@@ -36,7 +36,11 @@ val localProperties = Properties().apply {
 
 val adbPath = providers.provider {
     val sdkDir = localProperties.getProperty("sdk.dir")
-        ?: error("sdk.dir is missing from local.properties")
+        ?: System.getenv("ANDROID_HOME")
+        ?: System.getenv("ANDROID_SDK_ROOT")
+        ?: error(
+            "Android SDK location is missing. Set sdk.dir in local.properties or define ANDROID_HOME/ANDROID_SDK_ROOT.",
+        )
     "${sdkDir}/platform-tools/adb"
 }
 

@@ -19,6 +19,21 @@ Kotlin Multiplatform port of JSON Forms.
 
 ## Build
 
+Android-enabled Gradle tasks in this repository require a local Android SDK. Configure one of these before running `build`, `assemble`, or any Android demo task:
+
+```bash
+export ANDROID_HOME="$HOME/Android/Sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+```
+
+or create a root `local.properties` file:
+
+```properties
+sdk.dir=/absolute/path/to/Android/Sdk
+```
+
+You can copy [local.properties.example](/home/krasi/dev/workspaces/kchobantonov/jsonforms-kotlin/local.properties.example) and update the path for your machine.
+
 Build everything from the repository root:
 
 ```bash
@@ -59,7 +74,7 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose:run
 Android emulator:
 
 1. Start an Android emulator from Android Studio or Device Manager.
-2. Make sure `adb` is available under the Android SDK pointed to by `local.properties`.
+2. Make sure the Android SDK is configured via `local.properties`, `ANDROID_HOME`, or `ANDROID_SDK_ROOT`.
 3. Run:
 
 ```bash
