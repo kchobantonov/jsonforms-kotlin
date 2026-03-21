@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
 val personCoreSchema = JsonSchema(
@@ -31,14 +32,14 @@ val personCoreSchema = JsonSchema(
             }
             putJsonObject("nationality") {
                 put("type", "string")
-                put("enum", buildJsonArray {
+                putJsonArray("enum") {
                     add(JsonPrimitive("DE"))
                     add(JsonPrimitive("IT"))
                     add(JsonPrimitive("JP"))
                     add(JsonPrimitive("US"))
                     add(JsonPrimitive("RU"))
                     add(JsonPrimitive("Other"))
-                })
+                }
             }
         }
     },
@@ -68,10 +69,10 @@ val personSchema = JsonSchema(
                         put("default", 7)
                     }
                 }
-                put("required", buildJsonArray {
+                putJsonArray("required") {
                     add(JsonPrimitive("age"))
                     add(JsonPrimitive("height"))
-                })
+                }
             }
             putJsonObject("vegetarian") {
                 put("type", "boolean")
@@ -88,10 +89,10 @@ val personSchema = JsonSchema(
                 put("maxLength", 5)
             }
         }
-        put("required", buildJsonArray {
+        putJsonArray("required") {
             add(JsonPrimitive("occupation"))
             add(JsonPrimitive("nationality"))
-        })
+        }
     },
 )
 
@@ -109,7 +110,21 @@ val personUiSchema = VerticalLayout(
             elements = listOf(
                 ControlElement(scope = "#/properties/personalData/properties/height"),
                 ControlElement(scope = "#/properties/nationality"),
-                ControlElement(scope = "#/properties/occupation"),
+                ControlElement(
+                    scope = "#/properties/occupation",
+                    options = mapOf(
+                        "suggestion" to buildJsonArray {
+                            add(JsonPrimitive("Accountant"))
+                            add(JsonPrimitive("Engineer"))
+                            add(JsonPrimitive("Freelancer"))
+                            add(JsonPrimitive("Journalism"))
+                            add(JsonPrimitive("Physician"))
+                            add(JsonPrimitive("Student"))
+                            add(JsonPrimitive("Teacher"))
+                            add(JsonPrimitive("Other"))
+                        },
+                    ),
+                ),
             ),
         ),
     ),

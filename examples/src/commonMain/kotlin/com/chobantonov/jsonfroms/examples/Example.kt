@@ -2,26 +2,30 @@ package com.chobantonov.jsonfroms.examples
 
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
+import com.chobantonov.jsonfroms.core.reducers.Middleware
 import com.chobantonov.jsonfroms.core.store.JsonFormsCellRendererRegistryEntry
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.JsonFormsRendererRegistryEntry
 import com.chobantonov.jsonfroms.core.store.JsonFormsUISchemaRegistryEntry
+import com.chobantonov.jsonfroms.core.validation.ErrorObject
 import kotlinx.serialization.json.JsonElement
 
 data class ExampleAction(
     val label: String,
-    val apply: (StateProps) -> JsonElement,
+    val apply: (StateProps) -> StateProps,
 )
 
 data class ExampleDescription(
     val name: String,
     val label: String,
     val data: JsonElement,
-    val schema: JsonSchema,
-    val uischema: UiSchemaElement,
+    val schema: JsonSchema? = null,
+    val uischema: UiSchemaElement? = null,
     val uischemas: List<JsonFormsUISchemaRegistryEntry> = emptyList(),
     val config: Map<String, Any?> = emptyMap(),
     val actions: List<ExampleAction> = emptyList(),
+    val additionalErrors: List<ErrorObject> = emptyList(),
+    val middleware: Middleware? = null,
     val i18n: JsonFormsI18nState? = null,
     val readonly: Boolean = false,
 )
@@ -34,5 +38,9 @@ data class StateProps(
     val cells: List<JsonFormsCellRendererRegistryEntry<*>> = emptyList(),
     val config: Map<String, Any?> = emptyMap(),
     val uischemas: List<JsonFormsUISchemaRegistryEntry> = emptyList(),
+    val additionalErrors: List<ErrorObject> = emptyList(),
+    val actions: List<ExampleAction> = emptyList(),
+    val middleware: Middleware? = null,
+    val i18n: JsonFormsI18nState? = null,
     val readonly: Boolean = false,
 )

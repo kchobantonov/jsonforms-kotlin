@@ -1,11 +1,13 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
 import com.chobantonov.jsonfroms.material.renderers.util.MaterialInputVariant
 import com.chobantonov.jsonfroms.material.renderers.util.useInputVariant
@@ -16,6 +18,8 @@ import kotlinx.serialization.json.contentOrNull
 internal fun MaterialInputControl(
     props: ControlProps,
     value: String,
+    keyboardType: KeyboardType? = null,
+    placeholder: String? = null,
     onChange: (String) -> Unit,
 ) {
     val description = props.description
@@ -32,8 +36,14 @@ internal fun MaterialInputControl(
                 enabled = props.enabled && !props.readonly,
                 readOnly = props.readonly,
                 isError = props.errors.isNotBlank(),
+                keyboardOptions = keyboardType?.let { KeyboardOptions(keyboardType = it) } ?: KeyboardOptions.Default,
                 label = if (props.label.isNotBlank()) {
                     { Text(props.label) }
+                } else {
+                    null
+                },
+                placeholder = if (!placeholder.isNullOrBlank()) {
+                    { Text(placeholder) }
                 } else {
                     null
                 },
@@ -57,8 +67,14 @@ internal fun MaterialInputControl(
                 enabled = props.enabled && !props.readonly,
                 readOnly = props.readonly,
                 isError = props.errors.isNotBlank(),
+                keyboardOptions = keyboardType?.let { KeyboardOptions(keyboardType = it) } ?: KeyboardOptions.Default,
                 label = if (props.label.isNotBlank()) {
                     { Text(props.label) }
+                } else {
+                    null
+                },
+                placeholder = if (!placeholder.isNullOrBlank()) {
+                    { Text(placeholder) }
                 } else {
                     null
                 },

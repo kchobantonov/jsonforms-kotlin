@@ -165,6 +165,15 @@ data class ControlElement(
     override val type: String = "Control"
 }
 
+data class ListWithDetailElement(
+    override val scope: String,
+    override val i18n: String? = null,
+    override val rule: Rule? = null,
+    override val options: JsonOptions = emptyMap(),
+) : ScopedUiSchemaElement, Internationalizable {
+    override val type: String = "ListWithDetail"
+}
+
 data class CategoryElement(
     override val label: String,
     override val i18n: String? = null,

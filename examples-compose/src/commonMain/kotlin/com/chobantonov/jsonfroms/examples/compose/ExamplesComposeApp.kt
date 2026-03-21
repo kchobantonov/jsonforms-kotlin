@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.JsonForms
+import com.chobantonov.jsonfroms.core.reducers.defaultMiddleware
+import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.examples.ExampleDescription
+import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialCells
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
@@ -56,7 +60,9 @@ fun ExamplesComposeApp(
 
         var selectedExampleName by remember(examples) { mutableStateOf(examples.first().name) }
         val selectedExample = examples.firstOrNull { it.name == selectedExampleName } ?: examples.first()
-        var currentData by remember(selectedExample.name) { mutableStateOf(selectedExample.data) }
+        var currentState by remember(selectedExample.name) {
+            mutableStateOf(selectedExample.toStateProps())
+        }
 
         Row(
             modifier = Modifier
@@ -74,8 +80,8 @@ fun ExamplesComposeApp(
             Spacer(modifier = Modifier.width(16.dp))
             ExampleSurface(
                 example = selectedExample,
-                currentData = currentData,
-                onDataChange = { currentData = it },
+                state = currentState,
+                onStateChange = { currentState = it },
             )
         }
     }
@@ -132,8 +138,8 @@ private fun ExampleNavigation(
 @Composable
 private fun ExampleSurface(
     example: ExampleDescription,
-    currentData: JsonElement,
-    onDataChange: (JsonElement) -> Unit,
+    state: StateProps,
+    onStateChange: (StateProps) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -180,18 +186,33 @@ private fun ExampleSurface(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
+                    if (state.actions.isNotEmpty()) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            state.actions.forEach { action ->
+                                FilledTonalButton(
+                                    onClick = {
+                                        onStateChange(action.apply(state))
+                                    },
+                                ) {
+                                    Text(action.label)
+                                }
+                            }
+                        }
+                    }
                     JsonForms(
-                        data = currentData,
-                        schema = example.schema,
-                        uischema = example.uischema,
-                        uischemas = example.uischemas,
+                        data = state.data,
+                        schema = state.schema ?: example.schema,
+                        uischema = state.uischema ?: example.uischema,
+                        uischemas = state.uischemas,
                         renderers = materialRenderers,
                         cells = materialCells,
-                        config = example.config,
-                        readonly = example.readonly,
-                        i18n = example.i18n ?: com.chobantonov.jsonfroms.core.store.JsonFormsI18nState(),
+                        config = state.config,
+                        readonly = state.readonly,
+                        i18n = state.i18n ?: JsonFormsI18nState(),
+                        additionalErrors = state.additionalErrors,
+                        middleware = state.middleware ?: defaultMiddleware,
                         onChange = { change ->
-                            onDataChange(change.data)
+                            onStateChange(state.copy(data = change.data))
                         },
                     )
                 }
@@ -215,7 +236,7 @@ private fun ExampleSurface(
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = prettyJson.encodeToString(currentData),
+                        text = prettyJson.encodeToString(state.data),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -223,6 +244,22 @@ private fun ExampleSurface(
         }
     }
 }
+
+private fun ExampleDescription.toStateProps(): StateProps =
+    StateProps(
+        data = data,
+        schema = schema,
+        uischema = uischema,
+        renderers = materialRenderers,
+        cells = materialCells,
+        config = config,
+        uischemas = uischemas,
+        additionalErrors = additionalErrors,
+        actions = actions,
+        middleware = middleware,
+        i18n = i18n,
+        readonly = readonly,
+    )
 
 @Composable
 private fun EmptyExamplesState() {

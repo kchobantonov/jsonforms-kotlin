@@ -7,8 +7,8 @@ import com.chobantonov.jsonfroms.core.models.StringControlLabel
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.examples.ExampleDescription
 
-private val sharedData = personData
-private val sharedSchema = personSchema
+val layoutSchema = personSchema
+val layoutData = personData
 
 val layoutVerticalUiSchema = VerticalLayout(
     elements = listOf(
@@ -88,29 +88,29 @@ val layoutExamples = listOf(
     ExampleDescription(
         name = "layout-vertical",
         label = "Layout Vertical",
-        data = sharedData,
-        schema = sharedSchema,
+        data = layoutData,
+        schema = layoutSchema,
         uischema = layoutVerticalUiSchema,
     ),
     ExampleDescription(
         name = "layout-horizontal",
         label = "Layout Horizontal",
-        data = sharedData,
-        schema = sharedSchema,
+        data = layoutData,
+        schema = layoutSchema,
         uischema = layoutHorizontalUiSchema,
     ),
     ExampleDescription(
         name = "layout-group",
         label = "Layout Group",
-        data = sharedData,
-        schema = sharedSchema,
+        data = layoutData,
+        schema = layoutSchema,
         uischema = layoutGroupUiSchema,
     ),
     ExampleDescription(
         name = "layout-complex",
         label = "Layout Complex",
-        data = sharedData,
-        schema = sharedSchema,
+        data = layoutData,
+        schema = layoutSchema,
         uischema = layoutComplexUiSchema,
     ),
 )
