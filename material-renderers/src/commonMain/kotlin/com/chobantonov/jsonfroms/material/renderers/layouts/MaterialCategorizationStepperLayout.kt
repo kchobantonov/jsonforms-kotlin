@@ -33,6 +33,7 @@ import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.store.getData
 import com.chobantonov.jsonfroms.core.store.getValidator
 import com.chobantonov.jsonfroms.core.util.Runtime
+import com.chobantonov.jsonfroms.material.renderers.translatedText
 import kotlinx.serialization.json.JsonPrimitive
 
 val MaterialCategorizationStepperLayout: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
@@ -80,6 +81,8 @@ fun MaterialCategorizationStepperLayout(
     var activeCategory by remember(categorization) { mutableIntStateOf(0) }
     val safeCategory = activeCategory.coerceIn(0, categories.lastIndex)
     val showNavButtons = resolveShowNavButtons(categorization, config)
+    val previousLabel = translatedText(translator, null, "Previous", "Previous")
+    val nextLabel = translatedText(translator, null, "Next", "Next")
     val labels = categories.map { category ->
         deriveLabelForUISchemaElement(category, translator) ?: category.label
     }
@@ -122,13 +125,13 @@ fun MaterialCategorizationStepperLayout(
                 onClick = { activeCategory = (safeCategory - 1).coerceAtLeast(0) },
                 enabled = safeCategory > 0,
             ) {
-                Text("Previous")
+                Text(previousLabel)
             }
             Button(
                 onClick = { activeCategory = (safeCategory + 1).coerceAtMost(categories.lastIndex) },
                 enabled = safeCategory < categories.lastIndex,
             ) {
-                Text("Next")
+                Text(nextLabel)
             }
         }
     }

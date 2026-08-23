@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.core
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.LabelElement
+import com.chobantonov.jsonfroms.core.models.ListWithDetailElement
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.testers.TesterContext
 import com.chobantonov.jsonfroms.core.testers.and
@@ -14,6 +15,7 @@ import com.chobantonov.jsonfroms.core.testers.isEnumControl
 import com.chobantonov.jsonfroms.core.testers.isIntegerControl
 import com.chobantonov.jsonfroms.core.testers.isMultiLineControl
 import com.chobantonov.jsonfroms.core.testers.isNumberControl
+import com.chobantonov.jsonfroms.core.testers.isObjectArray
 import com.chobantonov.jsonfroms.core.testers.isObjectArrayControl
 import com.chobantonov.jsonfroms.core.testers.isObjectArrayWithNesting
 import com.chobantonov.jsonfroms.core.testers.isOneOfEnumControl
@@ -129,6 +131,13 @@ class TestersTest {
             })
         }
         assertTrue(isObjectArrayControl(control, objectArraySchema, testerContext(objectArraySchema)))
+        assertTrue(
+            isObjectArray(
+                ListWithDetailElement(scope = "#/properties/foo"),
+                objectArraySchema,
+                testerContext(objectArraySchema),
+            ),
+        )
     }
 
     @Test

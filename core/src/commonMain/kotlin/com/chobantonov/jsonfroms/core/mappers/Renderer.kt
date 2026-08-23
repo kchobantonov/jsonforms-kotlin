@@ -138,7 +138,7 @@ data class StatePropsOfControl(
 )
 
 fun interface DispatchPropsOfControl {
-    fun handleChange(path: String, value: JsonElement)
+    fun handleChange(path: String, value: JsonElement?)
 }
 
 data class ControlProps(
@@ -159,7 +159,7 @@ data class ControlProps(
     val description: String? = null,
     val required: Boolean = false,
     val i18nKeyPrefix: String? = null,
-    val handleChange: (String, JsonElement) -> Unit,
+    val handleChange: (String, JsonElement?) -> Unit,
 )
 
 data class StatePropsOfLayout(
@@ -396,17 +396,50 @@ fun extractDefaults(
     schema: JsonSchema,
     rootSchema: JsonSchema,
 ): JsonElement {
-    schema["default"]?.let { return it }
-    val properties = schema["properties"] as? JsonObject ?: return buildJsonObject { }
+    val resolvedSchema = ((schema["\$ref"] as? JsonPrimitive)?.content?.let {
+        resolveSchema(rootSchema, it, rootSchema)
+    } ?: schema)
+    resolvedSchema["default"]?.let { return it }
+    val properties = resolvedSchema["properties"] as? JsonObject ?: return buildJsonObject { }
     return buildJsonObject {
         properties.forEach { (key, value) ->
             val propertySchema = value.asJsonSchemaOrNull() ?: return@forEach
-            val defaultValue = doCreateDefaultValue(propertySchema, rootSchema)
+            val defaultValue = extractExplicitDefault(propertySchema, rootSchema)
             if (defaultValue != null) {
                 put(key, defaultValue)
             }
         }
     }
+}
+
+/**
+ * Extracts only defaults declared by the schema. Type fallbacks such as an empty
+ * string or zero are useful when adding primitive array items, but must not be
+ * materialized as properties of a newly-created object.
+ */
+private fun extractExplicitDefault(
+    schema: JsonSchema,
+    rootSchema: JsonSchema,
+): JsonElement? {
+    val resolvedSchema = ((schema["\$ref"] as? JsonPrimitive)?.content?.let {
+        resolveSchema(rootSchema, it, rootSchema)
+    } ?: schema)
+    resolvedSchema["default"]?.let { return it }
+
+    if (hasType(resolvedSchema, "object")) {
+        val nestedDefaults = extractDefaults(resolvedSchema, rootSchema)
+        if (nestedDefaults is JsonObject && nestedDefaults.isNotEmpty()) {
+            return nestedDefaults
+        }
+    }
+
+    listOf("oneOf", "anyOf", "allOf").forEach { combinator ->
+        val schemas = resolvedSchema[combinator] as? JsonArray ?: return@forEach
+        schemas.mapNotNull(JsonElement::asJsonSchemaOrNull).forEach { subSchema ->
+            extractExplicitDefault(subSchema, rootSchema)?.let { return it }
+        }
+    }
+    return null
 }
 
 private fun isRequired(

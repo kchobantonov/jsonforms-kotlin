@@ -116,5 +116,22 @@ object RuleEvaluator {
     private fun resolveScopedData(
         data: JsonElement,
         scope: String?,
-    ): JsonElement? = JsonPointer.resolve(data, scope)
+    ): JsonElement? {
+        if (scope.isNullOrBlank() || scope == "#") return data
+
+        val segments = scope
+            .removePrefix("#")
+            .split('/')
+            .filter(String::isNotEmpty)
+        val isSchemaPath = segments.any { segment ->
+            segment in setOf("properties", "anyOf", "allOf", "oneOf", "then", "else")
+        }
+
+        return if (isSchemaPath) {
+            Resolve.data(data, toDataPath(scope))
+        } else {
+            // Retain support for direct JSON Pointer condition scopes such as "#/role".
+            JsonPointer.resolve(data, scope)
+        }
+    }
 }

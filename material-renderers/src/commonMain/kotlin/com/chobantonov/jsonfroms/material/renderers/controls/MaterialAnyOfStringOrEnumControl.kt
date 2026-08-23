@@ -98,7 +98,10 @@ fun MaterialAnyOfStringOrEnumControl(
                         draftValue = nextValue
                         lastCommittedValue = nextValue
                         expanded = filteredOptions.isNotEmpty()
-                        bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(nextValue))
+                        bindings.dispatchProps.handleChange(
+                            bindings.stateProps.path,
+                            nextValue.takeIf(String::isNotEmpty)?.let(::JsonPrimitive),
+                        )
                     },
                     enabled = controlProps.enabled && !controlProps.readonly,
                     readOnly = controlProps.readonly,
@@ -136,7 +139,10 @@ fun MaterialAnyOfStringOrEnumControl(
                         draftValue = nextValue
                         lastCommittedValue = nextValue
                         expanded = filteredOptions.isNotEmpty()
-                        bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(nextValue))
+                        bindings.dispatchProps.handleChange(
+                            bindings.stateProps.path,
+                            nextValue.takeIf(String::isNotEmpty)?.let(::JsonPrimitive),
+                        )
                     },
                     enabled = controlProps.enabled && !controlProps.readonly,
                     readOnly = controlProps.readonly,

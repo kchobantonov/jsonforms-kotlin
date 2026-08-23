@@ -64,6 +64,38 @@ class RuleEvaluatorTest {
 
         assertFalse(RuleEvaluator.isVisible(control, data, validator))
     }
+
+    @Test
+    fun resolvesStandardUiSchemaConditionScopesAgainstData() {
+        val validator = StubJsonSchemaValidator { _, data ->
+            if (data == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not enabled"))
+        }
+        val control = ControlElement(
+            scope = "#/properties/name",
+            rule = Rule(
+                effect = RuleEffect.SHOW,
+                condition = SchemaBasedCondition(
+                    scope = "#/properties/vegetarian",
+                    schema = buildJsonSchema { put("const", true) },
+                ),
+            ),
+        )
+
+        assertFalse(
+            RuleEvaluator.isVisible(
+                control,
+                buildJsonObject { put("vegetarian", false) },
+                validator,
+            ),
+        )
+        assertTrue(
+            RuleEvaluator.isVisible(
+                control,
+                buildJsonObject { put("vegetarian", true) },
+                validator,
+            ),
+        )
+    }
 }
 
 private class StubJsonSchemaValidator(

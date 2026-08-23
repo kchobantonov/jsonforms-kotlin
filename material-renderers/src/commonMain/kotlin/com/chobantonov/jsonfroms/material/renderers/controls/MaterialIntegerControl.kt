@@ -12,8 +12,6 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isIntegerControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonPrimitive
 
 val MaterialIntegerControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialIntegerControl(props)
@@ -30,6 +28,7 @@ fun MaterialIntegerControl(
     val committedValue = bindings.stateProps.data.toMaterialInputString()
     var draftValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     var lastCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
+    val parsedDraft = parseIntegerInput(draftValue)
 
     LaunchedEffect(committedValue) {
         if (committedValue != lastCommittedValue) {
@@ -42,22 +41,14 @@ fun MaterialIntegerControl(
         props = bindings.controlProps,
         value = draftValue,
         keyboardType = KeyboardType.Number,
+        localError = parsedDraft.error,
         onChange = { value ->
             draftValue = value
-            when {
-                value.isBlank() -> {
-                    lastCommittedValue = ""
-                    bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonNull)
-                }
-
-                value.toIntOrNull() != null -> {
-                    lastCommittedValue = value
-                    bindings.dispatchProps.handleChange(
-                        bindings.stateProps.path,
-                        JsonPrimitive(value.toInt()),
-                    )
-                }
-            }
+            lastCommittedValue = value
+            bindings.dispatchProps.handleChange(
+                bindings.stateProps.path,
+                parseIntegerInput(value).data,
+            )
         },
     )
 }

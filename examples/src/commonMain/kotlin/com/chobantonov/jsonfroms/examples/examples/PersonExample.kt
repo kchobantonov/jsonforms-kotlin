@@ -99,6 +99,7 @@ val personSchema = JsonSchema(
 val personUiSchema = VerticalLayout(
     elements = listOf(
         HorizontalLayout(
+            options = mapOf("stackOnSmallScreen" to JsonPrimitive(true)),
             elements = listOf(
                 ControlElement(scope = "#/properties/name"),
                 ControlElement(scope = "#/properties/personalData/properties/age"),
@@ -107,6 +108,7 @@ val personUiSchema = VerticalLayout(
         ),
         LabelElement(text = "Additional Information"),
         HorizontalLayout(
+            options = mapOf("stackOnSmallScreen" to JsonPrimitive(true)),
             elements = listOf(
                 ControlElement(scope = "#/properties/personalData/properties/height"),
                 ControlElement(scope = "#/properties/nationality"),

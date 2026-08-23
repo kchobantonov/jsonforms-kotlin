@@ -32,6 +32,7 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":core"))
             implementation(project(":compose"))
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(compose.runtime)
             implementation(compose.foundation)

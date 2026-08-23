@@ -10,6 +10,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,8 +75,20 @@ fun MaterialOneOfEnumControl(
     val modifier = if (trim) Modifier else Modifier.fillMaxWidth()
     val variant = useInputVariant(stateProps.config, stateProps.uischema)
     val selectedOption = stateProps.options.firstOrNull { it.value == stateProps.data }
+    val committedText = selectedOption?.label ?: stateProps.data.toMaterialInputString()
     var expanded by remember(stateProps.path) { mutableStateOf(false) }
-    var query by remember(stateProps.path, selectedOption?.label) { mutableStateOf(selectedOption?.label.orEmpty()) }
+    var query by remember(stateProps.path) { mutableStateOf(committedText) }
+    var observedCommittedText by remember(stateProps.path) { mutableStateOf(committedText) }
+
+    LaunchedEffect(committedText) {
+        if (committedText != observedCommittedText) {
+            query = committedText
+            observedCommittedText = committedText
+        }
+    }
+
+    val localError = unmatchedEnumQueryError(query, selectedOption?.label)
+    val effectiveError = stateProps.errors.takeIf(String::isNotBlank) ?: localError.orEmpty()
 
     val filteredOptions = if (autocomplete) {
         stateProps.options.filter { option ->
@@ -102,19 +115,24 @@ fun MaterialOneOfEnumControl(
                     onValueChange = { value ->
                         if (autocomplete) {
                             query = value
-                            expanded = filteredOptions.isNotEmpty()
+                            expanded = stateProps.options.any { option ->
+                                value.isBlank() || option.label.contains(value, ignoreCase = true)
+                            }
+                            val exactOption = stateProps.options.firstOrNull { it.label == value }
+                            observedCommittedText = exactOption?.label.orEmpty()
+                            dispatchProps.handleChange(stateProps.path, exactOption?.value)
                         }
                     },
                     enabled = stateProps.enabled && !stateProps.readonly,
                     readOnly = stateProps.readonly || !autocomplete,
-                    isError = stateProps.errors.isNotBlank(),
+                    isError = effectiveError.isNotBlank(),
                     label = if (stateProps.label.isNotBlank()) {
                         { Text(stateProps.label) }
                     } else {
                         null
                     },
-                    supportingText = if (stateProps.errors.isNotBlank()) {
-                        { Text(stateProps.errors) }
+                    supportingText = if (effectiveError.isNotBlank()) {
+                        { Text(effectiveError) }
                     } else if (!stateProps.description.isNullOrBlank()) {
                         { Text(stateProps.description!!) }
                     } else {
@@ -138,19 +156,24 @@ fun MaterialOneOfEnumControl(
                     onValueChange = { value ->
                         if (autocomplete) {
                             query = value
-                            expanded = filteredOptions.isNotEmpty()
+                            expanded = stateProps.options.any { option ->
+                                value.isBlank() || option.label.contains(value, ignoreCase = true)
+                            }
+                            val exactOption = stateProps.options.firstOrNull { it.label == value }
+                            observedCommittedText = exactOption?.label.orEmpty()
+                            dispatchProps.handleChange(stateProps.path, exactOption?.value)
                         }
                     },
                     enabled = stateProps.enabled && !stateProps.readonly,
                     readOnly = stateProps.readonly || !autocomplete,
-                    isError = stateProps.errors.isNotBlank(),
+                    isError = effectiveError.isNotBlank(),
                     label = if (stateProps.label.isNotBlank()) {
                         { Text(stateProps.label) }
                     } else {
                         null
                     },
-                    supportingText = if (stateProps.errors.isNotBlank()) {
-                        { Text(stateProps.errors) }
+                    supportingText = if (effectiveError.isNotBlank()) {
+                        { Text(effectiveError) }
                     } else if (!stateProps.description.isNullOrBlank()) {
                         { Text(stateProps.description!!) }
                     } else {
@@ -167,7 +190,7 @@ fun MaterialOneOfEnumControl(
             expanded = expanded && filteredOptions.isNotEmpty() && stateProps.enabled && !stateProps.readonly,
             onDismissRequest = {
                 expanded = false
-                query = selectedOption?.label.orEmpty()
+                query = committedText
             },
         ) {
             filteredOptions.forEach { option ->
@@ -175,6 +198,7 @@ fun MaterialOneOfEnumControl(
                     text = { Text(option.label) },
                     onClick = {
                         query = option.label
+                        observedCommittedText = option.label
                         expanded = false
                         dispatchProps.handleChange(stateProps.path, option.value)
                     },

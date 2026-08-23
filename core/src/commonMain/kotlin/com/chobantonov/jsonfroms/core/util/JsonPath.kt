@@ -134,7 +134,11 @@ object JsonPath {
         segments: MutableList<PathSegment>,
     ) {
         if (token.isNotEmpty()) {
-            segments += PathSegment.Property(token.toString())
+            val value = token.toString()
+            segments += value.toIntOrNull()
+                ?.takeIf { it >= 0 }
+                ?.let(PathSegment::Index)
+                ?: PathSegment.Property(value)
             token.clear()
         }
     }

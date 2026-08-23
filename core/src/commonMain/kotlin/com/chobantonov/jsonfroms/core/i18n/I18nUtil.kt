@@ -1,6 +1,8 @@
 package com.chobantonov.jsonfroms.core.i18n
 
+import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.models.GroupElement
 import com.chobantonov.jsonfroms.core.models.Internationalizable
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.LabelElement
@@ -68,7 +70,21 @@ fun deriveLabelForUISchemaElement(
     translator: Translator,
 ): String? = when (uiSchema) {
     is LabelElement -> translator.translate(uiSchema.text, uiSchema.text, emptyMap()) ?: uiSchema.text
-    is com.chobantonov.jsonfroms.core.models.GroupElement -> uiSchema.label
-    is com.chobantonov.jsonfroms.core.models.CategoryElement -> uiSchema.label
+    is GroupElement -> translateLayoutLabel(uiSchema.label, uiSchema.i18n, uiSchema, translator)
+    is CategoryElement -> translateLayoutLabel(uiSchema.label, uiSchema.i18n, uiSchema, translator)
     else -> null
+}
+
+private fun translateLayoutLabel(
+    label: String?,
+    i18n: String?,
+    uiSchema: UiSchemaElement,
+    translator: Translator,
+): String? {
+    val translationKey = i18n?.let { "$it.label" } ?: label ?: return null
+    return translator.translate(
+        translationKey,
+        label,
+        mapOf("uischema" to uiSchema),
+    ) ?: label
 }

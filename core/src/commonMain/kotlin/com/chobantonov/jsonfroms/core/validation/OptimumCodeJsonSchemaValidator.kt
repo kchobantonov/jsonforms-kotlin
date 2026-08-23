@@ -3,10 +3,26 @@ package com.chobantonov.jsonfroms.core.validation
 import com.chobantonov.jsonfroms.core.models.JsonData
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import io.github.optimumcode.json.schema.JsonSchema as OptimumCodeSchema
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+
+private const val LatestSchemaUri = "https://json-schema.org/draft/2020-12/schema"
+
+private val genericSchemaUris = setOf(
+    "http://json-schema.org/schema",
+    "http://json-schema.org/schema#",
+    "https://json-schema.org/schema",
+    "https://json-schema.org/schema#",
+)
 
 class OptimumCodeJsonSchemaValidator : JsonSchemaValidator {
     override fun compile(schema: JsonSchema): ValidateFunction {
-        val delegate = OptimumCodeSchema.fromJsonElement(schema.toJsonObject())
+        val normalizedSchema = schema.normalizeGenericSchemaUri()
+        val delegate = try {
+            OptimumCodeSchema.fromJsonElement(normalizedSchema.toJsonObject())
+        } catch (exception: Exception) {
+            return SchemaCompilationFailure(schema, exception)
+        }
 
         return object : ValidateFunction {
             override val schema: JsonSchema = schema
@@ -20,6 +36,35 @@ class OptimumCodeJsonSchemaValidator : JsonSchemaValidator {
             }
         }
     }
+}
+
+private fun JsonSchema.normalizeGenericSchemaUri(): JsonSchema {
+    if (schemaUri !in genericSchemaUris) {
+        return this
+    }
+    return JsonSchema(
+        JsonObject(toJsonObject() + ("\$schema" to JsonPrimitive(LatestSchemaUri))),
+    )
+}
+
+private class SchemaCompilationFailure(
+    override val schema: JsonSchema,
+    exception: Exception,
+) : ValidateFunction {
+    private val error = ErrorObject(
+        schemaPath = if (schema.schemaUri == null) "" else "/\$schema",
+        keyword = "\$schema",
+        message = buildString {
+            append("Unable to compile JSON Schema")
+            exception.message?.takeIf(String::isNotBlank)?.let {
+                append(": ")
+                append(it)
+            }
+        },
+        params = schema.schemaUri?.let { mapOf("schemaUri" to it) }.orEmpty(),
+    )
+
+    override fun validate(data: JsonData): List<ErrorObject> = listOf(error)
 }
 
 private fun io.github.optimumcode.json.schema.ValidationError.toErrorObject(): ErrorObject {

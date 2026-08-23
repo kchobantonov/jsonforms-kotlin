@@ -1,12 +1,15 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.mappers.computeLabel
@@ -51,25 +54,35 @@ fun MaterialSliderControl(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(computeLabel(controlProps.label, controlProps.required, hideRequiredAsterisk))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(minimum.toString())
-            Text(maximum.toString())
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(formatSliderEndpoint(minimum))
+            Slider(
+                modifier = Modifier.weight(1f),
+                value = currentValue.toFloat(),
+                onValueChange = { value ->
+                    bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value.toDouble()))
+                },
+                valueRange = minimum.toFloat()..maximum.toFloat(),
+                steps = computeSliderSteps(minimum, maximum, step),
+                enabled = controlProps.enabled && !controlProps.readonly,
+            )
+            Text(formatSliderEndpoint(maximum))
         }
-        Slider(
-            value = currentValue.toFloat(),
-            onValueChange = { value ->
-                bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value.toDouble()))
-            },
-            valueRange = minimum.toFloat()..maximum.toFloat(),
-            steps = computeSliderSteps(minimum, maximum, step),
-            enabled = controlProps.enabled && !controlProps.readonly,
-        )
         if (controlProps.errors.isNotBlank()) {
             Text(controlProps.errors)
         } else if (showDescription && !controlProps.description.isNullOrBlank()) {
             Text(controlProps.description!!)
         }
     }
+}
+
+internal fun formatSliderEndpoint(value: Double): String {
+    val integralValue = value.toLong()
+    return if (integralValue.toDouble() == value) integralValue.toString() else value.toString()
 }
 
 private fun computeSliderSteps(

@@ -84,7 +84,7 @@ data class CellProps(
     val rootSchema: JsonSchema,
     val id: String,
     val isValid: Boolean,
-    val handleChange: (String, JsonElement) -> Unit,
+    val handleChange: (String, JsonElement?) -> Unit,
 )
 
 data class EnumCellProps(
@@ -103,7 +103,7 @@ data class EnumCellProps(
     val id: String,
     val isValid: Boolean,
     val options: List<EnumOption> = emptyList(),
-    val handleChange: (String, JsonElement) -> Unit,
+    val handleChange: (String, JsonElement?) -> Unit,
 )
 
 data class DispatchCellStateProps(
@@ -272,7 +272,7 @@ fun mapDispatchToCellProps(
 
 fun defaultMapDispatchToControlProps(
     dispatch: Dispatch<JsonFormsAction>,
-    handleChangeOverride: ((String, JsonElement) -> Unit)? = null,
+    handleChangeOverride: ((String, JsonElement?) -> Unit)? = null,
 ): DispatchPropsOfControl {
     val delegate = mapDispatchToCellProps(dispatch)
     return DispatchPropsOfControl { path, value ->

@@ -19,6 +19,8 @@ import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfLayout
 import com.chobantonov.jsonfroms.core.mappers.mapStateToLayoutProps
 import com.chobantonov.jsonfroms.core.models.CategorizationElement
 import com.chobantonov.jsonfroms.core.models.CategoryElement
+import com.chobantonov.jsonfroms.core.models.JsonData
+import com.chobantonov.jsonfroms.core.validation.JsonSchemaValidator
 import com.chobantonov.jsonfroms.core.store.getData
 import com.chobantonov.jsonfroms.core.store.getValidator
 import com.chobantonov.jsonfroms.core.testers.RankedTester
@@ -59,11 +61,7 @@ fun MaterialCategorizationLayout(
     val validator = getValidator(props.state)
     val config = layoutProps.config
     val translator = props.state.jsonforms.i18n.translate ?: defaultTranslator
-    val categories = categorization.elements
-        .filterIsInstance<CategoryElement>()
-        .filter { category ->
-            Runtime.isVisible(category, data, validator, config = config)
-        }
+    val categories = visibleCategories(categorization, data, validator, config)
     if (categories.isEmpty()) {
         return
     }
@@ -94,6 +92,15 @@ fun MaterialCategorizationLayout(
         )
     }
 }
+
+internal fun visibleCategories(
+    categorization: CategorizationElement,
+    data: JsonData,
+    validator: JsonSchemaValidator,
+    config: Map<String, Any?> = emptyMap(),
+): List<CategoryElement> = categorization.elements
+    .filterIsInstance<CategoryElement>()
+    .filter { category -> Runtime.isVisible(category, data, validator, config = config) }
 
 private val isSingleLevelCategorization = and(
     uiTypeIs("Categorization"),

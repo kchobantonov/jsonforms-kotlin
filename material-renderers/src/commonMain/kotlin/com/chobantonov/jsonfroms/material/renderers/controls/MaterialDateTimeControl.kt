@@ -12,52 +12,153 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isDateTimeControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
-import com.chobantonov.jsonfroms.core.util.defaultDateTimeFormat
+import com.chobantonov.jsonfroms.material.renderers.translatedActionText
+import com.chobantonov.jsonfroms.material.renderers.translatedText
 import kotlinx.serialization.json.JsonPrimitive
 
-val MaterialDateTimeControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
-    MaterialDateTimeControl(props)
-}
+val MaterialDateTimeControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props -> MaterialDateTimeControl(props) }
 
 @Composable
-fun MaterialDateTimeControl(
-    props: ComposeJsonFormsRendererProps,
-) {
-    val bindings = materialControlBindings(
-        props = props,
-        rendererName = "MaterialDateTimeControl",
-    )
+fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
+    val bindings = materialControlBindings(props, "MaterialDateTimeControl")
     val controlProps = bindings.controlProps
-    val appliedOptions = controlProps.config + controlProps.uischema.options
+    val options = controlProps.config + controlProps.uischema.options
+    val displayFormat = options.stringOption("dateTimeFormat") ?: DEFAULT_DATE_TIME_DISPLAY_FORMAT
+    val saveFormat = options.stringOption("dateTimeSaveFormat") ?: DEFAULT_DATE_TIME_SAVE_FORMAT
+    val translator = props.state.jsonforms.i18n.translate
+    val i18nKeyPrefix = bindings.stateProps.i18nKeyPrefix
+    val translationValues = mapOf("label" to bindings.stateProps.label, "format" to displayFormat)
+    val pickerText = translatedActionText(
+        translator,
+        i18nKeyPrefix,
+        "chooseDateTimeTooltip",
+        "chooseDateTimeAriaLabel",
+        "Choose date and time",
+        values = translationValues,
+    )
+    val invalidDateTimeText = translatedText(
+        translator,
+        i18nKeyPrefix,
+        "invalidDateTime",
+        "Invalid date and time. Expected $displayFormat.",
+        translationValues,
+    )
+    val cancelText = options.stringOption("cancelLabel")
+        ?: translatedText(translator, i18nKeyPrefix, "cancel", "Cancel", translationValues)
+    val nextText = translatedText(translator, i18nKeyPrefix, "next", "Next", translationValues)
+    val okText = options.stringOption("okLabel")
+        ?: translatedText(translator, i18nKeyPrefix, "ok", "OK", translationValues)
+    val selectTimeText = translatedText(
+        translator,
+        i18nKeyPrefix,
+        "selectTime",
+        "Select time",
+        translationValues,
+    )
     val committedValue = bindings.stateProps.data.toMaterialInputString()
-    var draftValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
-    var lastCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
+    val committedTemporal = parseDateTimeValue(
+        committedValue,
+        listOf(saveFormat, DEFAULT_DATE_TIME_SAVE_FORMAT, "YYYY-MM-DDTHH:mm:ss.SSSZ", "YYYY-MM-DDTHH:mm:ss"),
+    )
+    val displayValue = committedTemporal?.let { formatTemporal(it, displayFormat) } ?: committedValue
+    var draftValue by remember(bindings.stateProps.path) { mutableStateOf(displayValue) }
+    var observedCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
+    var pickerStep by remember { mutableStateOf<PickerStep?>(null) }
+    var pendingValue by remember { mutableStateOf<TemporalValue?>(null) }
+    val maskInput = options.booleanOption("mask") != false
+    val localError = draftValue
+        .takeIf { it.isNotEmpty() && parseDateTimeValue(it, listOf(displayFormat)) == null }
+        ?.let { invalidDateTimeText }
 
-    LaunchedEffect(committedValue) {
-        if (committedValue != lastCommittedValue) {
-            draftValue = committedValue
-            lastCommittedValue = committedValue
+    LaunchedEffect(committedValue, displayValue) {
+        if (committedValue != observedCommittedValue) {
+            draftValue = displayValue
+            observedCommittedValue = committedValue
         }
     }
 
-    val placeholder = (appliedOptions["dateTimeFormat"] as? String)
-        ?: (appliedOptions["dateTimeSaveFormat"] as? String)
-        ?: defaultDateTimeFormat
+    fun commit(temporal: TemporalValue) {
+        val saved = formatTemporal(temporal, saveFormat)
+        observedCommittedValue = saved
+        draftValue = formatTemporal(temporal, displayFormat)
+        bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(saved))
+    }
 
     MaterialInputControl(
         props = controlProps,
         value = draftValue,
         keyboardType = KeyboardType.Text,
-        placeholder = placeholder,
+        placeholder = options.stringOption("placeholder") ?: displayFormat,
+        leadingIcon = {
+            TemporalPickerIcon(
+                type = TemporalPickerType.DateTime,
+                enabled = controlProps.enabled && !controlProps.readonly,
+                tooltipLabel = pickerText.tooltip,
+                ariaLabel = pickerText.ariaLabel,
+                onClick = {
+                    pendingValue = committedTemporal ?: currentTemporalValue()
+                    pickerStep = PickerStep.Date
+                },
+            )
+        },
+        showDescriptionOnlyWhenFocused = true,
+        localError = localError,
         onChange = { value ->
+            if (!isAllowedTemporalEdit(draftValue, value, displayFormat, maskInput)) return@MaterialInputControl
             draftValue = value
-            lastCommittedValue = value
-            bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
+            when {
+                value.isEmpty() -> {
+                    observedCommittedValue = ""
+                    bindings.dispatchProps.handleChange(bindings.stateProps.path, null)
+                }
+                else -> {
+                    val temporal = parseDateTimeValue(value, listOf(displayFormat))
+                    if (temporal != null) {
+                        commit(temporal)
+                    } else {
+                        observedCommittedValue = value
+                        bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
+                    }
+                }
+            }
         },
     )
+
+    when (pickerStep) {
+        PickerStep.Date -> {
+            val initial = pendingValue ?: currentTemporalValue()
+            MaterialDatePickerDialog(
+                initialDateMillis = initial.date.toPickerMillis(),
+                cancelLabel = cancelText,
+                okLabel = nextText,
+                onDismiss = { pickerStep = null },
+                onConfirm = { millis ->
+                    val date = pickerMillisToDate(millis)
+                    pendingValue = initial.copy(year = date.year, month = date.monthNumber, day = date.day)
+                    pickerStep = PickerStep.Time
+                },
+            )
+        }
+        PickerStep.Time -> {
+            val initial = pendingValue ?: currentTemporalValue()
+            MaterialTimePickerDialog(
+                initialHour = initial.hour,
+                initialMinute = initial.minute,
+                is24Hour = options.booleanOption("ampm") == false,
+                cancelLabel = cancelText,
+                okLabel = okText,
+                titleLabel = selectTimeText,
+                onDismiss = { pickerStep = null },
+                onConfirm = { hour, minute ->
+                    commit(initial.copy(hour = hour, minute = minute))
+                    pickerStep = null
+                },
+            )
+        }
+        null -> Unit
+    }
 }
 
-val materialDateTimeControlTester: RankedTester = rankWith(
-    2,
-    isDateTimeControl,
-)
+private enum class PickerStep { Date, Time }
+
+val materialDateTimeControlTester: RankedTester = rankWith(2, isDateTimeControl)

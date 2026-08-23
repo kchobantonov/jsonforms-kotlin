@@ -22,6 +22,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
@@ -48,14 +49,14 @@ class RendererTest {
     private val coreUiSchema = ControlElement(scope = "#/properties/firstName")
 
     @Test
-    fun `mapStateToControlProps - visible via ownProps `() {
+    fun `mapStateToControlProps - hide rule overrides inherited visibility`() {
         val uiSchema = coreUiSchema.copy(rule = hideRule)
         val props = mapStateToControlProps(
             createState(uiSchema),
             ownProps(uiSchema, visible = true),
         )
 
-        assertTrue(props.visible)
+        assertFalse(props.visible)
     }
 
     @Ignore
@@ -94,14 +95,14 @@ class RendererTest {
     }
 
     @Test
-    fun `mapStateToControlProps - enabled via ownProps `() {
+    fun `mapStateToControlProps - disable rule overrides inherited enablement`() {
         val uiSchema = coreUiSchema.copy(rule = disableRule)
         val props = mapStateToControlProps(
             createState(uiSchema),
             ownProps(uiSchema, enabled = true),
         )
 
-        assertTrue(props.enabled)
+        assertFalse(props.enabled)
     }
 
     @Ignore
@@ -238,10 +239,83 @@ class RendererTest {
     }
 
     @Test
+    fun `mapDispatchToControlProps - null removes the controlled property`() {
+        val dispatched = mutableListOf<JsonFormsAction>()
+        val props = mapDispatchToControlProps(
+            Dispatch { action ->
+                dispatched += action
+                action
+            },
+        )
+
+        props.handleChange("personalData.height", null)
+
+        val action = assertIs<UpdateAction>(dispatched.single())
+        assertEquals("personalData.height", action.path)
+        assertNull(action.updater(JsonPrimitive(180)))
+    }
+
+    @Test
     fun `createDefaultValue`() {
         assertEquals(JsonPrimitive(""), createDefaultValue(buildJsonSchema { put("type", "string") }))
         assertEquals(JsonPrimitive(0), createDefaultValue(buildJsonSchema { put("type", "integer") }))
         assertEquals(JsonPrimitive(false), createDefaultValue(buildJsonSchema { put("type", "boolean") }))
+    }
+
+    @Test
+    fun `createDefaultValue does not materialize type fallbacks in object properties`() {
+        val schema = buildJsonSchema {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("plainEnum", buildJsonObject {
+                    put("type", "string")
+                    put("enum", buildJsonArray {
+                        add(JsonPrimitive("foo"))
+                        add(JsonPrimitive("bar"))
+                    })
+                })
+                put("oneOfEnum", buildJsonObject {
+                    put("type", "string")
+                    put("oneOf", buildJsonArray {
+                        add(buildJsonObject { put("const", "foo") })
+                        add(buildJsonObject { put("const", "bar") })
+                    })
+                })
+            })
+        }
+
+        assertEquals(buildJsonObject {}, createDefaultValue(schema))
+    }
+
+    @Test
+    fun `createDefaultValue preserves explicit and nested object defaults`() {
+        val schema = buildJsonSchema {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("name", buildJsonObject {
+                    put("type", "string")
+                    put("default", "Ada")
+                })
+                put("address", buildJsonObject {
+                    put("type", "object")
+                    put("properties", buildJsonObject {
+                        put("city", buildJsonObject {
+                            put("type", "string")
+                            put("default", "London")
+                        })
+                        put("street", buildJsonObject { put("type", "string") })
+                    })
+                })
+            })
+        }
+
+        assertEquals(
+            buildJsonObject {
+                put("name", "Ada")
+                put("address", buildJsonObject { put("city", "London") })
+            },
+            createDefaultValue(schema),
+        )
     }
 
     @Test

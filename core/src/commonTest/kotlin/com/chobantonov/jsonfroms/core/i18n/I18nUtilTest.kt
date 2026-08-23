@@ -1,7 +1,10 @@
 package com.chobantonov.jsonfroms.core.i18n
 
+import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.models.GroupElement
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
+import com.chobantonov.jsonfroms.core.store.Translator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -9,6 +12,36 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.put
 
 class I18nUtilTest {
+    private val translator = Translator { key, defaultMessage, _ ->
+        when (key) {
+            "categoryLabelKey" -> "Basic"
+            "address.label" -> "Address"
+            "group.label" -> "Translated group"
+            else -> defaultMessage
+        }
+    }
+
+    @Test
+    fun `deriveLabelForUISchemaElement translates a category label as its key`() {
+        val category = CategoryElement(label = "categoryLabelKey")
+
+        assertEquals("Basic", deriveLabelForUISchemaElement(category, translator))
+    }
+
+    @Test
+    fun `deriveLabelForUISchemaElement uses the i18n label key for a category`() {
+        val category = CategoryElement(label = "", i18n = "address")
+
+        assertEquals("Address", deriveLabelForUISchemaElement(category, translator))
+    }
+
+    @Test
+    fun `deriveLabelForUISchemaElement uses the i18n label key for a group`() {
+        val group = GroupElement(label = "Fallback", i18n = "group")
+
+        assertEquals("Translated group", deriveLabelForUISchemaElement(group, translator))
+    }
+
     @Test
     fun `transformPathToI18nPrefix returns root when empty`() {
         assertEquals("root", transformPathToI18nPrefix(""))

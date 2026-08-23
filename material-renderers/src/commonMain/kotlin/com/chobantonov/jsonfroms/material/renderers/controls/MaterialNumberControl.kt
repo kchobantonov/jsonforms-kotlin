@@ -12,8 +12,6 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isNumberControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonPrimitive
 
 val MaterialNumberControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialNumberControl(props)
@@ -30,6 +28,7 @@ fun MaterialNumberControl(
     val committedValue = bindings.stateProps.data.toMaterialInputString()
     var draftValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     var lastCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
+    val parsedDraft = parseNumberInput(draftValue)
 
     LaunchedEffect(committedValue) {
         if (committedValue != lastCommittedValue) {
@@ -42,22 +41,14 @@ fun MaterialNumberControl(
         props = bindings.controlProps,
         value = draftValue,
         keyboardType = KeyboardType.Decimal,
+        localError = parsedDraft.error,
         onChange = { value ->
             draftValue = value
-            when {
-                value.isBlank() -> {
-                    lastCommittedValue = ""
-                    bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonNull)
-                }
-
-                value.toDoubleOrNull() != null -> {
-                    lastCommittedValue = value
-                    bindings.dispatchProps.handleChange(
-                        bindings.stateProps.path,
-                        JsonPrimitive(value.toDouble()),
-                    )
-                }
-            }
+            lastCommittedValue = value
+            bindings.dispatchProps.handleChange(
+                bindings.stateProps.path,
+                parseNumberInput(value).data,
+            )
         },
     )
 }

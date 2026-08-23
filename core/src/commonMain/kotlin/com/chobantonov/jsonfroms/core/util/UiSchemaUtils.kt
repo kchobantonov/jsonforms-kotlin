@@ -16,6 +16,7 @@ import com.chobantonov.jsonfroms.core.models.ScopedUiSchemaElement
 import com.chobantonov.jsonfroms.core.models.StringControlLabel
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -162,6 +163,9 @@ fun getFirstPrimitiveProp(schema: JsonSchema?): String? {
     }?.key
 }
 
+fun getDetailUiSchema(uiSchema: UiSchemaElement): UiSchemaElement? =
+    (uiSchema.options["detail"] as? JsonObject)?.let(::jsonObjectToUiSchema)
+
 private fun uiSchemaElements(uiSchema: UiSchemaElement): List<UiSchemaElement> =
     when (uiSchema) {
         is VerticalLayout -> uiSchema.elements
@@ -205,15 +209,29 @@ private fun jsonObjectToUiSchema(element: JsonObject): UiSchemaElement? {
     return when (type) {
         "Control" -> {
             val scope = (element["scope"] as? JsonPrimitive)?.content ?: return null
-            ControlElement(scope = scope)
+            ControlElement(
+                scope = scope,
+                options = (element["options"] as? JsonObject).orEmpty(),
+            )
         }
         "Label" -> {
             val text = (element["text"] as? JsonPrimitive)?.content ?: return null
             LabelElement(text = text)
         }
+        "VerticalLayout" -> VerticalLayout(elements = element.uiSchemaElements())
+        "HorizontalLayout" -> HorizontalLayout(elements = element.uiSchemaElements())
+        "Group" -> GroupElement(
+            label = (element["label"] as? JsonPrimitive)?.content,
+            elements = element.uiSchemaElements(),
+        )
         else -> null
     }
 }
+
+private fun JsonObject.uiSchemaElements(): List<UiSchemaElement> =
+    (this["elements"] as? JsonArray)
+        ?.mapNotNull { child -> (child as? JsonObject)?.let(::jsonObjectToUiSchema) }
+        .orEmpty()
 
 private fun deriveLabel(
     controlElement: ControlElement,

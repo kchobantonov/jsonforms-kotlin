@@ -87,6 +87,18 @@ internal fun JsonElement?.toMaterialInputString(): String = when (this) {
     else -> toString()
 }
 
+internal fun String.toMaterialSupportingText(): String =
+    lineSequence()
+        .map(String::trim)
+        .filter(String::isNotEmpty)
+        .joinToString(" ")
+
+internal fun unmatchedEnumQueryError(
+    query: String,
+    selectedLabel: String?,
+): String? = "Select a valid option."
+    .takeIf { query.isNotEmpty() && query != selectedLabel }
+
 internal fun Any?.toBooleanStrictOrNullCompat(): Boolean? = when (this) {
     is Boolean -> this
     is JsonPrimitive -> contentOrNull?.toBooleanStrictOrNull()

@@ -26,7 +26,10 @@ fun MaterialTextControl(
         props = bindings.controlProps,
         value = textValue,
         onChange = { value ->
-            bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
+            bindings.dispatchProps.handleChange(
+                bindings.stateProps.path,
+                value.takeIf { it.isNotEmpty() }?.let(::JsonPrimitive),
+            )
         },
     )
 }

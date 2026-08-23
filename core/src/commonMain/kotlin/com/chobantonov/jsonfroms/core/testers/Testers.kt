@@ -5,6 +5,7 @@ import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonOptions
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.ScopedUiSchemaElement
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.models.asJsonSchemaOrNull
 import com.chobantonov.jsonfroms.core.util.JsonPointer
@@ -96,7 +97,7 @@ fun or(vararg testers: Tester): Tester = { uiSchema, schema, context ->
 
 fun schemaMatches(predicate: (JsonSchema) -> Boolean): Tester = { uiSchema, schema, context ->
     val resolved = when {
-        uiSchema is ControlElement -> resolveControlSchema(uiSchema, schema, context)
+        uiSchema is ScopedUiSchemaElement -> resolveScopedSchema(uiSchema, schema, context)
         schema != null -> schema
         else -> null
     }
@@ -105,7 +106,7 @@ fun schemaMatches(predicate: (JsonSchema) -> Boolean): Tester = { uiSchema, sche
 
 fun schemaMatches(predicate: (JsonSchema, JsonSchema) -> Boolean): Tester = { uiSchema, schema, context ->
     val resolved = when {
-        uiSchema is ControlElement -> resolveControlSchema(uiSchema, schema, context)
+        uiSchema is ScopedUiSchemaElement -> resolveScopedSchema(uiSchema, schema, context)
         schema != null -> schema
         else -> null
     }
@@ -122,7 +123,7 @@ fun schemaSubPathMatches(
     predicate: (JsonSchema, JsonSchema) -> Boolean,
 ): Tester = { uiSchema, schema, context ->
     val resolved = when {
-        uiSchema is ControlElement -> resolveControlSchema(uiSchema, schema, context)
+        uiSchema is ScopedUiSchemaElement -> resolveScopedSchema(uiSchema, schema, context)
         schema != null -> schema
         else -> null
     }
@@ -264,13 +265,13 @@ fun not(tester: Tester): Tester = { uiSchema, schema, context ->
     !tester(uiSchema, schema, context)
 }
 
-private fun resolveControlSchema(
-    control: ControlElement,
+private fun resolveScopedSchema(
+    uiSchema: ScopedUiSchemaElement,
     schema: JsonSchema?,
     context: TesterContext,
 ): JsonSchema? {
     val root = context.rootSchema ?: schema ?: return null
-    return resolveSchema(schema ?: root, control.scope, root)
+    return resolveSchema(schema ?: root, uiSchema.scope, root)
 }
 
 private fun optionEquals(

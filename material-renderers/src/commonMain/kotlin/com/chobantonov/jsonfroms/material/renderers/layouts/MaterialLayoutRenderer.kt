@@ -1,6 +1,7 @@
 package com.chobantonov.jsonfroms.material.renderers.layouts
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,12 +36,14 @@ internal fun MaterialLayoutRenderer(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 elements.forEach { child ->
-                    JsonFormsDispatchRenderer(
-                        props = props.copy(
-                            uischema = child,
-                            id = null,
-                        ),
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        JsonFormsDispatchRenderer(
+                            props = props.copy(
+                                uischema = child,
+                                id = null,
+                            ),
+                        )
+                    }
                 }
             }
         }

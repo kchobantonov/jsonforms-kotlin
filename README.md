@@ -99,6 +99,21 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose:wasmJsBrowse
 The Wasm browser page is served from:
 - [index.html](/Users/kchobantonov/dev/workspaces/kchobantonov/jsonforms-kotlin/examples-compose/src/wasmJsMain/resources/index.html)
 
+## Responsive horizontal layouts
+
+`HorizontalLayout` preserves the UI schema's horizontal direction on every screen size. Its children receive equal width within the row.
+
+To let a particular horizontal layout stack its children on screens narrower than `600dp`, opt in on that layout:
+
+```kotlin
+HorizontalLayout(
+    options = mapOf("stackOnSmallScreen" to JsonPrimitive(true)),
+    elements = listOf(/* ... */),
+)
+```
+
+Layouts without this option remain horizontal, which is useful for compact controls such as two checkboxes displayed side by side.
+
 iOS:
 
 - The shared iOS entry point is exposed as `MainViewController()` in [MainViewController.kt](/Users/kchobantonov/dev/workspaces/kchobantonov/jsonforms-kotlin/examples-compose/src/iosMain/kotlin/com/chobantonov/jsonfroms/examples/compose/ios/MainViewController.kt).

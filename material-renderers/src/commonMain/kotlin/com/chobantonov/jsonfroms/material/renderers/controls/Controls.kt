@@ -12,6 +12,7 @@ val unwrappedControls: Map<String, Any> = mapOf(
     "MaterialNumberControl" to MaterialNumberControl,
     "MaterialOneOfEnumControl" to MaterialOneOfEnumControl,
     "MaterialOneOfRadioGroupControl" to MaterialOneOfRadioGroupControl,
+    "MaterialPasswordControl" to MaterialPasswordControl,
     "MaterialRadioGroupControl" to MaterialRadioGroupControl,
     "MaterialSliderControl" to MaterialSliderControl,
     "MaterialTimeControl" to MaterialTimeControl,

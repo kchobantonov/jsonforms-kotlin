@@ -31,6 +31,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.MaterialNativeContr
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialNumberControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialOneOfEnumControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialOneOfRadioGroupControl
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPasswordControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialRadioGroupControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialSliderControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialTextControl
@@ -46,6 +47,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.materialNativeContr
 import com.chobantonov.jsonfroms.material.renderers.controls.materialNumberControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialOneOfEnumControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialOneOfRadioGroupControlTester
+import com.chobantonov.jsonfroms.material.renderers.controls.materialPasswordControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialRadioGroupControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialSliderControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialTextControlTester
@@ -135,6 +137,10 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
     JsonFormsRendererRegistryEntry(
         tester = materialRadioGroupControlTester,
         renderer = MaterialRadioGroupControl,
+    ),
+    JsonFormsRendererRegistryEntry(
+        tester = materialPasswordControlTester,
+        renderer = MaterialPasswordControl,
     ),
     JsonFormsRendererRegistryEntry(
         tester = materialSliderControlTester,
