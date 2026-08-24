@@ -53,6 +53,7 @@ kotlin {
             implementation(project(":material-renderers"))
             implementation(project(":examples"))
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.multiplatform.settings.no.arg)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -61,6 +62,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.multiplatform.settings.test)
         }
 
         jvmMain.dependencies {

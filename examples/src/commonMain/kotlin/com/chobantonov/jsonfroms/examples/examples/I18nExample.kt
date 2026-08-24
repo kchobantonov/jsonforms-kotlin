@@ -40,7 +40,7 @@ val i18nData = buildJsonObject {
     put("postalCode", "12345")
 }
 
-private val i18nTranslations = mapOf(
+val i18nTranslations = mapOf(
     "basicInfoGroup.label" to "Basic Information",
     "additionalInformationLabel" to "Additional Information",
 )
@@ -59,4 +59,5 @@ val i18nExample = ExampleDescription(
         translate = exampleTranslator,
         locale = "en",
     ),
+    translations = i18nTranslations,
 )

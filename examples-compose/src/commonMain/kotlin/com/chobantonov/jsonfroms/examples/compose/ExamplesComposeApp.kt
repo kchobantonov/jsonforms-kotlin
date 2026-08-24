@@ -2,6 +2,7 @@ package com.chobantonov.jsonfroms.examples.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,34 +21,82 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.chobantonov.jsonfroms.compose.JsonForms
+import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.reducers.defaultMiddleware
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
+import com.chobantonov.jsonfroms.core.store.Translator
 import com.chobantonov.jsonfroms.core.store.ValidationMode
 import com.chobantonov.jsonfroms.examples.ExampleDescription
 import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialCells
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
+import com.russhwolf.settings.Settings
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 
 @OptIn(ExperimentalSerializationApi::class)
 private val prettyJson = Json { prettyPrint = true; prettyPrintIndent = "  " }
 private val CompactWidth = 840.dp
 private const val GitHubUrl = "https://github.com/kchobantonov/jsonforms-kotlin"
 
-private enum class DemoThemeMode(val displayName: String) {
+internal enum class DemoThemeMode(val displayName: String) {
     System("System"),
     Light("Light"),
     Dark("Dark"),
 }
 
-private data class DemoSettings(
+internal enum class DemoLocale(val displayName: String, val languageTag: String?) {
+    English("English (en)", "en"),
+    German("German (de)", "de"),
+    Bulgarian("Bulgarian (bg)", "bg"),
+    BrowserLanguage("Browser Language", null),
+}
+
+internal enum class DemoLayout(val displayName: String) {
+    Default("Default"),
+    DemoAndData("Demo and Data"),
+}
+
+internal enum class DemoPane(val displayName: String) {
+    Demo("Demo"),
+    Data("Data"),
+    Schema("Schema"),
+    UiSchema("UI Schema"),
+    UiSchemas("UI Schemas"),
+    Internationalization("Internationalization"),
+    Config("Config"),
+}
+
+private data class EditorDraft(val text: String, val error: String? = null)
+
+private data class EditorDrafts(val values: Map<DemoPane, EditorDraft>) {
+    operator fun get(pane: DemoPane) = values.getValue(pane)
+
+    fun update(pane: DemoPane, transform: (EditorDraft) -> EditorDraft) =
+        copy(values = values + (pane to transform(get(pane))))
+
+    companion object {
+        fun from(state: StateProps) = EditorDrafts(
+            DemoPane.entries.filter { it.isEditor }.associateWith { pane ->
+                EditorDraft(editorText(pane, state))
+            },
+        )
+    }
+}
+
+private val DemoPane.isEditor: Boolean
+    get() = this != DemoPane.Demo
+
+internal data class DemoSettings(
     val themeMode: DemoThemeMode = DemoThemeMode.System,
+    val locale: DemoLocale = DemoLocale.English,
+    val demoLayout: DemoLayout = DemoLayout.Default,
     val validationMode: ValidationMode = ValidationMode.ValidateAndShow,
     val hideRequiredAsterisk: Boolean = false,
     val showUnfocusedDescription: Boolean = false,
@@ -70,8 +119,13 @@ private data class DemoSettings(
 }
 
 @Composable
-fun ExamplesComposeApp(examples: List<ExampleDescription> = getBuiltInExamples()) {
-    var settings by remember { mutableStateOf(DemoSettings()) }
+fun ExamplesComposeApp(
+    examples: List<ExampleDescription> = getBuiltInExamples(),
+    selectedExampleName: String? = null,
+    onExampleSelected: (String) -> Unit = {},
+) {
+    val preferences = remember { DemoPreferences(Settings()) }
+    var settings by remember(preferences) { mutableStateOf(preferences.load()) }
     val useDarkTheme = when (settings.themeMode) {
         DemoThemeMode.System -> isSystemInDarkTheme()
         DemoThemeMode.Light -> false
@@ -80,9 +134,12 @@ fun ExamplesComposeApp(examples: List<ExampleDescription> = getBuiltInExamples()
 
     MaterialTheme(colorScheme = if (useDarkTheme) darkColorScheme() else lightColorScheme()) {
         if (examples.isEmpty()) return@MaterialTheme EmptyExamplesState()
-        var selectedName by remember(examples) { mutableStateOf(examples.first().name) }
-        val selected = examples.firstOrNull { it.name == selectedName } ?: examples.first()
-        var state by remember(selected.name) { mutableStateOf(selected.toStateProps()) }
+        var localSelectedName by remember(examples) { mutableStateOf(examples.first().name) }
+        val effectiveSelectedName = selectedExampleName ?: localSelectedName
+        val selected = examples.firstOrNull { it.name == effectiveSelectedName } ?: examples.first()
+        val originalState = remember(selected.name) { selected.toStateProps() }
+        var state by remember(selected.name) { mutableStateOf(originalState) }
+        var editorDrafts by remember(selected.name) { mutableStateOf(EditorDrafts.from(state)) }
         var formOnly by remember { mutableStateOf(false) }
         var settingsOpen by remember { mutableStateOf(false) }
 
@@ -90,8 +147,17 @@ fun ExamplesComposeApp(examples: List<ExampleDescription> = getBuiltInExamples()
             val compact = maxWidth < CompactWidth
             var navigationVisible by remember(compact) { mutableStateOf(!compact) }
             val selectExample: (ExampleDescription) -> Unit = {
-                selectedName = it.name
+                localSelectedName = it.name
+                onExampleSelected(it.name)
                 if (compact) navigationVisible = false
+            }
+            val updateState: (StateProps) -> Unit = { nextState ->
+                if (nextState.data != state.data) {
+                    editorDrafts = editorDrafts.update(DemoPane.Data) {
+                        EditorDraft(editorText(DemoPane.Data, nextState))
+                    }
+                }
+                state = nextState
             }
             Column(Modifier.fillMaxSize()) {
                 DemoTopBar(
@@ -102,13 +168,13 @@ fun ExamplesComposeApp(examples: List<ExampleDescription> = getBuiltInExamples()
                 )
                 if (compact) {
                     CompactLayout(
-                        examples, selected, state, navigationVisible && !formOnly, formOnly, settings,
-                        selectExample, { state = it },
+                        examples, selected, originalState, state, navigationVisible && !formOnly, formOnly, settings,
+                        editorDrafts, { editorDrafts = it }, selectExample, updateState,
                     )
                 } else {
                     ExpandedLayout(
-                        examples, selected, state, navigationVisible && !formOnly, formOnly, settings,
-                        selectExample, { state = it },
+                        examples, selected, originalState, state, navigationVisible && !formOnly, formOnly, settings,
+                        editorDrafts, { editorDrafts = it }, selectExample, updateState,
                     )
                 }
             }
@@ -118,7 +184,10 @@ fun ExamplesComposeApp(examples: List<ExampleDescription> = getBuiltInExamples()
                         .clickable { settingsOpen = false },
                 )
                 SettingsPanel(
-                    settings, { settings = it }, { settingsOpen = false },
+                    settings, {
+                        settings = it
+                        preferences.save(it)
+                    }, { settingsOpen = false },
                     Modifier.zIndex(3f).align(Alignment.TopEnd)
                         .padding(top = 68.dp, end = 12.dp, bottom = 12.dp)
                         .width(if (compact) maxWidth - 24.dp else 390.dp).fillMaxHeight(),
@@ -180,8 +249,9 @@ private fun ActionTooltip(label: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun CompactLayout(
-    examples: List<ExampleDescription>, selected: ExampleDescription, state: StateProps,
+    examples: List<ExampleDescription>, selected: ExampleDescription, originalState: StateProps, state: StateProps,
     navigationVisible: Boolean, formOnly: Boolean, settings: DemoSettings,
+    editorDrafts: EditorDrafts, onEditorDraftsChange: (EditorDrafts) -> Unit,
     onSelected: (ExampleDescription) -> Unit, onStateChange: (StateProps) -> Unit,
 ) {
     if (navigationVisible) {
@@ -195,23 +265,43 @@ private fun CompactLayout(
             modifier = Modifier.fillMaxSize(),
         )
     } else {
+        var selectedPane by remember(selected.name) { mutableStateOf(DemoPane.Demo) }
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (!formOnly) ExampleHeader(selected)
-            FormCard(selected, state, true, settings, onStateChange)
-            if (!formOnly) DataCard(state)
+            if (!formOnly) {
+                DemoPaneSelector(selectedPane) { selectedPane = it }
+            }
+            when {
+                formOnly -> FormCard(state, true, settings, onStateChange)
+                selectedPane.isEditor -> EditorCard(
+                    selectedPane, originalState, state, editorDrafts, onEditorDraftsChange, onStateChange,
+                    Modifier.fillMaxWidth().heightIn(min = 520.dp),
+                )
+                settings.demoLayout == DemoLayout.DemoAndData -> {
+                    FormCard(state, true, settings, onStateChange)
+                    EditorCard(
+                        DemoPane.Data, originalState, state, editorDrafts,
+                        onEditorDraftsChange, onStateChange,
+                        Modifier.fillMaxWidth().heightIn(min = 520.dp),
+                    )
+                }
+                selectedPane == DemoPane.Demo -> FormCard(state, true, settings, onStateChange)
+            }
         }
     }
 }
 
 @Composable
 private fun ExpandedLayout(
-    examples: List<ExampleDescription>, selected: ExampleDescription, state: StateProps,
+    examples: List<ExampleDescription>, selected: ExampleDescription, originalState: StateProps, state: StateProps,
     navigationVisible: Boolean, formOnly: Boolean, settings: DemoSettings,
+    editorDrafts: EditorDrafts, onEditorDraftsChange: (EditorDrafts) -> Unit,
     onSelected: (ExampleDescription) -> Unit, onStateChange: (StateProps) -> Unit,
 ) {
+    var selectedPane by remember(selected.name) { mutableStateOf(DemoPane.Demo) }
     Row(
         Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -220,13 +310,48 @@ private fun ExpandedLayout(
         )
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (!formOnly) ExampleHeader(selected)
-            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (!formOnly) {
+                DemoPaneSelector(selectedPane) { selectedPane = it }
+            }
+            if (!formOnly && selectedPane.isEditor) {
+                EditorCard(
+                    selectedPane, originalState, state, editorDrafts, onEditorDraftsChange, onStateChange,
+                    Modifier.weight(1f).fillMaxWidth(),
+                )
+            } else if (formOnly || settings.demoLayout == DemoLayout.DemoAndData) Row(
+                Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 FormCard(
-                    selected, state, false, settings, onStateChange,
+                    state, false, settings, onStateChange,
                     Modifier.weight(if (formOnly) 1f else 3f).fillMaxHeight(), true,
                 )
-                if (!formOnly) DataCard(state, Modifier.weight(1f).fillMaxHeight(), true)
+                if (!formOnly) EditorCard(
+                    DemoPane.Data, originalState, state, editorDrafts,
+                    onEditorDraftsChange, onStateChange,
+                    Modifier.weight(1f).fillMaxHeight(),
+                )
+            } else if (selectedPane == DemoPane.Demo) {
+                FormCard(
+                    state, false, settings, onStateChange,
+                    Modifier.weight(1f).fillMaxWidth(), true,
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun DemoPaneSelector(selected: DemoPane, onSelected: (DemoPane) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        DemoPane.entries.forEach { pane ->
+            FilterChip(
+                selected = selected == pane,
+                onClick = { onSelected(pane) },
+                label = { Text(pane.displayName) },
+            )
         }
     }
 }
@@ -285,11 +410,14 @@ private fun ExampleHeader(example: ExampleDescription) {
 
 @Composable
 private fun FormCard(
-    example: ExampleDescription, state: StateProps, compact: Boolean, settings: DemoSettings,
+    state: StateProps, compact: Boolean, settings: DemoSettings,
     onStateChange: (StateProps) -> Unit, modifier: Modifier = Modifier.fillMaxWidth(),
     scrollContent: Boolean = false,
 ) {
     Card(modifier) {
+        val configuredI18n = (state.i18n ?: JsonFormsI18nState()).copy(
+            locale = settings.locale.languageTag ?: Locale.current.toLanguageTag(),
+        )
         val contentModifier = if (scrollContent) Modifier.fillMaxSize().verticalScroll(rememberScrollState()) else Modifier.fillMaxWidth()
         Column(contentModifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("Form", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
@@ -305,11 +433,11 @@ private fun FormCard(
                 }
             }
             JsonForms(
-                data = state.data, schema = state.schema ?: example.schema,
-                uischema = state.uischema ?: example.uischema, uischemas = state.uischemas,
+                data = state.data, schema = state.schema,
+                uischema = state.uischema, uischemas = state.uischemas,
                 renderers = materialRenderers, cells = materialCells,
                 config = settings.applyTo(state.config), readonly = state.readonly || settings.readonly,
-                validationMode = settings.validationMode, i18n = state.i18n ?: JsonFormsI18nState(),
+                validationMode = settings.validationMode, i18n = configuredI18n,
                 additionalErrors = state.additionalErrors, middleware = state.middleware ?: defaultMiddleware,
                 onChange = { onStateChange(state.copy(data = it.data)) },
             )
@@ -318,13 +446,152 @@ private fun FormCard(
 }
 
 @Composable
-private fun DataCard(state: StateProps, modifier: Modifier = Modifier.fillMaxWidth(), scrollContent: Boolean = false) {
+private fun EditorCard(
+    pane: DemoPane,
+    originalState: StateProps,
+    state: StateProps,
+    drafts: EditorDrafts,
+    onDraftsChange: (EditorDrafts) -> Unit,
+    onStateChange: (StateProps) -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+) {
+    val draft = drafts[pane]
     Card(modifier) {
-        val contentModifier = if (scrollContent) Modifier.fillMaxSize().verticalScroll(rememberScrollState()) else Modifier.fillMaxWidth()
-        Column(contentModifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Data", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-            Text(prettyJson.encodeToString(state.data), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
+        Column(
+            Modifier.fillMaxSize().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(pane.displayName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Changes affect the active form only after Apply succeeds.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                TextButton(onClick = {
+                    onDraftsChange(drafts.update(pane) { EditorDraft(editorText(pane, originalState)) })
+                }) { Text("Reload") }
+                Button(onClick = {
+                    val result = applyEditorDraft(pane, draft.text, state)
+                    result.fold(
+                        onSuccess = { nextState ->
+                            onStateChange(nextState)
+                            onDraftsChange(drafts.update(pane) { it.copy(error = null) })
+                        },
+                        onFailure = { failure ->
+                            val message = failure.message ?: "The JSON could not be applied."
+                            onDraftsChange(drafts.update(pane) { it.copy(error = message) })
+                        },
+                    )
+                }) { Text("Apply") }
+            }
+            OutlinedTextField(
+                value = draft.text,
+                onValueChange = { value ->
+                    onDraftsChange(drafts.update(pane) { it.copy(text = value, error = null) })
+                },
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                isError = draft.error != null,
+                supportingText = draft.error?.let { error -> { Text(error) } },
+                label = { Text("JSON") },
+            )
+            if (pane == DemoPane.UiSchemas) {
+                Text(
+                    "Registry tester functions are retained by position; the number of entries cannot be changed here.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
+    }
+}
+
+private fun editorText(pane: DemoPane, state: StateProps): String {
+    val json = when (pane) {
+        DemoPane.Data -> state.data
+        DemoPane.Schema -> state.schema?.toJsonObject()
+        DemoPane.UiSchema -> state.uischema?.toJsonObject()
+        DemoPane.UiSchemas -> JsonArray(state.uischemas.map { it.uischema.toJsonObject() })
+        DemoPane.Internationalization -> JsonObject(state.translations.mapValues { JsonPrimitive(it.value) })
+        DemoPane.Config -> state.config.toJsonObject()
+        else -> error("$pane is not a JSON editor")
+    }
+    return json?.let { prettyJson.encodeToString(it) }.orEmpty()
+}
+
+internal fun applyEditorDraft(pane: DemoPane, text: String, state: StateProps): Result<StateProps> = runCatching {
+    when (pane) {
+        DemoPane.Data -> state.copy(data = prettyJson.parseToJsonElement(text))
+        DemoPane.Schema -> state.copy(
+            schema = if (text.isBlank()) null else JsonSchema(parseJsonObject(text, "Schema")),
+        )
+        DemoPane.UiSchema -> state.copy(
+            uischema = if (text.isBlank()) null else parseJsonObject(text, "UI Schema").toUiSchemaElement(),
+        )
+        DemoPane.UiSchemas -> {
+            val values = parseJsonArray(text, "UI Schemas")
+            require(values.size == state.uischemas.size) {
+                "UI Schemas must contain ${state.uischemas.size} entries so their tester functions can be retained."
+            }
+            state.copy(uischemas = state.uischemas.zip(values).mapIndexed { index, (entry, value) ->
+                entry.copy(uischema = (value as? JsonObject
+                    ?: throw IllegalArgumentException("UI Schemas[$index] must be an object")).toUiSchemaElement())
+            })
+        }
+        DemoPane.Internationalization -> {
+            val values = parseJsonObject(text, "Internationalization").mapValues { (key, value) ->
+                (value as? JsonPrimitive)?.takeIf { it.isString }?.content
+                    ?: throw IllegalArgumentException("Internationalization.$key must be a string")
+            }
+            state.copy(
+                translations = values,
+                i18n = (state.i18n ?: JsonFormsI18nState()).copy(
+                    translate = Translator { id, defaultMessage, _ -> values[id] ?: defaultMessage },
+                ),
+            )
+        }
+        DemoPane.Config -> state.copy(config = parseJsonObject(text, "Config").toKotlinMap())
+        else -> error("$pane is not a JSON editor")
+    }
+}
+
+private fun parseJsonObject(text: String, label: String): JsonObject =
+    prettyJson.parseToJsonElement(text.ifBlank { "{}" }) as? JsonObject
+        ?: throw IllegalArgumentException("$label must be a JSON object.")
+
+private fun parseJsonArray(text: String, label: String): JsonArray =
+    prettyJson.parseToJsonElement(text.ifBlank { "[]" }) as? JsonArray
+        ?: throw IllegalArgumentException("$label must be a JSON array.")
+
+private fun Map<String, Any?>.toJsonObject() = JsonObject(mapValues { (_, value) -> value.toJsonElement() })
+
+private fun Any?.toJsonElement(): JsonElement = when (this) {
+    null -> JsonNull
+    is JsonElement -> this
+    is Boolean -> JsonPrimitive(this)
+    is Number -> JsonPrimitive(this)
+    is String -> JsonPrimitive(this)
+    is Map<*, *> -> JsonObject(entries.associate { (key, value) ->
+        (key as? String ?: throw IllegalArgumentException("Config object keys must be strings")) to value.toJsonElement()
+    })
+    is List<*> -> JsonArray(map { it.toJsonElement() })
+    else -> JsonPrimitive(toString())
+}
+
+private fun JsonObject.toKotlinMap(): Map<String, Any?> = mapValues { (_, value) -> value.toKotlinValue() }
+
+private fun JsonElement.toKotlinValue(): Any? = when (this) {
+    JsonNull -> null
+    is JsonObject -> toKotlinMap()
+    is JsonArray -> map { it.toKotlinValue() }
+    is JsonPrimitive -> when {
+        isString -> content
+        content == "true" -> true
+        content == "false" -> false
+        else -> content.toLongOrNull() ?: content.toDoubleOrNull() ?: content
     }
 }
 
@@ -347,6 +614,20 @@ private fun SettingsPanel(
                     IconButton(onClose) { Icon(CloseIcon, contentDescription = "Close settings") }
                 }
             }
+            SettingsSelect(
+                label = "Locale",
+                selected = settings.locale,
+                values = DemoLocale.entries,
+                displayName = DemoLocale::displayName,
+                onSelected = { onChange(settings.copy(locale = it)) },
+            )
+            SettingsSelect(
+                label = "Demo Layout",
+                selected = settings.demoLayout,
+                values = DemoLayout.entries,
+                displayName = DemoLayout::displayName,
+                onSelected = { onChange(settings.copy(demoLayout = it)) },
+            )
             HorizontalDivider()
             Text("Appearance", style = MaterialTheme.typography.titleMedium)
             Row(
@@ -395,6 +676,45 @@ private fun SettingsPanel(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> SettingsSelect(
+    label: String,
+    selected: T,
+    values: List<T>,
+    displayName: (T) -> String,
+    onSelected: (T) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = displayName(selected),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            modifier = Modifier.menuAnchor(
+                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                enabled = true,
+            ).fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            values.forEach { value ->
+                DropdownMenuItem(
+                    text = { Text(displayName(value)) },
+                    onClick = {
+                        onSelected(value)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun SettingSwitch(label: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
@@ -414,7 +734,7 @@ private fun ValidationMode.displayName() = when (this) {
 
 private fun ExampleDescription.toStateProps() = StateProps(
     data, schema, uischema, materialRenderers, materialCells, config, uischemas,
-    additionalErrors, actions, middleware, i18n, readonly,
+    additionalErrors, actions, middleware, i18n, readonly, translations,
 )
 
 @Composable

@@ -1,12 +1,35 @@
 package com.chobantonov.jsonfroms.examples.compose.web
 
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.ComposeViewport
 import com.chobantonov.jsonfroms.examples.compose.ExamplesComposeApp
+import com.chobantonov.jsonfroms.examples.compose.exampleHash
+import com.chobantonov.jsonfroms.examples.compose.exampleNameFromHash
+import kotlinx.browser.window
+import org.w3c.dom.events.EventListener
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport {
-        ExamplesComposeApp()
+        var selectedExampleName by remember { mutableStateOf(exampleNameFromHash(window.location.hash)) }
+        DisposableEffect(Unit) {
+            val listener = EventListener {
+                selectedExampleName = exampleNameFromHash(window.location.hash)
+            }
+            window.addEventListener("hashchange", listener)
+            onDispose { window.removeEventListener("hashchange", listener) }
+        }
+        ExamplesComposeApp(
+            selectedExampleName = selectedExampleName,
+            onExampleSelected = { name ->
+                selectedExampleName = name
+                window.location.hash = exampleHash(name)
+            },
+        )
     }
 }

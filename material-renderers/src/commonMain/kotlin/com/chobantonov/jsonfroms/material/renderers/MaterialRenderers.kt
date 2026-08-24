@@ -27,6 +27,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.MaterialDateControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialDateTimeControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialEnumControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialIntegerControl
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialMultiTextControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialNativeControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialNumberControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialOneOfEnumControl
@@ -43,6 +44,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.materialDateControl
 import com.chobantonov.jsonfroms.material.renderers.controls.materialDateTimeControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialEnumControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialIntegerControlTester
+import com.chobantonov.jsonfroms.material.renderers.controls.materialMultiTextControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialNativeControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialNumberControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialOneOfEnumControlTester
@@ -145,6 +147,10 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
     JsonFormsRendererRegistryEntry(
         tester = materialSliderControlTester,
         renderer = MaterialSliderControl,
+    ),
+    JsonFormsRendererRegistryEntry(
+        tester = materialMultiTextControlTester,
+        renderer = MaterialMultiTextControl,
     ),
     JsonFormsRendererRegistryEntry(
         tester = materialTextControlTester,

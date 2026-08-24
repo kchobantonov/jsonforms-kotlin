@@ -3,8 +3,11 @@ package com.chobantonov.jsonfroms.core.mappers
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
+import com.chobantonov.jsonfroms.core.validation.OptimumCodeJsonSchemaValidator
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -139,5 +142,69 @@ class CombinatorsTest {
 
         assertEquals("anyOf-0", duaRenderInfo.label)
         assertEquals("anyOf-1", lipaRenderInfo.label)
+    }
+
+    @Test
+    fun `findFittingSchemaIndex selects branch matching current object data`() {
+        val branches = buildJsonArray {
+            add(buildJsonObject {
+                put("type", "object")
+                put("required", buildJsonArray {
+                    add(JsonPrimitive("street_address"))
+                    add(JsonPrimitive("city"))
+                    add(JsonPrimitive("state"))
+                })
+                put("additionalProperties", false)
+                put("properties", buildJsonObject {
+                    put("street_address", buildJsonObject { put("type", "string") })
+                    put("city", buildJsonObject { put("type", "string") })
+                    put("state", buildJsonObject { put("type", "string") })
+                })
+            })
+            add(buildJsonObject {
+                put("type", "object")
+                put("required", buildJsonArray {
+                    add(JsonPrimitive("name"))
+                    add(JsonPrimitive("mail"))
+                })
+                put("additionalProperties", false)
+                put("properties", buildJsonObject {
+                    put("name", buildJsonObject { put("type", "string") })
+                    put("mail", buildJsonObject {
+                        put("type", "string")
+                        put("format", "email")
+                    })
+                })
+            })
+        }.map { JsonSchema(it.jsonObject) }
+        val data = buildJsonObject {
+            put("name", "User")
+            put("mail", "mail@example.com")
+        }
+
+        assertEquals(
+            1,
+            findFittingSchemaIndex(branches, data, OptimumCodeJsonSchemaValidator()),
+        )
+    }
+
+    @Test
+    fun `findFittingSchemaIndex returns null when no branch structurally matches`() {
+        val branches = buildJsonArray {
+            add(buildJsonObject {
+                put("type", "string")
+            })
+            add(buildJsonObject {
+                put("type", "number")
+            })
+        }.map { JsonSchema(it.jsonObject) }
+
+        assertNull(
+            findFittingSchemaIndex(
+                branches,
+                buildJsonObject { put("value", true) },
+                OptimumCodeJsonSchemaValidator(),
+            ),
+        )
     }
 }

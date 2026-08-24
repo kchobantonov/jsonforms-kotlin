@@ -53,7 +53,7 @@ val coreReducer: Reducer<JsonFormsCoreState, JsonFormsAction> = Reducer { state,
                 action.updater(currentState.data) ?: JsonNull
             } else {
                 val existing = JsonPath.get(currentState.data, action.path)
-                JsonPath.set(currentState.data, action.path, action.updater(existing))
+                JsonPath.set(currentState.data, action.path, action.updater(existing), currentState.schema)
             }
             currentState.copy(
                 data = updated,

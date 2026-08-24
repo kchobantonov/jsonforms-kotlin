@@ -28,6 +28,7 @@ internal fun MaterialInputControl(
     trailingIcon: (@Composable () -> Unit)? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     showDescriptionOnlyWhenFocused: Boolean = true,
+    singleLine: Boolean = true,
     localError: String? = null,
     onChange: (String) -> Unit,
 ) {
@@ -66,6 +67,7 @@ internal fun MaterialInputControl(
                 leadingIcon = leadingIcon,
                 trailingIcon = trailingIcon,
                 visualTransformation = visualTransformation,
+                singleLine = singleLine,
                 label = if (props.label.isNotBlank()) {
                     { Text(props.label) }
                 } else {
@@ -95,6 +97,7 @@ internal fun MaterialInputControl(
                 leadingIcon = leadingIcon,
                 trailingIcon = trailingIcon,
                 visualTransformation = visualTransformation,
+                singleLine = singleLine,
                 label = if (props.label.isNotBlank()) {
                     { Text(props.label) }
                 } else {

@@ -61,8 +61,8 @@ import com.chobantonov.jsonfroms.core.reducers.findMatchingUISchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.and
-import com.chobantonov.jsonfroms.core.testers.isObjectArray
 import com.chobantonov.jsonfroms.core.testers.rankWith
+import com.chobantonov.jsonfroms.core.testers.schemaTypeIs
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.util.Resolve
 import com.chobantonov.jsonfroms.core.util.composePaths
@@ -362,5 +362,5 @@ private fun lineIcon(
 
 val materialListWithDetailTester: RankedTester = rankWith(
     4,
-    and(uiTypeIs("ListWithDetail"), isObjectArray),
+    and(uiTypeIs("ListWithDetail"), schemaTypeIs("array")),
 )

@@ -14,9 +14,8 @@ fun CombinatorProperties(
     schema: JsonSchema,
     combinatorKeyword: String,
 ) {
-    val otherProps = JsonSchema(
-        JsonObject(schema.toJsonObject().filterKeys { it != combinatorKeyword }),
-    )
+    val otherProps = schemaWithoutCombinatorProperties(schema, combinatorKeyword) ?: return
+
     val foundUiSchema = Generate.uiSchema(
         jsonSchema = otherProps,
         layoutType = "VerticalLayout",
@@ -37,4 +36,19 @@ fun CombinatorProperties(
             uischema = foundUiSchema,
         ),
     )
+}
+
+/**
+ * Returns the non-combinator part of a schema only when it contains properties that can be
+ * rendered. Dispatching an empty remainder would fall through to UnknownRenderer.
+ */
+internal fun schemaWithoutCombinatorProperties(
+    schema: JsonSchema,
+    combinatorKeyword: String,
+): JsonSchema? {
+    val otherProps = JsonSchema(
+        JsonObject(schema.toJsonObject().filterKeys { it != combinatorKeyword }),
+    )
+    val properties = otherProps["properties"] as? JsonObject
+    return otherProps.takeIf { !properties.isNullOrEmpty() }
 }

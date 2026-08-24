@@ -1,5 +1,8 @@
 package com.chobantonov.jsonfroms.core.util
 
+import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.JsonSchemaOrBoolean
+import com.chobantonov.jsonfroms.core.models.JsonSchemaOrSchemas
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -16,10 +19,9 @@ object JsonPath {
 
         var current: JsonElement? = root
         parse(path).forEach { segment ->
-            current = when {
-                current == null -> null
-                segment is PathSegment.Property && current is JsonObject -> (current as JsonObject)[segment.name]
-                segment is PathSegment.Index && current is JsonArray -> (current as JsonArray).getOrNull(segment.index)
+            current = when (val container = current) {
+                is JsonObject -> container[segment]
+                is JsonArray -> segment.toArrayIndex()?.let(container::getOrNull)
                 else -> null
             }
         }
@@ -30,126 +32,112 @@ object JsonPath {
         root: JsonElement?,
         path: String,
         value: JsonElement?,
+        schema: JsonSchema? = null,
     ): JsonElement {
         val segments = parse(path)
         if (segments.isEmpty()) {
             return value ?: JsonNull
         }
 
-        return setAt(root ?: JsonObject(emptyMap()), segments, value)
+        return setAt(
+            current = root ?: containerFor(schema),
+            segments = segments,
+            value = value,
+            schema = schema,
+            rootSchema = schema,
+        )
     }
 
     private fun setAt(
         current: JsonElement?,
-        segments: List<PathSegment>,
+        segments: List<String>,
         value: JsonElement?,
+        schema: JsonSchema?,
+        rootSchema: JsonSchema?,
     ): JsonElement {
         val segment = segments.first()
         val remaining = segments.drop(1)
+        val resolvedSchema = resolveSchema(schema, "", rootSchema) ?: schema
+        val isArray = current is JsonArray || (current !is JsonObject && resolvedSchema?.let(::deriveTypes)?.contains("array") == true)
 
-        return when (segment) {
-            is PathSegment.Property -> {
-                val source = current as? JsonObject ?: JsonObject(emptyMap())
-                val updatedValue = if (remaining.isEmpty()) {
-                    value
-                } else {
-                    setAt(source[segment.name], remaining, value)
-                }
-
-                buildJsonObject {
-                    source.forEach { (key, existing) ->
-                        if (key != segment.name) {
-                            put(key, existing)
-                        }
-                    }
-                    if (updatedValue != null) {
-                        put(segment.name, updatedValue)
-                    }
-                }
+        return if (isArray) {
+            val index = requireNotNull(segment.toArrayIndex()) {
+                "Array path segment must be a non-negative integer: $segment"
             }
+            val source = current as? JsonArray ?: JsonArray(emptyList())
+            val mutable = source.toMutableList()
+            while (mutable.size <= index) {
+                mutable += JsonNull
+            }
+            val childSchema = arrayItemSchema(resolvedSchema, index, rootSchema)
 
-            is PathSegment.Index -> {
-                val source = current as? JsonArray ?: JsonArray(emptyList())
-                val mutable = source.toMutableList()
-                while (mutable.size <= segment.index) {
-                    mutable += JsonNull
-                }
-
-                if (remaining.isEmpty()) {
-                    if (value == null) {
-                        if (segment.index in mutable.indices) {
-                            mutable.removeAt(segment.index)
-                        }
-                    } else {
-                        mutable[segment.index] = value
+            if (remaining.isEmpty()) {
+                if (value == null) {
+                    if (index in mutable.indices) {
+                        mutable.removeAt(index)
                     }
                 } else {
-                    mutable[segment.index] = setAt(mutable.getOrNull(segment.index), remaining, value)
+                    mutable[index] = value
                 }
+            } else {
+                mutable[index] = setAt(mutable.getOrNull(index), remaining, value, childSchema, rootSchema)
+            }
 
-                buildJsonArray {
-                    mutable.forEach(::add)
+            buildJsonArray {
+                mutable.forEach(::add)
+            }
+        } else {
+            val source = current as? JsonObject ?: JsonObject(emptyMap())
+            val childSchema = objectPropertySchema(resolvedSchema, segment)
+            val updatedValue = if (remaining.isEmpty()) {
+                value
+            } else {
+                setAt(source[segment], remaining, value, childSchema, rootSchema)
+            }
+
+            buildJsonObject {
+                source.forEach { (key, existing) ->
+                    if (key != segment) {
+                        put(key, existing)
+                    }
+                }
+                if (updatedValue != null) {
+                    put(segment, updatedValue)
                 }
             }
         }
     }
 
-    internal fun parse(path: String): List<PathSegment> {
-        if (path.isBlank()) {
-            return emptyList()
+    internal fun parse(path: String): List<String> =
+        path.split('.').filter(String::isNotEmpty)
+
+    private fun String.toArrayIndex(): Int? = toIntOrNull()?.takeIf { it >= 0 }
+
+    private fun containerFor(schema: JsonSchema?): JsonElement =
+        if (schema?.let(::deriveTypes)?.contains("array") == true) {
+            JsonArray(emptyList())
+        } else {
+            JsonObject(emptyMap())
         }
 
-        val segments = mutableListOf<PathSegment>()
-        val token = StringBuilder()
-        var index = 0
-        while (index < path.length) {
-            when (val char = path[index]) {
-                '.' -> {
-                    flushProperty(token, segments)
-                    index++
-                }
+    private fun objectPropertySchema(
+        schema: JsonSchema?,
+        property: String,
+    ): JsonSchema? =
+        schema?.properties?.get(property)
+            ?: (schema?.additionalProperties as? JsonSchemaOrBoolean.SchemaValue)?.schema
 
-                '[' -> {
-                    flushProperty(token, segments)
-                    val closing = path.indexOf(']', startIndex = index)
-                    require(closing > index) { "Invalid array segment in path: $path" }
-                    val value = path.substring(index + 1, closing).toInt()
-                    segments += PathSegment.Index(value)
-                    index = closing + 1
-                }
-
-                else -> {
-                    token.append(char)
-                    index++
-                }
-            }
-        }
-
-        flushProperty(token, segments)
-        return segments
-    }
-
-    private fun flushProperty(
-        token: StringBuilder,
-        segments: MutableList<PathSegment>,
-    ) {
-        if (token.isNotEmpty()) {
-            val value = token.toString()
-            segments += value.toIntOrNull()
-                ?.takeIf { it >= 0 }
-                ?.let(PathSegment::Index)
-                ?: PathSegment.Property(value)
-            token.clear()
+    private fun arrayItemSchema(
+        schema: JsonSchema?,
+        index: Int,
+        rootSchema: JsonSchema?,
+    ): JsonSchema? {
+        schema ?: return null
+        schema.prefixItems?.getOrNull(index)?.let { return resolveSchema(it, "", rootSchema) ?: it }
+        return when (val items = schema.items) {
+            is JsonSchemaOrSchemas.Single -> resolveSchema(items.schema, "", rootSchema) ?: items.schema
+            is JsonSchemaOrSchemas.Multiple -> items.schemas.getOrNull(index)
+            null -> null
         }
     }
-}
-
-sealed interface PathSegment {
-    data class Property(
-        val name: String,
-    ) : PathSegment
-
-    data class Index(
-        val index: Int,
-    ) : PathSegment
 }

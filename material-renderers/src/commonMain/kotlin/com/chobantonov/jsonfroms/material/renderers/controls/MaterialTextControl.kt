@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.testers.RankedTester
+import com.chobantonov.jsonfroms.core.testers.and
+import com.chobantonov.jsonfroms.core.testers.isMultiLineControl
 import com.chobantonov.jsonfroms.core.testers.isStringControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import kotlinx.serialization.json.JsonPrimitive
@@ -12,9 +14,24 @@ val MaterialTextControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { p
     MaterialTextControl(props)
 }
 
+val MaterialMultiTextControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
+    MaterialMultiTextControl(props)
+}
+
 @Composable
 fun MaterialTextControl(
     props: ComposeJsonFormsRendererProps,
+) = MaterialTextControl(props, singleLine = true)
+
+@Composable
+fun MaterialMultiTextControl(
+    props: ComposeJsonFormsRendererProps,
+) = MaterialTextControl(props, singleLine = false)
+
+@Composable
+private fun MaterialTextControl(
+    props: ComposeJsonFormsRendererProps,
+    singleLine: Boolean,
 ) {
     val bindings = materialControlBindings(
         props = props,
@@ -25,6 +42,7 @@ fun MaterialTextControl(
     MaterialInputControl(
         props = bindings.controlProps,
         value = textValue,
+        singleLine = singleLine,
         onChange = { value ->
             bindings.dispatchProps.handleChange(
                 bindings.stateProps.path,
@@ -37,4 +55,9 @@ fun MaterialTextControl(
 val materialTextControlTester: RankedTester = rankWith(
     1,
     isStringControl,
+)
+
+val materialMultiTextControlTester: RankedTester = rankWith(
+    2,
+    and(isStringControl, isMultiLineControl),
 )

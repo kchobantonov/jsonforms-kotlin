@@ -108,16 +108,55 @@ class JsonFormsComposeController(
         private set
 
     fun dispatch(action: JsonFormsAction) {
+        dispatchAndGetChange(action)
+    }
+
+    internal fun dispatchAndGetChange(action: JsonFormsAction): JsonFormsChange? {
+        val currentCore = state.jsonforms.core as JsonFormsCoreState
+        val nextCore = middleware(currentCore, action, coreReducer)
+        if (nextCore == currentCore) {
+            return null
+        }
         state = state.copy(
-            jsonforms = state.jsonforms.copy(
-                core = middleware(state.jsonforms.core as JsonFormsCoreState, action, coreReducer),
-            ),
+            jsonforms = state.jsonforms.copy(core = nextCore),
         )
+        return if (nextCore.data != currentCore.data || nextCore.errors != currentCore.errors) {
+            JsonFormsChange(nextCore.data, nextCore.errors)
+        } else {
+            null
+        }
     }
 
     fun replaceState(newState: ComposeJsonFormsState) {
-        state = newState
+        // A controlled JsonForms instance feeds an internal edit back through its
+        // data parameter. The freshly initialized state has a new validator and
+        // derived errors, but otherwise describes the state we already hold. Do
+        // not replace the whole tree for that echo: doing so causes a second
+        // validation/recomposition pass and visible text flicker on JS.
+        if (!state.hasSameExternalInputs(newState)) {
+            state = newState
+        }
     }
+}
+
+private fun ComposeJsonFormsState.hasSameExternalInputs(other: ComposeJsonFormsState): Boolean {
+    val current = jsonforms
+    val next = other.jsonforms
+    val currentCore = current.core
+    val nextCore = next.core
+
+    return currentCore.data == nextCore.data &&
+        currentCore.schema == nextCore.schema &&
+        currentCore.uischema == nextCore.uischema &&
+        currentCore.additionalErrors == nextCore.additionalErrors &&
+        currentCore.validationMode == nextCore.validationMode &&
+        current.config == next.config &&
+        current.renderers == next.renderers &&
+        current.cells == next.cells &&
+        current.i18n == next.i18n &&
+        current.uischemas == next.uischemas &&
+        current.readonly == next.readonly &&
+        current.additionalState == next.additionalState
 }
 
 @Composable
@@ -142,7 +181,15 @@ fun JsonFormsStateProvider(
         initialState = initState,
         middleware = middleware,
     )
-    val currentOnChange by rememberUpdatedState(onChange)
+    val currentOnChange = rememberUpdatedState(onChange)
+    val dispatch = remember(controller) {
+        { action: JsonFormsAction ->
+            controller.dispatchAndGetChange(action)?.let { change ->
+                currentOnChange.value?.invoke(change)
+            }
+            Unit
+        }
+    }
 
     LaunchedEffect(initState) {
         controller.replaceState(initState)
@@ -150,19 +197,10 @@ fun JsonFormsStateProvider(
 
     val state = controller.state
 
-    LaunchedEffect(state.jsonforms.core.data, state.jsonforms.core.errors) {
-        currentOnChange?.invoke(
-            JsonFormsChange(
-                data = state.jsonforms.core.data,
-                errors = state.jsonforms.core.errors,
-            ),
-        )
-    }
-
     CompositionLocalProvider(
         LocalJsonFormsContext provides JsonFormsComposeContext(
             state = state,
-            dispatch = controller::dispatch,
+            dispatch = dispatch,
         ),
         content = content,
     )

@@ -26,8 +26,10 @@ import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
 import com.chobantonov.jsonfroms.core.mappers.createCombinatorRenderInfos
 import com.chobantonov.jsonfroms.core.mappers.createDefaultValue
+import com.chobantonov.jsonfroms.core.mappers.findFittingSchemaIndex
 import com.chobantonov.jsonfroms.core.mappers.mapStateToControlProps
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.store.getValidator
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isOneOfControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
@@ -75,10 +77,21 @@ fun MaterialOneOfRenderer(
         return
     }
 
-    var selectedIndex by remember(controlProps.schema, controlProps.path) { mutableIntStateOf(0) }
+    val fittingSchemaIndex = findFittingSchemaIndex(
+        combinatorSubSchemas = renderInfos.map { it.schema },
+        data = controlProps.data,
+        validator = getValidator(props.state),
+    )
+    var selectedIndex by remember(controlProps.schema, controlProps.path) {
+        mutableIntStateOf(fittingSchemaIndex ?: 0)
+    }
     var expanded by remember { mutableStateOf(false) }
-    LaunchedEffect(controlProps.schema, controlProps.path) {
-        selectedIndex = 0
+    LaunchedEffect(controlProps.schema, controlProps.path, fittingSchemaIndex) {
+        if (fittingSchemaIndex != null) {
+            selectedIndex = fittingSchemaIndex
+        } else if (selectedIndex !in renderInfos.indices) {
+            selectedIndex = 0
+        }
     }
     val safeIndex = selectedIndex.coerceIn(0, renderInfos.lastIndex)
 
