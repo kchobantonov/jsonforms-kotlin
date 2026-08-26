@@ -27,8 +27,12 @@ val initState = JsonFormsCoreState()
 val coreReducer: Reducer<JsonFormsCoreState, JsonFormsAction> = Reducer { state, action ->
     val currentState = state ?: initState
     when (action) {
-        is InitAction -> initialize(currentState, action.data, action.schema, action.uiSchema, action.options)
-        is UpdateCoreAction -> initialize(currentState, action.data, action.schema, action.uiSchema, action.options)
+        is InitAction -> initialize(
+            currentState, action.data, action.dataProvided, action.schema, action.uiSchema, action.options,
+        )
+        is UpdateCoreAction -> initialize(
+            currentState, action.data, action.dataProvided, action.schema, action.uiSchema, action.options,
+        )
         is SetValidatorAction -> {
             val compiled = compileIfEnabled(action.validator, currentState.schema, currentState.validationMode)
             currentState.copy(
@@ -57,6 +61,7 @@ val coreReducer: Reducer<JsonFormsCoreState, JsonFormsAction> = Reducer { state,
             }
             currentState.copy(
                 data = updated,
+                dataProvided = if (action.path.isEmpty()) action.dataProvided ?: true else currentState.dataProvided,
                 errors = validate(currentState.validator, updated),
             )
         }
@@ -70,6 +75,7 @@ val coreReducer: Reducer<JsonFormsCoreState, JsonFormsAction> = Reducer { state,
 private fun initialize(
     state: JsonFormsCoreState,
     data: JsonData,
+    dataProvided: Boolean,
     schema: JsonSchema,
     uiSchema: UiSchemaElement?,
     options: InitActionOptions?,
@@ -79,6 +85,7 @@ private fun initialize(
     val compiled = compileIfEnabled(validatorEngine, schema, validationMode)
     return state.copy(
         data = data,
+        dataProvided = dataProvided,
         schema = schema,
         uischema = uiSchema,
         validatorEngine = validatorEngine,

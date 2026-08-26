@@ -53,6 +53,34 @@ class JsonPathTest {
     }
 
     @Test
+    fun updatingAnExistingPropertyPreservesObjectKeyOrder() {
+        val data = buildJsonObject {
+            put("propertiesString", "data")
+            put("string", "string value")
+            put("number", 10.2)
+            put("integer", 11)
+            put("object", buildJsonObject { put("prop1", "prop 1 value") })
+            put("boolean", true)
+            put("stringArray", buildJsonArray { add(JsonPrimitive("value1")); add(JsonPrimitive("value2")) })
+            put("numberArray", buildJsonArray { add(JsonPrimitive(12.2)) })
+            put("integerArray", buildJsonArray { add(JsonPrimitive(33)) })
+            put("objectArray", buildJsonArray {
+                add(buildJsonObject { put("prop1", "prop1 val") })
+                add(buildJsonObject { })
+            })
+            put("booleanArray", buildJsonArray { add(JsonPrimitive(false)); add(JsonPrimitive(true)) })
+        }
+        val originalOrder = data.keys.toList()
+
+        val typed = JsonPath.set(data, "string", JsonPrimitive("s"))
+        val cleared = JsonPath.set(typed, "string", JsonPrimitive(""))
+
+        assertEquals(originalOrder, typed.jsonObject.keys.toList())
+        assertEquals(originalOrder, cleared.jsonObject.keys.toList())
+        assertEquals(JsonPrimitive(""), cleared.jsonObject["string"])
+    }
+
+    @Test
     fun usesSchemaToCreateMissingArrayContainers() {
         val schema = JsonSchema(buildJsonObject {
             put("type", "object")

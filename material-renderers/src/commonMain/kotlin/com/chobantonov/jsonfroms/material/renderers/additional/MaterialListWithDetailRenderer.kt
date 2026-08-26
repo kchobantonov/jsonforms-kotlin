@@ -219,6 +219,7 @@ private fun ItemList(
     Surface(
         modifier.heightIn(min = 256.dp, max = 384.dp),
         shape = MaterialTheme.shapes.medium,
+        color = Color.Transparent,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         if (items.isEmpty()) {
@@ -238,7 +239,7 @@ private fun ItemList(
                             containerColor = if (selected) {
                                 MaterialTheme.colorScheme.secondaryContainer
                             } else {
-                                MaterialTheme.colorScheme.surface
+                                Color.Transparent
                             },
                         ),
                     ) {

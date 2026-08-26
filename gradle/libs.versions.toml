@@ -2,6 +2,8 @@
 kotlin = "2.2.21"
 android-gradle-plugin = "9.1.0"
 compose = "1.10.2"
+compose-material3 = "1.10.0-alpha05"
+compose-cupertino = "2.3.1"
 kotlinx-serialization = "1.9.0"
 kotlinx-datetime = "0.7.1"
 json-schema-validator = "0.5.3"
@@ -17,6 +19,8 @@ optimumcode-json-schema-validator = { module = "io.github.optimumcode:json-schem
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "multiplatform-settings" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-cupertino = { module = "io.github.schott12521:cupertino", version.ref = "compose-cupertino" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

@@ -4,12 +4,16 @@ import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.examples.StateProps
+import com.chobantonov.jsonfroms.examples.examples.ruleUiSchema
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -43,6 +47,17 @@ class EditorDraftTest {
     }
 
     @Test
+    fun `blank data draft represents absent data while null remains explicit`() {
+        val absent = applyEditorDraft(DemoPane.Data, "", state).getOrThrow()
+        val explicitNull = applyEditorDraft(DemoPane.Data, "null", state).getOrThrow()
+
+        assertEquals(JsonNull, absent.data)
+        assertFalse(absent.dataProvided)
+        assertEquals(JsonNull, explicitNull.data)
+        assertTrue(explicitNull.dataProvided)
+    }
+
+    @Test
     fun `ui schema must parse and convert before replacement state is produced`() {
         val invalid = applyEditorDraft(DemoPane.UiSchema, """{"type":"Control"}""", state)
         val valid = applyEditorDraft(
@@ -54,6 +69,17 @@ class EditorDraftTest {
         assertTrue(invalid.isFailure)
         assertEquals(originalUiSchema, state.uischema)
         assertIs<ControlElement>(valid.getOrThrow().uischema)
+    }
+
+    @Test
+    fun `rule example UI schema can be serialized and applied by the editor`() {
+        val ruleState = state.copy(uischema = ruleUiSchema)
+        val text = Json.encodeToString(ruleUiSchema.toJsonObject())
+
+        val result = applyEditorDraft(DemoPane.UiSchema, text, ruleState)
+
+        assertTrue(result.isSuccess)
+        assertEquals(ruleUiSchema.toJsonObject(), result.getOrThrow().uischema?.toJsonObject())
     }
 
     @Test

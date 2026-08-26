@@ -20,6 +20,38 @@ import kotlinx.serialization.json.put
 
 class RuleEvaluatorTest {
     @Test
+    fun enableRuleOnlyAffectsEnablement() {
+        val validator = StubJsonSchemaValidator { _, data ->
+            if (data == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not true"))
+        }
+        val control = ruleControl(RuleEffect.ENABLE)
+
+        assertTrue(RuleEvaluator.isVisible(control, ruleData(false), validator))
+        assertFalse(RuleEvaluator.isEnabled(control, ruleData(false), validator))
+        assertFalse(RuleEvaluator.isReadonly(control, ruleData(false), validator))
+
+        assertTrue(RuleEvaluator.isVisible(control, ruleData(true), validator))
+        assertTrue(RuleEvaluator.isEnabled(control, ruleData(true), validator))
+        assertFalse(RuleEvaluator.isReadonly(control, ruleData(true), validator))
+    }
+
+    @Test
+    fun showRuleOnlyAffectsVisibility() {
+        val validator = StubJsonSchemaValidator { _, data ->
+            if (data == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not true"))
+        }
+        val control = ruleControl(RuleEffect.SHOW)
+
+        assertFalse(RuleEvaluator.isVisible(control, ruleData(false), validator))
+        assertTrue(RuleEvaluator.isEnabled(control, ruleData(false), validator))
+        assertFalse(RuleEvaluator.isReadonly(control, ruleData(false), validator))
+
+        assertTrue(RuleEvaluator.isVisible(control, ruleData(true), validator))
+        assertTrue(RuleEvaluator.isEnabled(control, ruleData(true), validator))
+        assertFalse(RuleEvaluator.isReadonly(control, ruleData(true), validator))
+    }
+
+    @Test
     fun showsControlWhenSchemaConditionMatches() {
         val validator = StubJsonSchemaValidator { _, data ->
             if (data == JsonPrimitive("admin")) emptyList() else listOf(ErrorObject(message = "not admin"))
@@ -96,6 +128,19 @@ class RuleEvaluatorTest {
             ),
         )
     }
+
+    private fun ruleControl(effect: RuleEffect) = ControlElement(
+        scope = "#/properties/value",
+        rule = Rule(
+            effect = effect,
+            condition = SchemaBasedCondition(
+                scope = "#/properties/trigger",
+                schema = buildJsonSchema { put("const", true) },
+            ),
+        ),
+    )
+
+    private fun ruleData(trigger: Boolean) = buildJsonObject { put("trigger", trigger) }
 }
 
 private class StubJsonSchemaValidator(

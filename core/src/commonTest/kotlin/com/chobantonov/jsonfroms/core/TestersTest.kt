@@ -14,6 +14,7 @@ import com.chobantonov.jsonfroms.core.testers.isDateControl
 import com.chobantonov.jsonfroms.core.testers.isEnumControl
 import com.chobantonov.jsonfroms.core.testers.isIntegerControl
 import com.chobantonov.jsonfroms.core.testers.isMultiLineControl
+import com.chobantonov.jsonfroms.core.testers.isMixedArrayControl
 import com.chobantonov.jsonfroms.core.testers.isNumberControl
 import com.chobantonov.jsonfroms.core.testers.isObjectArray
 import com.chobantonov.jsonfroms.core.testers.isObjectArrayControl
@@ -138,6 +139,22 @@ class TestersTest {
                 testerContext(objectArraySchema),
             ),
         )
+
+        val mixedArraySchema = buildJsonSchema {
+            put("type", "array")
+            put("items", buildJsonObject {
+                put("type", buildJsonArray {
+                    add(JsonPrimitive("array"))
+                    add(JsonPrimitive("boolean"))
+                    add(JsonPrimitive("integer"))
+                    add(JsonPrimitive("null"))
+                    add(JsonPrimitive("number"))
+                    add(JsonPrimitive("object"))
+                    add(JsonPrimitive("string"))
+                })
+            })
+        }
+        assertTrue(isMixedArrayControl(ControlElement(scope = ""), mixedArraySchema, testerContext(mixedArraySchema)))
     }
 
     @Test

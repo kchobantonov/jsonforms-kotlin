@@ -43,12 +43,14 @@ import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isObjectArrayControl
+import com.chobantonov.jsonfroms.core.testers.isMixedArrayControl
 import com.chobantonov.jsonfroms.core.testers.isPrimitiveArrayControl
 import com.chobantonov.jsonfroms.core.testers.or
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.util.JsonPointer
 import com.chobantonov.jsonfroms.core.util.Resolve
 import com.chobantonov.jsonfroms.core.util.composePaths
+import com.chobantonov.jsonfroms.core.util.deriveTypes
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -90,6 +92,7 @@ fun MaterialArrayControlRenderer(
 
     val items = (stateProps.data as? JsonArray).orEmpty()
     val columns = arrayColumns(stateProps.schema, stateProps.rootSchema)
+    val renderAsTable = shouldRenderArrayItemsAsTable(stateProps.schema, stateProps.rootSchema)
     val actionsEnabled = stateProps.enabled && !stateProps.readonly
     val showSortButtons = control.booleanOption("showSortButtons", stateProps.config)
     val actionColumnWidth = if (showSortButtons) SortAndDeleteActionColumnWidth else DeleteActionColumnWidth
@@ -162,7 +165,7 @@ fun MaterialArrayControlRenderer(
 
             HorizontalDivider()
 
-            if (columns.any { it.name.isNotEmpty() }) {
+            if (renderAsTable && columns.any { it.name.isNotEmpty() }) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -201,79 +204,143 @@ fun MaterialArrayControlRenderer(
                 if (index > 0) HorizontalDivider()
                 val itemPath = composePaths(stateProps.path, index.toString())
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    columns.forEach { column ->
-                        val cellPath = if (column.name.isEmpty()) {
-                            itemPath
-                        } else {
-                            composePaths(itemPath, column.name)
+                if (renderAsTable) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        columns.forEach { column ->
+                            val cellPath = if (column.name.isEmpty()) {
+                                itemPath
+                            } else {
+                                composePaths(itemPath, column.name)
+                            }
+                            Box(modifier = Modifier.weight(1f)) {
+                                JsonFormsDispatchRenderer(
+                                    props = props.copy(
+                                        schema = column.schema,
+                                        rootSchema = stateProps.rootSchema,
+                                        uischema = CellUiSchema,
+                                        path = cellPath,
+                                        enabled = stateProps.enabled,
+                                        id = "${stateProps.id}-$index-${column.name}",
+                                    ),
+                                )
+                            }
                         }
-                        Box(modifier = Modifier.weight(1f)) {
-                            JsonFormsDispatchRenderer(
-                                props = props.copy(
-                                    schema = column.schema,
-                                    rootSchema = stateProps.rootSchema,
-                                    uischema = CellUiSchema,
-                                    path = cellPath,
-                                    enabled = stateProps.enabled,
-                                    id = "${stateProps.id}-$index-${column.name}",
-                                ),
+
+                        if (actionsEnabled) {
+                            ArrayItemActions(
+                                modifier = Modifier.width(actionColumnWidth),
+                                index = index,
+                                lastIndex = items.lastIndex,
+                                showSortButtons = showSortButtons,
+                                upTooltip = upText.tooltip,
+                                upAriaLabel = upText.ariaLabel,
+                                downTooltip = downText.tooltip,
+                                downAriaLabel = downText.ariaLabel,
+                                removeTooltip = removeText.tooltip,
+                                removeAriaLabel = removeText.ariaLabel,
+                                onMoveUp = { dispatchProps.moveUp?.invoke(stateProps.path, index)?.invoke() },
+                                onMoveDown = { dispatchProps.moveDown?.invoke(stateProps.path, index)?.invoke() },
+                                onRemove = { dispatchProps.removeItems?.invoke(stateProps.path, listOf(index))?.invoke() },
                             )
                         }
                     }
-
-                    if (actionsEnabled) {
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
                         Row(
-                            modifier = Modifier.width(actionColumnWidth),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            if (showSortButtons) {
-                                ActionTooltip(upText.tooltip) {
-                                    OutlinedIconButton(
-                                        enabled = index > 0,
-                                        onClick = {
-                                            dispatchProps.moveUp?.invoke(stateProps.path, index)?.invoke()
-                                        },
-                                    ) {
-                                        Icon(ChevronUpIcon, contentDescription = upText.ariaLabel)
-                                    }
-                                }
-                                ActionTooltip(downText.tooltip) {
-                                    OutlinedIconButton(
-                                        enabled = index < items.lastIndex,
-                                        onClick = {
-                                            dispatchProps.moveDown?.invoke(stateProps.path, index)?.invoke()
-                                        },
-                                    ) {
-                                        Icon(ChevronDownIcon, contentDescription = downText.ariaLabel)
-                                    }
-                                }
-                            }
-                            ActionTooltip(removeText.tooltip) {
-                                FilledIconButton(
-                                    colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                    ),
-                                    onClick = {
-                                        dispatchProps.removeItems
-                                            ?.invoke(stateProps.path, listOf(index))
-                                            ?.invoke()
-                                    },
-                                ) {
-                                    Icon(DeleteIcon, contentDescription = removeText.ariaLabel)
-                                }
+                            Text(
+                                text = "Item ${index + 1}",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            if (actionsEnabled) {
+                                ArrayItemActions(
+                                    index = index,
+                                    lastIndex = items.lastIndex,
+                                    showSortButtons = showSortButtons,
+                                    upTooltip = upText.tooltip,
+                                    upAriaLabel = upText.ariaLabel,
+                                    downTooltip = downText.tooltip,
+                                    downAriaLabel = downText.ariaLabel,
+                                    removeTooltip = removeText.tooltip,
+                                    removeAriaLabel = removeText.ariaLabel,
+                                    onMoveUp = { dispatchProps.moveUp?.invoke(stateProps.path, index)?.invoke() },
+                                    onMoveDown = { dispatchProps.moveDown?.invoke(stateProps.path, index)?.invoke() },
+                                    onRemove = { dispatchProps.removeItems?.invoke(stateProps.path, listOf(index))?.invoke() },
+                                )
                             }
                         }
+                        JsonFormsDispatchRenderer(
+                            props = props.copy(
+                                schema = stateProps.schema,
+                                rootSchema = stateProps.rootSchema,
+                                uischema = CellUiSchema,
+                                path = itemPath,
+                                enabled = stateProps.enabled,
+                                id = "${stateProps.id}-$index",
+                            ),
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArrayItemActions(
+    index: Int,
+    lastIndex: Int,
+    showSortButtons: Boolean,
+    upTooltip: String,
+    upAriaLabel: String,
+    downTooltip: String,
+    downAriaLabel: String,
+    removeTooltip: String,
+    removeAriaLabel: String,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.End),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (showSortButtons) {
+            ActionTooltip(upTooltip) {
+                OutlinedIconButton(enabled = index > 0, onClick = onMoveUp) {
+                    Icon(ChevronUpIcon, contentDescription = upAriaLabel)
+                }
+            }
+            ActionTooltip(downTooltip) {
+                OutlinedIconButton(enabled = index < lastIndex, onClick = onMoveDown) {
+                    Icon(ChevronDownIcon, contentDescription = downAriaLabel)
+                }
+            }
+        }
+        ActionTooltip(removeTooltip) {
+            FilledIconButton(
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                ),
+                onClick = onRemove,
+            ) {
+                Icon(DeleteIcon, contentDescription = removeAriaLabel)
             }
         }
     }
@@ -311,6 +378,13 @@ private fun arrayColumns(
     }
 }
 
+internal fun shouldRenderArrayItemsAsTable(
+    itemSchema: JsonSchema,
+    rootSchema: JsonSchema,
+): Boolean = arrayColumns(itemSchema, rootSchema).all { column ->
+    deriveTypes(column.schema).none { type -> type == "object" || type == "array" }
+}
+
 private fun startCase(value: String): String =
     value
         .replace(Regex("([a-z])([A-Z])"), "$1 $2")
@@ -325,7 +399,7 @@ private fun startCase(value: String): String =
         }
 
 private val CellUiSchema = ControlElement(
-    scope = "#",
+    scope = "",
     label = BooleanControlLabel(false),
 )
 
@@ -415,5 +489,5 @@ private fun lineIcon(
 
 val materialArrayControlTester: RankedTester = rankWith(
     3,
-    or(isObjectArrayControl, isPrimitiveArrayControl),
+    or(isObjectArrayControl, isPrimitiveArrayControl, isMixedArrayControl),
 )

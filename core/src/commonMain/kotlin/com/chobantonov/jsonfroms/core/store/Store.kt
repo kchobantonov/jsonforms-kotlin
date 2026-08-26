@@ -46,6 +46,7 @@ enum class ValidationMode {
 
 interface JsonFormsCore {
     val data: JsonElement
+    val dataProvided: Boolean
     val schema: JsonSchema
     val uischema: UiSchemaElement?
     val errors: List<ErrorObject>
@@ -64,6 +65,7 @@ data class JsonFormsCoreState(
     override val validatorEngine: JsonSchemaValidator,
     override val validator: ValidateFunction?,
     override val validationMode: ValidationMode = ValidationMode.ValidateAndShow,
+    override val dataProvided: Boolean = true,
 ) : JsonFormsCore {
     constructor() : this(
         validatorEngine = com.chobantonov.jsonfroms.core.validation.OptimumCodeJsonSchemaValidator(),

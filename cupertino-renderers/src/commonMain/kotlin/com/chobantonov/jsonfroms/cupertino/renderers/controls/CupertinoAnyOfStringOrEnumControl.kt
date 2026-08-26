@@ -1,0 +1,8 @@
+package com.chobantonov.jsonfroms.cupertino.renderers.controls
+
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialAnyOfStringOrEnumControl
+import com.chobantonov.jsonfroms.material.renderers.controls.materialAnyOfStringOrEnumControlTester
+
+val CupertinoAnyOfStringOrEnumControl = ComposeJsonFormsRenderer { MaterialAnyOfStringOrEnumControl.Render(it) }
+val cupertinoAnyOfStringOrEnumControlTester = materialAnyOfStringOrEnumControlTester

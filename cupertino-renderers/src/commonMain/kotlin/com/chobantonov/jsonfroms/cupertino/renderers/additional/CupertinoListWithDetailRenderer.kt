@@ -1,0 +1,8 @@
+package com.chobantonov.jsonfroms.cupertino.renderers.additional
+
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
+import com.chobantonov.jsonfroms.material.renderers.additional.MaterialListWithDetailRenderer
+import com.chobantonov.jsonfroms.material.renderers.additional.materialListWithDetailTester
+
+val CupertinoListWithDetailRenderer = ComposeJsonFormsRenderer { MaterialListWithDetailRenderer.Render(it) }
+val cupertinoListWithDetailTester = materialListWithDetailTester

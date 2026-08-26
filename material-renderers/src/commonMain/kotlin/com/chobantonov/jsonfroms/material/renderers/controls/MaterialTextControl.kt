@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 import androidx.compose.runtime.Composable
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.and
 import com.chobantonov.jsonfroms.core.testers.isMultiLineControl
@@ -38,15 +39,17 @@ private fun MaterialTextControl(
         rendererName = "MaterialTextControl",
     )
     val textValue = bindings.stateProps.data.toMaterialInputString()
+    val preserveEmptyValue = LocalPreserveEmptyValue.current
 
     MaterialInputControl(
         props = bindings.controlProps,
         value = textValue,
         singleLine = singleLine,
+        clearLabel = bindings.clearLabel,
         onChange = { value ->
             bindings.dispatchProps.handleChange(
                 bindings.stateProps.path,
-                value.takeIf { it.isNotEmpty() }?.let(::JsonPrimitive),
+                if (value.isNotEmpty() || preserveEmptyValue) JsonPrimitive(value) else null,
             )
         },
     )

@@ -122,6 +122,7 @@ data class StatePropsOfControl(
     val uischema: ControlElement,
     val schema: JsonSchema,
     val data: JsonElement,
+    val dataProvided: Boolean = true,
     val enabled: Boolean,
     val readonly: Boolean = false,
     val visible: Boolean,
@@ -483,6 +484,7 @@ fun mapStateToControlProps(
     val errors = getErrorAt(path, resolvedSchema)(state)
     val description = (resolvedSchema["description"] as? JsonPrimitive)?.content ?: ""
     val data = com.chobantonov.jsonfroms.core.util.Resolve.data(rootData, path)
+    val dataProvided = if (path.isBlank()) state.jsonforms.core.dataProvided else data != null
     val labelDesc = createLabelDescriptionFrom(uischema, resolvedSchema)
     val label = if (labelDesc.show == true) labelDesc.text.orEmpty() else ""
     val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, resolvedSchema, rootData, config)
@@ -499,6 +501,7 @@ fun mapStateToControlProps(
         uischema = uischema,
         schema = resolvedSchema,
         data = data ?: JsonNull,
+        dataProvided = dataProvided,
         enabled = enabled,
         readonly = readonly,
         visible = visible,

@@ -56,6 +56,7 @@ import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.reducers.findMatchingUISchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.testers.RankedTester
+import com.chobantonov.jsonfroms.core.testers.isMixedArrayControl
 import com.chobantonov.jsonfroms.core.testers.isObjectArrayWithNesting
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.util.Resolve
@@ -476,5 +477,8 @@ private fun lineIcon(
 
 val materialArrayLayoutTester: RankedTester = rankWith(
     4,
-    { uiSchema, schema, context -> isObjectArrayWithNesting(uiSchema, schema, context) },
+    { uiSchema, schema, context ->
+        isObjectArrayWithNesting(uiSchema, schema, context) ||
+            isMixedArrayControl(uiSchema, schema, context)
+    },
 )

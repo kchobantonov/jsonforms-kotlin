@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isDateControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
@@ -57,6 +58,7 @@ fun MaterialDateControl(props: ComposeJsonFormsRendererProps) {
     val localError = draftValue
         .takeIf { it.isNotEmpty() && parseDateValue(it, listOf(displayFormat)) == null }
         ?.let { invalidDateText }
+    val preserveEmptyValue = LocalPreserveEmptyValue.current
 
     LaunchedEffect(committedValue, displayValue) {
         if (committedValue != observedCommittedValue) {
@@ -88,13 +90,17 @@ fun MaterialDateControl(props: ComposeJsonFormsRendererProps) {
         },
         showDescriptionOnlyWhenFocused = true,
         localError = localError,
+        clearLabel = bindings.clearLabel,
         onChange = { value ->
             if (!isAllowedTemporalEdit(draftValue, value, displayFormat, maskInput)) return@MaterialInputControl
             draftValue = value
             when {
                 value.isEmpty() -> {
                     observedCommittedValue = ""
-                    bindings.dispatchProps.handleChange(bindings.stateProps.path, null)
+                    bindings.dispatchProps.handleChange(
+                        bindings.stateProps.path,
+                        JsonPrimitive("").takeIf { preserveEmptyValue },
+                    )
                 }
                 else -> {
                     val temporal = parseDateValue(value, listOf(displayFormat))

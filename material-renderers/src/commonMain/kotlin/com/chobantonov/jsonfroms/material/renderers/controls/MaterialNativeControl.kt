@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isDateControl
 import com.chobantonov.jsonfroms.core.testers.isTimeControl
@@ -27,16 +28,18 @@ fun MaterialNativeControl(
     val appliedOptions = controlProps.config + controlProps.uischema.options
     val fieldType = (appliedOptions["format"] as? String) ?: controlProps.schema.format
     val placeholder = fieldType ?: controlProps.schema.format
+    val preserveEmptyValue = LocalPreserveEmptyValue.current
 
     MaterialInputControl(
         props = controlProps,
         value = bindings.stateProps.data.toMaterialInputString(),
         keyboardType = KeyboardType.Text,
         placeholder = placeholder,
+        clearLabel = bindings.clearLabel,
         onChange = { value ->
             bindings.dispatchProps.handleChange(
                 bindings.stateProps.path,
-                value.takeIf { it.isNotEmpty() }?.let(::JsonPrimitive),
+                if (value.isNotEmpty() || preserveEmptyValue) JsonPrimitive(value) else null,
             )
         },
     )

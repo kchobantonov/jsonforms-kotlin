@@ -83,6 +83,7 @@ data class ComposeJsonFormsCellProps(
 data class JsonFormsChange(
     val data: JsonElement,
     val errors: List<ErrorObject>,
+    val dataProvided: Boolean = true,
 )
 
 data class JsonFormsComposeContext(
@@ -120,8 +121,11 @@ class JsonFormsComposeController(
         state = state.copy(
             jsonforms = state.jsonforms.copy(core = nextCore),
         )
-        return if (nextCore.data != currentCore.data || nextCore.errors != currentCore.errors) {
-            JsonFormsChange(nextCore.data, nextCore.errors)
+        return if (
+            nextCore.data != currentCore.data || nextCore.errors != currentCore.errors ||
+            nextCore.dataProvided != currentCore.dataProvided
+        ) {
+            JsonFormsChange(nextCore.data, nextCore.errors, nextCore.dataProvided)
         } else {
             null
         }
@@ -146,6 +150,7 @@ private fun ComposeJsonFormsState.hasSameExternalInputs(other: ComposeJsonFormsS
     val nextCore = next.core
 
     return currentCore.data == nextCore.data &&
+        currentCore.dataProvided == nextCore.dataProvided &&
         currentCore.schema == nextCore.schema &&
         currentCore.uischema == nextCore.uischema &&
         currentCore.additionalErrors == nextCore.additionalErrors &&
@@ -223,6 +228,7 @@ fun JsonForms(
     i18n: JsonFormsI18nState = JsonFormsI18nState(),
     additionalErrors: List<ErrorObject> = emptyList(),
     middleware: Middleware = defaultMiddleware,
+    dataProvided: Boolean = true,
     onChange: ((JsonFormsChange) -> Unit)? = null,
 ) {
     val schemaToUse = remember(schema, data) {
@@ -233,6 +239,7 @@ fun JsonForms(
     }
     val initState = remember(
         data,
+        dataProvided,
         schemaToUse,
         uiSchemaToUse,
         renderers,
@@ -247,6 +254,7 @@ fun JsonForms(
     ) {
         createComposeState(
             data = data,
+            dataProvided = dataProvided,
             schema = schemaToUse,
             uischema = uiSchemaToUse,
             renderers = renderers,
@@ -383,6 +391,7 @@ private fun rememberControlId(
 
 private fun createComposeState(
     data: JsonElement,
+    dataProvided: Boolean,
     schema: JsonSchema,
     uischema: UiSchemaElement,
     renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>,
@@ -399,6 +408,7 @@ private fun createComposeState(
         state = JsonFormsCoreState(),
         action = Actions.init(
             data = data,
+            dataProvided = dataProvided,
             schema = schema,
             uischema = uischema,
             options = InitActionOptions(

@@ -25,6 +25,11 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.chobantonov.jsonfroms.compose.JsonForms
+import com.chobantonov.jsonfroms.cupertino.renderers.CupertinoSwitch
+import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoCells
+import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
+import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoAppTheme
+import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoThemePreset
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.reducers.defaultMiddleware
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
@@ -35,6 +40,8 @@ import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialCells
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
+import com.chobantonov.jsonfroms.material.renderers.util.MaterialThemePreset
+import com.chobantonov.jsonfroms.material.renderers.util.materialColorScheme
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
@@ -44,11 +51,18 @@ import kotlinx.serialization.json.*
 private val prettyJson = Json { prettyPrint = true; prettyPrintIndent = "  " }
 private val CompactWidth = 840.dp
 private const val GitHubUrl = "https://github.com/kchobantonov/jsonforms-kotlin"
+private val LocalDemoUiStyle = compositionLocalOf { DemoUiStyle.Material }
 
 internal enum class DemoThemeMode(val displayName: String) {
     System("System"),
     Light("Light"),
     Dark("Dark"),
+}
+
+internal enum class DemoUiStyle(val displayName: String) {
+    System("System"),
+    Material("Material"),
+    Cupertino("iOS"),
 }
 
 internal enum class DemoLocale(val displayName: String, val languageTag: String?) {
@@ -95,6 +109,11 @@ private val DemoPane.isEditor: Boolean
 
 internal data class DemoSettings(
     val themeMode: DemoThemeMode = DemoThemeMode.System,
+    val uiStyle: DemoUiStyle = DemoUiStyle.System,
+    val lightMaterialTheme: MaterialThemePreset = MaterialThemePreset.Purple,
+    val darkMaterialTheme: MaterialThemePreset = MaterialThemePreset.Purple,
+    val lightCupertinoTheme: CupertinoThemePreset = CupertinoThemePreset.Blue,
+    val darkCupertinoTheme: CupertinoThemePreset = CupertinoThemePreset.Blue,
     val locale: DemoLocale = DemoLocale.English,
     val demoLayout: DemoLayout = DemoLayout.Default,
     val validationMode: ValidationMode = ValidationMode.ValidateAndShow,
@@ -107,6 +126,15 @@ internal data class DemoSettings(
     val initCollapsed: Boolean = false,
     val hideAvatar: Boolean = false,
 ) {
+    fun effectiveUiStyle(applePlatform: Boolean = isApplePlatform): DemoUiStyle =
+        resolveUiStyle(uiStyle, applePlatform)
+
+    fun cupertinoTheme(darkTheme: Boolean): CupertinoThemePreset =
+        if (darkTheme) darkCupertinoTheme else lightCupertinoTheme
+
+    fun materialTheme(darkTheme: Boolean): MaterialThemePreset =
+        if (darkTheme) darkMaterialTheme else lightMaterialTheme
+
     fun applyTo(config: Map<String, Any?>) = config + mapOf(
         "hideRequiredAsterisk" to hideRequiredAsterisk,
         "showUnfocusedDescription" to showUnfocusedDescription,
@@ -132,8 +160,14 @@ fun ExamplesComposeApp(
         DemoThemeMode.Dark -> true
     }
 
-    MaterialTheme(colorScheme = if (useDarkTheme) darkColorScheme() else lightColorScheme()) {
-        if (examples.isEmpty()) return@MaterialTheme EmptyExamplesState()
+    val effectiveUiStyle = settings.effectiveUiStyle()
+    DemoAppTheme(
+        effectiveUiStyle,
+        useDarkTheme,
+        settings.materialTheme(useDarkTheme),
+        settings.cupertinoTheme(useDarkTheme),
+    ) {
+        if (examples.isEmpty()) return@DemoAppTheme EmptyExamplesState()
         var localSelectedName by remember(examples) { mutableStateOf(examples.first().name) }
         val effectiveSelectedName = selectedExampleName ?: localSelectedName
         val selected = examples.firstOrNull { it.name == effectiveSelectedName } ?: examples.first()
@@ -152,7 +186,7 @@ fun ExamplesComposeApp(
                 if (compact) navigationVisible = false
             }
             val updateState: (StateProps) -> Unit = { nextState ->
-                if (nextState.data != state.data) {
+                if (nextState.data != state.data || nextState.dataProvided != state.dataProvided) {
                     editorDrafts = editorDrafts.update(DemoPane.Data) {
                         EditorDraft(editorText(DemoPane.Data, nextState))
                     }
@@ -198,6 +232,26 @@ fun ExamplesComposeApp(
 }
 
 @Composable
+private fun DemoAppTheme(
+    style: DemoUiStyle,
+    darkTheme: Boolean,
+    materialTheme: MaterialThemePreset,
+    cupertinoTheme: CupertinoThemePreset,
+    content: @Composable () -> Unit,
+) {
+    CompositionLocalProvider(LocalDemoUiStyle provides style) {
+        if (style == DemoUiStyle.Cupertino) {
+            CupertinoAppTheme(darkTheme, cupertinoTheme, content)
+        } else {
+            MaterialTheme(
+                colorScheme = materialColorScheme(darkTheme, materialTheme),
+                content = content,
+            )
+        }
+    }
+}
+
+@Composable
 private fun DemoTopBar(
     navigationVisible: Boolean,
     formOnly: Boolean,
@@ -207,7 +261,11 @@ private fun DemoTopBar(
     onSettings: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
-    Surface(tonalElevation = 3.dp, shadowElevation = 3.dp) {
+    val cupertino = LocalDemoUiStyle.current == DemoUiStyle.Cupertino
+    Surface(
+        tonalElevation = if (cupertino) 0.dp else 3.dp,
+        shadowElevation = if (cupertino) 0.dp else 3.dp,
+    ) {
         Row(
             Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -347,11 +405,7 @@ private fun DemoPaneSelector(selected: DemoPane, onSelected: (DemoPane) -> Unit)
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         DemoPane.entries.forEach { pane ->
-            FilterChip(
-                selected = selected == pane,
-                onClick = { onSelected(pane) },
-                label = { Text(pane.displayName) },
-            )
+            DemoChoiceChip(selected == pane, { onSelected(pane) }) { Text(pane.displayName) }
         }
     }
 }
@@ -414,9 +468,11 @@ private fun FormCard(
     onStateChange: (StateProps) -> Unit, modifier: Modifier = Modifier.fillMaxWidth(),
     scrollContent: Boolean = false,
 ) {
+    val cupertino = settings.effectiveUiStyle() == DemoUiStyle.Cupertino
     Card(modifier) {
-        val configuredI18n = (state.i18n ?: JsonFormsI18nState()).copy(
-            locale = settings.locale.languageTag ?: Locale.current.toLanguageTag(),
+        val configuredI18n = exampleI18nForLocale(
+            state,
+            settings.locale.languageTag ?: Locale.current.toLanguageTag(),
         )
         val contentModifier = if (scrollContent) Modifier.fillMaxSize().verticalScroll(rememberScrollState()) else Modifier.fillMaxWidth()
         Column(contentModifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -433,13 +489,14 @@ private fun FormCard(
                 }
             }
             JsonForms(
-                data = state.data, schema = state.schema,
+                data = state.data, dataProvided = state.dataProvided, schema = state.schema,
                 uischema = state.uischema, uischemas = state.uischemas,
-                renderers = materialRenderers, cells = materialCells,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                cells = if (cupertino) cupertinoCells else materialCells,
                 config = settings.applyTo(state.config), readonly = state.readonly || settings.readonly,
                 validationMode = settings.validationMode, i18n = configuredI18n,
                 additionalErrors = state.additionalErrors, middleware = state.middleware ?: defaultMiddleware,
-                onChange = { onStateChange(state.copy(data = it.data)) },
+                onChange = { onStateChange(state.copy(data = it.data, dataProvided = it.dataProvided)) },
             )
         }
     }
@@ -511,7 +568,7 @@ private fun EditorCard(
 
 private fun editorText(pane: DemoPane, state: StateProps): String {
     val json = when (pane) {
-        DemoPane.Data -> state.data
+        DemoPane.Data -> state.data.takeIf { state.dataProvided }
         DemoPane.Schema -> state.schema?.toJsonObject()
         DemoPane.UiSchema -> state.uischema?.toJsonObject()
         DemoPane.UiSchemas -> JsonArray(state.uischemas.map { it.uischema.toJsonObject() })
@@ -524,7 +581,11 @@ private fun editorText(pane: DemoPane, state: StateProps): String {
 
 internal fun applyEditorDraft(pane: DemoPane, text: String, state: StateProps): Result<StateProps> = runCatching {
     when (pane) {
-        DemoPane.Data -> state.copy(data = prettyJson.parseToJsonElement(text))
+        DemoPane.Data -> if (text.isBlank()) {
+            state.copy(data = JsonNull, dataProvided = false)
+        } else {
+            state.copy(data = prettyJson.parseToJsonElement(text), dataProvided = true)
+        }
         DemoPane.Schema -> state.copy(
             schema = if (text.isBlank()) null else JsonSchema(parseJsonObject(text, "Schema")),
         )
@@ -548,6 +609,7 @@ internal fun applyEditorDraft(pane: DemoPane, text: String, state: StateProps): 
             }
             state.copy(
                 translations = values,
+                localizedTranslations = emptyMap(),
                 i18n = (state.i18n ?: JsonFormsI18nState()).copy(
                     translate = Translator { id, defaultMessage, _ -> values[id] ?: defaultMessage },
                 ),
@@ -630,18 +692,55 @@ private fun SettingsPanel(
             )
             HorizontalDivider()
             Text("Appearance", style = MaterialTheme.typography.titleMedium)
+            SettingsSelect(
+                label = "Interface Style",
+                selected = settings.uiStyle,
+                values = DemoUiStyle.entries,
+                displayName = DemoUiStyle::displayName,
+                onSelected = { onChange(settings.copy(uiStyle = it)) },
+            )
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 DemoThemeMode.entries.forEach { mode ->
-                    FilterChip(
+                    DemoChoiceChip(
                         selected = settings.themeMode == mode,
                         onClick = { onChange(settings.copy(themeMode = mode)) },
-                        label = { Text(mode.displayName) },
                         modifier = Modifier.weight(1f),
-                    )
+                    ) { Text(mode.displayName) }
                 }
+            }
+            if (settings.effectiveUiStyle() == DemoUiStyle.Material) {
+                SettingsSelect(
+                    label = "Light Material Theme",
+                    selected = settings.lightMaterialTheme,
+                    values = MaterialThemePreset.entries,
+                    displayName = MaterialThemePreset::displayName,
+                    onSelected = { onChange(settings.copy(lightMaterialTheme = it)) },
+                )
+                SettingsSelect(
+                    label = "Dark Material Theme",
+                    selected = settings.darkMaterialTheme,
+                    values = MaterialThemePreset.entries,
+                    displayName = MaterialThemePreset::displayName,
+                    onSelected = { onChange(settings.copy(darkMaterialTheme = it)) },
+                )
+            } else {
+                SettingsSelect(
+                    label = "Light iOS Theme",
+                    selected = settings.lightCupertinoTheme,
+                    values = CupertinoThemePreset.entries,
+                    displayName = CupertinoThemePreset::displayName,
+                    onSelected = { onChange(settings.copy(lightCupertinoTheme = it)) },
+                )
+                SettingsSelect(
+                    label = "Dark iOS Theme",
+                    selected = settings.darkCupertinoTheme,
+                    values = CupertinoThemePreset.entries,
+                    displayName = CupertinoThemePreset::displayName,
+                    onSelected = { onChange(settings.copy(darkCupertinoTheme = it)) },
+                )
             }
             HorizontalDivider()
             Text("Validation", style = MaterialTheme.typography.titleMedium)
@@ -718,11 +817,43 @@ private fun <T> SettingsSelect(
 @Composable
 private fun SettingSwitch(label: String, description: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-        Switch(checked, onCheckedChange)
+        if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino) {
+            CupertinoSwitch(checked, onCheckedChange)
+        } else {
+            Switch(checked, onCheckedChange)
+        }
         Column(Modifier.weight(1f)) {
             Text(label, fontWeight = FontWeight.Medium)
             Text(description, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
         }
+    }
+}
+
+@Composable
+private fun DemoChoiceChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino) {
+        Surface(
+            modifier = modifier.clickable(onClick = onClick),
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            Box(Modifier.padding(horizontal = 12.dp, vertical = 7.dp), contentAlignment = Alignment.Center) {
+                content()
+            }
+        }
+    } else {
+        FilterChip(
+            selected = selected,
+            onClick = onClick,
+            label = content,
+            modifier = modifier,
+        )
     }
 }
 
@@ -732,9 +863,32 @@ private fun ValidationMode.displayName() = when (this) {
     ValidationMode.NoValidation -> "No Validation"
 }
 
+internal fun exampleI18nForLocale(state: StateProps, languageTag: String): JsonFormsI18nState {
+    val language = languageTag.substringBefore('-').lowercase()
+    val localized = state.localizedTranslations[languageTag]
+        ?: state.localizedTranslations[language]
+    val translator = localized?.let { values ->
+        Translator { id, defaultMessage, _ -> values[id] ?: defaultMessage }
+    } ?: state.i18n?.translate
+    return (state.i18n ?: JsonFormsI18nState()).copy(locale = languageTag, translate = translator)
+}
+
 private fun ExampleDescription.toStateProps() = StateProps(
-    data, schema, uischema, materialRenderers, materialCells, config, uischemas,
-    additionalErrors, actions, middleware, i18n, readonly, translations,
+    data = data,
+    dataProvided = dataProvided,
+    schema = schema,
+    uischema = uischema,
+    renderers = materialRenderers,
+    cells = materialCells,
+    config = config,
+    uischemas = uischemas,
+    additionalErrors = additionalErrors,
+    actions = actions,
+    middleware = middleware,
+    i18n = i18n,
+    readonly = readonly,
+    translations = translations,
+    localizedTranslations = localizedTranslations,
 )
 
 @Composable

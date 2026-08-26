@@ -36,6 +36,45 @@ import kotlinx.serialization.json.put
 
 class CoreTest {
     @Test
+    fun `updating initially absent data marks it as provided even when value is null`() {
+        val initialized = coreReducer(
+            state = null,
+            action = InitAction(
+                data = kotlinx.serialization.json.JsonNull,
+                schema = buildJsonSchema {},
+                dataProvided = false,
+            ),
+        )
+
+        val updated = coreReducer(
+            initialized,
+            UpdateAction(path = "", updater = { kotlinx.serialization.json.JsonNull }),
+        )
+
+        assertFalse(initialized.dataProvided)
+        assertTrue(updated.dataProvided)
+    }
+
+    @Test
+    fun `clearing root data preserves absent separately from explicit null`() {
+        val initialized = coreReducer(
+            state = null,
+            action = InitAction(
+                data = JsonPrimitive("value"),
+                schema = buildJsonSchema {},
+            ),
+        )
+
+        val cleared = coreReducer(
+            initialized,
+            UpdateAction(path = "", updater = { null }, dataProvided = false),
+        )
+
+        assertEquals(kotlinx.serialization.json.JsonNull, cleared.data)
+        assertFalse(cleared.dataProvided)
+    }
+
+    @Test
     fun `core reducer should support v7`() {
         val schema = buildJsonSchema {
             put("type", "object")

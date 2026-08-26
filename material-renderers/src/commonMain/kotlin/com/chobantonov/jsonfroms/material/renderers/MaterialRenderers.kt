@@ -12,10 +12,12 @@ import com.chobantonov.jsonfroms.material.renderers.complex.MaterialAllOfRendere
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialAnyOfRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialArrayControlRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialEnumArrayRenderer
+import com.chobantonov.jsonfroms.material.renderers.complex.MaterialMixedRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.materialArrayControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialAllOfControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialAnyOfControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialEnumArrayRendererTester
+import com.chobantonov.jsonfroms.material.renderers.complex.materialMixedControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialObjectRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialOneOfRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.materialObjectControlTester
@@ -68,6 +70,10 @@ import com.chobantonov.jsonfroms.material.renderers.layouts.materialHorizontalLa
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialVerticalLayoutTester
 
 val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>> = listOf(
+    JsonFormsRendererRegistryEntry(
+        tester = materialMixedControlTester,
+        renderer = MaterialMixedRenderer,
+    ),
     JsonFormsRendererRegistryEntry(
         tester = materialAnyOfStringOrEnumControlTester,
         renderer = MaterialAnyOfStringOrEnumControl,

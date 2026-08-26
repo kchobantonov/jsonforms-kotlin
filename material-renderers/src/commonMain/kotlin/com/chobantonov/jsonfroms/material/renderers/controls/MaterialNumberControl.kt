@@ -9,9 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isNumberControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
+import kotlinx.serialization.json.JsonPrimitive
 
 val MaterialNumberControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialNumberControl(props)
@@ -29,6 +31,7 @@ fun MaterialNumberControl(
     var draftValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     var lastCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     val parsedDraft = parseNumberInput(draftValue)
+    val preserveEmptyValue = LocalPreserveEmptyValue.current
 
     LaunchedEffect(committedValue) {
         if (committedValue != lastCommittedValue) {
@@ -42,12 +45,13 @@ fun MaterialNumberControl(
         value = draftValue,
         keyboardType = KeyboardType.Decimal,
         localError = parsedDraft.error,
+        clearLabel = bindings.clearLabel,
         onChange = { value ->
             draftValue = value
             lastCommittedValue = value
             bindings.dispatchProps.handleChange(
                 bindings.stateProps.path,
-                parseNumberInput(value).data,
+                if (value.isEmpty() && preserveEmptyValue) JsonPrimitive(0.0) else parseNumberInput(value).data,
             )
         },
     )

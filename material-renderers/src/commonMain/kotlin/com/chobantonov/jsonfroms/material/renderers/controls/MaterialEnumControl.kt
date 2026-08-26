@@ -1,6 +1,11 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -16,8 +21,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfEnum
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
@@ -75,6 +83,7 @@ fun MaterialEnumControl(
     val modifier = if (trim) Modifier else Modifier.fillMaxWidth()
     val variant = useInputVariant(stateProps.config, stateProps.uischema)
     val selectedOption = stateProps.options.firstOrNull { it.value == stateProps.data }
+    val clearLabel = props.state.jsonforms.i18n.translate?.translate("clear", "Clear value", emptyMap()) ?: "Clear value"
     val committedText = selectedOption?.label ?: stateProps.data.toMaterialInputString()
     var expanded by remember(stateProps.path) { mutableStateOf(false) }
     var query by remember(stateProps.path) { mutableStateOf(committedText) }
@@ -138,9 +147,17 @@ fun MaterialEnumControl(
                     } else {
                         null
                     },
-                    trailingIcon = {
+                    trailingIcon = { Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (selectedOption != null) ActionTooltip(clearLabel) {
+                            IconButton(onClick = {
+                                query = ""; observedCommittedText = ""; expanded = false
+                                dispatchProps.handleChange(stateProps.path, null)
+                            }, modifier = Modifier.size(32.dp)) {
+                                Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
+                            }
+                        }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
-                    },
+                    } },
                 )
             }
 
@@ -179,9 +196,17 @@ fun MaterialEnumControl(
                     } else {
                         null
                     },
-                    trailingIcon = {
+                    trailingIcon = { Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (selectedOption != null) ActionTooltip(clearLabel) {
+                            IconButton(onClick = {
+                                query = ""; observedCommittedText = ""; expanded = false
+                                dispatchProps.handleChange(stateProps.path, null)
+                            }, modifier = Modifier.size(32.dp)) {
+                                Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
+                            }
+                        }
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
-                    },
+                    } },
                 )
             }
         }

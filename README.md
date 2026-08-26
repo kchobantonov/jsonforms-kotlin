@@ -12,10 +12,32 @@ Kotlin Multiplatform port of JSON Forms.
 - `:core` contains the Kotlin Multiplatform port of the JSON Forms core package.
 - `:compose` contains the Compose Multiplatform binding layer on top of `:core`.
 - `:material-renderers` contains the first Compose Material renderer set.
+- `:cupertino-renderers` contains iOS-style Compose renderers and a Cupertino theme. Its package
+  layout mirrors `:material-renderers`; boolean, enum, slider, date, time, and date-time inputs use
+  Compose Cupertino widgets, while complex controls preserve the same behavior with Cupertino
+  presentation.
 - `:examples` contains shared example definitions based on the TypeScript examples package.
 - `:examples-compose` contains the shared Compose demo app.
 - `:examples-compose-android` contains the thin Android launcher app for the demo.
 - `:examples-compose-ios` contains the thin Xcode host app for the demo.
+
+## Example catalog parity
+
+The demo contains all 78 examples registered by the sibling JSON Forms TypeScript examples
+package. Hand-written Kotlin examples are retained where they provide Kotlin-specific behavior;
+the remaining examples are generated into a portable snapshot. Mixed-type schemas and dynamic
+`additionalProperties`/`patternProperties` objects have dedicated renderers in both Material and
+Cupertino, including type selection and add, rename, and delete operations.
+
+After updating the sibling JSON Forms checkout, refresh the portable examples with:
+
+```bash
+node scripts/sync-upstream-examples.mjs
+```
+
+Set `JSONFORMS_EXAMPLES_BUNDLE` when the upstream bundle is not located at the default sibling
+path (`../jsonforms/packages/examples/lib/jsonforms-examples.cjs.js`). Catalog tests compare the
+Kotlin names to the upstream snapshot so omissions and duplicates fail the build.
 
 ## Build
 
@@ -52,6 +74,7 @@ Build individual modules:
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :core:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :compose:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :material-renderers:build
+GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :cupertino-renderers:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose-android:assembleDebug
@@ -64,6 +87,16 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew kotlinUpgradeYarnLock
 ```
 
 ## Run Demo
+
+The demo's Settings panel has an **Interface Style** selector:
+
+- **System** uses Cupertino on iOS and Material on other platforms.
+- **Material** forces Material on every platform, including iOS.
+- **iOS** forces Cupertino styling on every platform, including Android, desktop, and web.
+
+The selected style and light/dark preference apply to both the demo shell and the JSON Forms
+renderer registry. Material and iOS styles each have independently selectable light and dark
+color themes: Blue, Indigo, Purple, Green, Orange, and Pink. All choices are persisted.
 
 Desktop:
 

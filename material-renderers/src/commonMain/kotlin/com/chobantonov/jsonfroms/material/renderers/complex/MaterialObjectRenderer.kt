@@ -1,6 +1,7 @@
 package com.chobantonov.jsonfroms.material.renderers.complex
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
@@ -15,6 +16,7 @@ import com.chobantonov.jsonfroms.core.reducers.findMatchingUISchema
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isObjectControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
+import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialGroupLayout
 
 val MaterialObjectRenderer: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialObjectRenderer(props)
@@ -46,24 +48,30 @@ fun MaterialObjectRenderer(
         return
     }
 
-    val detailUiSchema = resolveDetailUiSchema(
+    val detailUiSchema = resolveObjectDetailUiSchema(
         props = detailProps,
         control = control,
     )
 
-    JsonFormsDispatchRenderer(
-        props = props.copy(
-            schema = detailProps.schema,
-            uischema = detailUiSchema,
-            path = detailProps.path,
-            enabled = detailProps.enabled,
-            renderers = props.renderers,
-            cells = props.cells,
-        ),
+    val detailRendererProps = props.copy(
+        schema = detailProps.schema,
+        uischema = detailUiSchema,
+        path = detailProps.path,
+        enabled = detailProps.enabled,
+        renderers = props.renderers,
+        cells = props.cells,
     )
+    if (detailUiSchema is GroupElement) {
+        MaterialGroupLayout(detailRendererProps, elevation = 0.dp) {
+            MaterialAdditionalProperties(props, detailProps)
+        }
+    } else {
+        JsonFormsDispatchRenderer(props = detailRendererProps)
+        MaterialAdditionalProperties(props, detailProps)
+    }
 }
 
-private fun resolveDetailUiSchema(
+fun resolveObjectDetailUiSchema(
     props: com.chobantonov.jsonfroms.core.mappers.StatePropsOfControlWithDetail,
     control: ControlElement,
 ): UiSchemaElement {

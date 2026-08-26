@@ -97,11 +97,15 @@ object JsonPath {
 
             buildJsonObject {
                 source.forEach { (key, existing) ->
-                    if (key != segment) {
+                    if (key == segment) {
+                        if (updatedValue != null) {
+                            put(key, updatedValue)
+                        }
+                    } else {
                         put(key, existing)
                     }
                 }
-                if (updatedValue != null) {
+                if (segment !in source && updatedValue != null) {
                     put(segment, updatedValue)
                 }
             }

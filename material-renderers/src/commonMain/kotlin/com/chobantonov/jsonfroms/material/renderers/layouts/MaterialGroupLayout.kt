@@ -7,6 +7,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
@@ -30,6 +31,8 @@ val MaterialGroupLayout: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { p
 @Composable
 fun MaterialGroupLayout(
     props: ComposeJsonFormsRendererProps,
+    elevation: Dp = 2.dp,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val layout = props.uischema as? GroupElement
         ?: error("MaterialGroupLayout can only render Group elements")
@@ -54,7 +57,7 @@ fun MaterialGroupLayout(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
         if (!label.isNullOrBlank()) {
             Text(
@@ -65,11 +68,14 @@ fun MaterialGroupLayout(
         androidx.compose.foundation.layout.Box(
             modifier = Modifier.padding(16.dp),
         ) {
-            MaterialLayoutRenderer(
-                props = props.copy(enabled = layoutProps.enabled),
-                elements = layout.elements,
-                direction = LayoutDirection.Column,
-            )
+            androidx.compose.foundation.layout.Column {
+                MaterialLayoutRenderer(
+                    props = props.copy(enabled = layoutProps.enabled),
+                    elements = layout.elements,
+                    direction = LayoutDirection.Column,
+                )
+                footer?.invoke()
+            }
         }
     }
 }

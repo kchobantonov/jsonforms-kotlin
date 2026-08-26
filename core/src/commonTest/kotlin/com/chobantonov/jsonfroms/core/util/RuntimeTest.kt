@@ -207,6 +207,10 @@ class RuntimeTest {
                 },
             ),
         )
+        val enabledRuleControl = controlWithRule(
+            RuleEffect.ENABLE,
+            LeafCondition(scope = "#/ruleValue", expectedValue = JsonPrimitive("bar")),
+        )
 
         assertFalse(isInherentlyEnabled(state(readonly = true), uiSchema = defaultControl, schema = null, rootData = JsonNull))
         assertTrue(
@@ -222,7 +226,7 @@ class RuntimeTest {
         assertFalse(isInherentlyEnabled(state(), uiSchema = readonlyOptionControl, schema = null, rootData = JsonNull))
         assertTrue(isInherentlyEnabled(state(), uiSchema = readwriteOptionControl, schema = null, rootData = JsonNull))
         assertFalse(isInherentlyEnabled(state(), uiSchema = defaultControl, schema = buildJsonSchema { put("readOnly", true) }, rootData = JsonNull))
-        assertTrue(
+        assertFalse(
             isInherentlyEnabled(
                 state(),
                 ownProps = mapOf("enabled" to false),
@@ -230,6 +234,15 @@ class RuntimeTest {
                 schema = null,
                 rootData = JsonNull,
                 config = mapOf("readonly" to false),
+            ),
+        )
+        assertFalse(
+            isInherentlyEnabled(
+                state(),
+                ownProps = mapOf("enabled" to false),
+                uiSchema = enabledRuleControl,
+                schema = null,
+                rootData = data,
             ),
         )
         assertFalse(

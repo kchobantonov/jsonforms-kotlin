@@ -22,7 +22,11 @@ object RuleEvaluator {
         validator: JsonSchemaValidator,
         path: String? = null,
         config: Any? = null,
-    ): Boolean = evaluateRuleEffect(uiSchemaElement, data, validator, path, config, visibleByDefault = true)
+    ): Boolean = when (uiSchemaElement.rule?.effect) {
+        RuleEffect.SHOW -> evaluateRule(uiSchemaElement, data, validator, path, config)
+        RuleEffect.HIDE -> !evaluateRule(uiSchemaElement, data, validator, path, config)
+        else -> true
+    }
 
     fun isEnabled(
         uiSchemaElement: UiSchemaElement,
@@ -30,7 +34,11 @@ object RuleEvaluator {
         validator: JsonSchemaValidator,
         path: String? = null,
         config: Any? = null,
-    ): Boolean = evaluateRuleEffect(uiSchemaElement, data, validator, path, config, enabledByDefault = true)
+    ): Boolean = when (uiSchemaElement.rule?.effect) {
+        RuleEffect.ENABLE -> evaluateRule(uiSchemaElement, data, validator, path, config)
+        RuleEffect.DISABLE -> !evaluateRule(uiSchemaElement, data, validator, path, config)
+        else -> true
+    }
 
     fun isReadonly(
         uiSchemaElement: UiSchemaElement,
@@ -38,7 +46,11 @@ object RuleEvaluator {
         validator: JsonSchemaValidator,
         path: String? = null,
         config: Any? = null,
-    ): Boolean = evaluateRuleEffect(uiSchemaElement, data, validator, path, config, readonlyByDefault = false)
+    ): Boolean = when (uiSchemaElement.rule?.effect) {
+        RuleEffect.READONLY -> evaluateRule(uiSchemaElement, data, validator, path, config)
+        RuleEffect.WRITABLE -> !evaluateRule(uiSchemaElement, data, validator, path, config)
+        else -> false
+    }
 
     fun evaluateCondition(
         condition: Condition,
@@ -64,31 +76,15 @@ object RuleEvaluator {
             is SchemaBasedCondition -> evaluateSchemaBasedCondition(condition, data, validator)
         }
 
-    private fun evaluateRuleEffect(
+    private fun evaluateRule(
         uiSchemaElement: UiSchemaElement,
         data: JsonData,
         validator: JsonSchemaValidator,
         path: String? = null,
         config: Any? = null,
-        visibleByDefault: Boolean = false,
-        enabledByDefault: Boolean = false,
-        readonlyByDefault: Boolean = false,
     ): Boolean {
-        val rule = uiSchemaElement.rule ?: return when {
-            visibleByDefault -> true
-            enabledByDefault -> true
-            else -> readonlyByDefault
-        }
-
-        val fulfilled = evaluateCondition(rule.condition, data, validator, uiSchemaElement, path, config)
-        return when (rule.effect) {
-            RuleEffect.SHOW -> fulfilled
-            RuleEffect.HIDE -> !fulfilled
-            RuleEffect.ENABLE -> fulfilled
-            RuleEffect.DISABLE -> !fulfilled
-            RuleEffect.READONLY -> fulfilled
-            RuleEffect.WRITABLE -> !fulfilled
-        }
+        val condition = uiSchemaElement.rule?.condition ?: return false
+        return evaluateCondition(condition, data, validator, uiSchemaElement, path, config)
     }
 
     private fun evaluateLeafCondition(

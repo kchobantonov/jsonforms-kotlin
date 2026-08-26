@@ -40,10 +40,52 @@ val i18nData = buildJsonObject {
     put("postalCode", "12345")
 }
 
-val i18nTranslations = mapOf(
+val i18nEnglishTranslations = mapOf(
     "basicInfoGroup.label" to "Basic Information",
     "additionalInformationLabel" to "Additional Information",
+    "name.label" to "Name",
+    "birthDate.label" to "Birth date",
+    "nationality.label" to "Nationality",
+    "vegetarian.label" to "Vegetarian",
+    "nationality.DE" to "Germany",
+    "nationality.IT" to "Italy",
+    "nationality.JP" to "Japan",
+    "nationality.US" to "United States",
+    "nationality.RU" to "Russia",
+    "nationality.Other" to "Other",
 )
+
+val i18nGermanTranslations = mapOf(
+    "basicInfoGroup.label" to "Grundinformationen",
+    "additionalInformationLabel" to "Zusätzliche Informationen",
+    "name.label" to "Name",
+    "birthDate.label" to "Geburtsdatum",
+    "nationality.label" to "Nationalität",
+    "vegetarian.label" to "Vegetarisch",
+    "nationality.DE" to "Deutschland",
+    "nationality.IT" to "Italien",
+    "nationality.JP" to "Japan",
+    "nationality.US" to "Vereinigte Staaten",
+    "nationality.RU" to "Russland",
+    "nationality.Other" to "Andere",
+)
+
+val i18nBulgarianTranslations = mapOf(
+    "basicInfoGroup.label" to "Основна информация",
+    "additionalInformationLabel" to "Допълнителна информация",
+    "name.label" to "Име",
+    "birthDate.label" to "Дата на раждане",
+    "nationality.label" to "Националност",
+    "vegetarian.label" to "Вегетарианец",
+    "nationality.DE" to "Германия",
+    "nationality.IT" to "Италия",
+    "nationality.JP" to "Япония",
+    "nationality.US" to "Съединени щати",
+    "nationality.RU" to "Русия",
+    "nationality.Other" to "Друга",
+)
+
+val i18nTranslations = i18nEnglishTranslations
 
 private val exampleTranslator = Translator { key, defaultMessage, _ ->
     i18nTranslations[key] ?: defaultMessage
@@ -60,4 +102,9 @@ val i18nExample = ExampleDescription(
         locale = "en",
     ),
     translations = i18nTranslations,
+    localizedTranslations = mapOf(
+        "en" to i18nEnglishTranslations,
+        "de" to i18nGermanTranslations,
+        "bg" to i18nBulgarianTranslations,
+    ),
 )

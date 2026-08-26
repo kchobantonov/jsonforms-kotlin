@@ -76,7 +76,7 @@ private val builtInExamples =
         stringArrayExample,
         stringExample,
         textExample,
-    ) + layoutExamples
+    ) + layoutExamples + upstreamSnapshotExamples
 
 fun registerBuiltInExamples() {
     clearExamples()

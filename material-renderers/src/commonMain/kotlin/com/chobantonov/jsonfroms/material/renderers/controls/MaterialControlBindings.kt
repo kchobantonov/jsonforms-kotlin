@@ -20,6 +20,7 @@ internal data class MaterialControlBindings(
     val stateProps: StatePropsOfControl,
     val dispatchProps: DispatchPropsOfControl,
     val controlProps: ControlProps,
+    val clearLabel: String,
 )
 
 internal fun materialControlBindings(
@@ -75,6 +76,11 @@ internal fun materialControlBindings(
         stateProps = stateProps,
         dispatchProps = dispatchProps,
         controlProps = controlProps,
+        clearLabel = props.state.jsonforms.i18n.translate?.translate(
+            "clear",
+            "Clear value",
+            mapOf("control" to stateProps.label),
+        ) ?: "Clear value",
     )
 }
 

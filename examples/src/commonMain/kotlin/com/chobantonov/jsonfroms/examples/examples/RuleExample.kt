@@ -1,5 +1,6 @@
 package com.chobantonov.jsonfroms.examples.examples
 
+import com.chobantonov.jsonfroms.core.models.AndCondition
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.GroupElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
@@ -8,16 +9,11 @@ import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.RuleEffect
 import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
 import com.chobantonov.jsonfroms.core.models.StringControlLabel
-import com.chobantonov.jsonfroms.core.models.ValidateFunctionCondition
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.examples.ExampleDescription
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
@@ -118,14 +114,27 @@ val ruleUiSchema = VerticalLayout(
                     scope = "#/properties/vitaminDeficiency",
                     rule = Rule(
                         effect = RuleEffect.SHOW,
-                        condition = ValidateFunctionCondition(
-                            scope = "#",
-                            validate = { context ->
-                                val data = context.data?.jsonObject ?: return@ValidateFunctionCondition false
-                                val dead = data["dead"]?.jsonPrimitive?.booleanOrNull ?: false
-                                val kindOfVegetables = data["kindOfVegetables"]?.jsonPrimitive?.contentOrNull
-                                !dead && kindOfVegetables != "All"
-                            },
+                        condition = AndCondition(
+                            conditions = listOf(
+                                SchemaBasedCondition(
+                                    scope = "#/properties/dead",
+                                    schema = JsonSchema(
+                                        buildJsonObject {
+                                            put("const", false)
+                                        },
+                                    ),
+                                ),
+                                SchemaBasedCondition(
+                                    scope = "#/properties/kindOfVegetables",
+                                    schema = JsonSchema(
+                                        buildJsonObject {
+                                            putJsonObject("not") {
+                                                put("const", "All")
+                                            }
+                                        },
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),

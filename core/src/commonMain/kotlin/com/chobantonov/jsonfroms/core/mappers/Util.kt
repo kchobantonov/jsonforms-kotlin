@@ -17,6 +17,10 @@ fun isInherentlyEnabled(
     if (config["separateReadonlyFromDisabled"] != true && state.jsonforms.readonly) {
         return false
     }
+    val inheritedEnabled = ownProps["enabled"] as? Boolean ?: true
+    if (!inheritedEnabled) {
+        return false
+    }
     if (uiSchema.rule != null) {
         return Runtime.isEnabled(uiSchema, rootData, state.jsonforms.core.validatorEngine)
     }
@@ -29,7 +33,7 @@ fun isInherentlyEnabled(
             return false
         }
     }
-    return ownProps["enabled"] as? Boolean ?: true
+    return true
 }
 
 fun isInherentlyReadonly(

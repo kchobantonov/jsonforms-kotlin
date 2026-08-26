@@ -52,6 +52,7 @@ data class InitAction(
     val schema: JsonSchema,
     val uiSchema: UiSchemaElement? = null,
     val options: InitActionOptions? = null,
+    val dataProvided: Boolean = true,
 ) : JsonFormsAction
 
 data class UpdateCoreAction(
@@ -59,12 +60,15 @@ data class UpdateCoreAction(
     val schema: JsonSchema,
     val uiSchema: UiSchemaElement? = null,
     val options: InitActionOptions? = null,
+    val dataProvided: Boolean = true,
 ) : JsonFormsAction
 
 data class UpdateAction(
     val path: String,
     val updater: (JsonData?) -> JsonData?,
     val context: Any? = null,
+    /** Explicitly distinguishes an absent root value from JSON null. Ignored for nested paths. */
+    val dataProvided: Boolean? = null,
 ) : JsonFormsAction
 
 data class UpdateErrorsAction(
@@ -124,8 +128,10 @@ object Actions {
         schema: JsonSchema = Generate.jsonSchema(data),
         uischema: Any? = null,
         options: InitActionOptions? = null,
+        dataProvided: Boolean = true,
     ): InitAction = InitAction(
         data = data,
+        dataProvided = dataProvided,
         schema = schema,
         uiSchema = (uischema as? UiSchemaElement) ?: Generate.uiSchema(schema),
         options = options,
@@ -136,8 +142,10 @@ object Actions {
         schema: JsonSchema,
         uischema: UiSchemaElement? = null,
         options: InitActionOptions? = null,
+        dataProvided: Boolean = true,
     ): UpdateCoreAction = UpdateCoreAction(
         data = data,
+        dataProvided = dataProvided,
         schema = schema,
         uiSchema = uischema,
         options = options,
@@ -147,10 +155,12 @@ object Actions {
         path: String,
         updater: (JsonData?) -> JsonData?,
         context: Any? = null,
+        dataProvided: Boolean? = null,
     ): UpdateAction = UpdateAction(
         path = path,
         updater = updater,
         context = context,
+        dataProvided = dataProvided,
     )
 
     fun registerUISchema(

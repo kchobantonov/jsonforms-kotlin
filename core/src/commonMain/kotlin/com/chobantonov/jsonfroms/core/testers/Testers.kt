@@ -146,6 +146,10 @@ fun formatIs(expectedFormat: String): Tester =
     }
 
 val isBooleanControl: Tester = and(uiTypeIs("Control"), schemaTypeIs("boolean"))
+val isMixedControl: Tester = and(
+    uiTypeIs("Control"),
+    schemaMatches { schema -> schema.typeValue is com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue.Multiple },
+)
 val isObjectControl: Tester = and(uiTypeIs("Control"), schemaTypeIs("object"))
 val isAllOfControl: Tester = and(uiTypeIs("Control"), schemaMatches { schema -> schema.containsKey("allOf") })
 val isAnyOfControl: Tester = and(uiTypeIs("Control"), schemaMatches { schema -> schema.containsKey("anyOf") })
@@ -182,6 +186,14 @@ val isPrimitiveArrayControl: Tester = and(
         val resolvedSchema = resolveReferencedSchema(schema, rootSchema)
         val types = deriveTypes(resolvedSchema)
         types.size == 1 && types.first() in setOf("integer", "number", "boolean", "string")
+    },
+)
+
+val isMixedArrayControl: Tester = and(
+    uiTypeIs("Control"),
+    schemaTypeIs("array"),
+    schemaSubPathMatches("items") { schema, _ ->
+        schema.typeValue is com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue.Multiple
     },
 )
 

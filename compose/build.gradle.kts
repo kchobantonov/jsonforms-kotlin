@@ -34,7 +34,8 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            implementation(libs.compose.material3)
             implementation(compose.ui)
         }
 

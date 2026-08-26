@@ -143,7 +143,14 @@ data class JsonSchema(
         (value[key] as? JsonArray)?.mapNotNull { it.asJsonSchemaOrNull() }
 
     private fun schemaMap(key: String): Map<String, JsonSchema>? =
-        objectValue(key)?.mapValues { (_, element) -> JsonSchema(element as JsonObject) }
+        objectValue(key)?.mapNotNull { (name, element) ->
+            val schema = when (element) {
+                is JsonObject -> JsonSchema(element)
+                is JsonPrimitive -> element.booleanValueOrNull()?.let(::normalizedBooleanSchema)
+                else -> null
+            }
+            schema?.let { name to it }
+        }?.toMap()
 
     private fun schemaOrBoolean(key: String): JsonSchemaOrBoolean? =
         when (val element = value[key]) {
@@ -207,10 +214,22 @@ private fun JsonPrimitive.stringContentOrNull(): String? =
     }
 
 private fun JsonPrimitive.booleanValueOrNull(): Boolean? =
-    when (content.lowercase()) {
-        "true" -> true
-        "false" -> false
-        else -> null
+    if (isString) {
+        null
+    } else {
+        when (content.lowercase()) {
+            "true" -> true
+            "false" -> false
+            else -> null
+        }
+    }
+
+/** Normalizes JSON Schema's boolean schema form to its equivalent object form. */
+private fun normalizedBooleanSchema(value: Boolean): JsonSchema =
+    if (value) {
+        JsonSchema()
+    } else {
+        JsonSchema(JsonObject(mapOf("not" to JsonObject(emptyMap()))))
     }
 
 private fun JsonPrimitive.intValueOrNull(): Int? = content.toIntOrNull()

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.and
 import com.chobantonov.jsonfroms.core.testers.formatIs
@@ -41,6 +42,7 @@ fun MaterialPasswordControl(
         rendererName = "MaterialPasswordControl",
     )
     val controlProps = bindings.controlProps
+    val preserveEmptyValue = LocalPreserveEmptyValue.current
     var passwordVisible by remember(bindings.stateProps.path) { mutableStateOf(false) }
     val translator = props.state.jsonforms.i18n.translate
     val translationValues = mapOf("label" to bindings.stateProps.label)
@@ -83,10 +85,11 @@ fun MaterialPasswordControl(
                 }
             }
         },
+        clearLabel = bindings.clearLabel,
         onChange = { value ->
             bindings.dispatchProps.handleChange(
                 bindings.stateProps.path,
-                value.takeIf { it.isNotEmpty() }?.let(::JsonPrimitive),
+                if (value.isNotEmpty() || preserveEmptyValue) JsonPrimitive(value) else null,
             )
         },
     )

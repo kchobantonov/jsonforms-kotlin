@@ -51,12 +51,13 @@ kotlin {
             implementation(project(":core"))
             implementation(project(":compose"))
             implementation(project(":material-renderers"))
+            implementation(project(":cupertino-renderers"))
             implementation(project(":examples"))
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.multiplatform.settings.no.arg)
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material3)
+            implementation(libs.compose.material3)
             implementation(compose.ui)
         }
 

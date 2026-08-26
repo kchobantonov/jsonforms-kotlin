@@ -29,6 +29,8 @@ data class ExampleDescription(
     val i18n: JsonFormsI18nState? = null,
     val readonly: Boolean = false,
     val translations: Map<String, String> = emptyMap(),
+    val localizedTranslations: Map<String, Map<String, String>> = emptyMap(),
+    val dataProvided: Boolean = true,
 )
 
 data class StateProps(
@@ -45,4 +47,6 @@ data class StateProps(
     val i18n: JsonFormsI18nState? = null,
     val readonly: Boolean = false,
     val translations: Map<String, String> = emptyMap(),
+    val localizedTranslations: Map<String, Map<String, String>> = emptyMap(),
+    val dataProvided: Boolean = true,
 )
