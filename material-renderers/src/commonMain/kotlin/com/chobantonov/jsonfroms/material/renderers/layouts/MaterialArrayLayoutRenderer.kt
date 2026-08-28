@@ -53,6 +53,8 @@ import com.chobantonov.jsonfroms.core.mappers.createDefaultValue
 import com.chobantonov.jsonfroms.core.mappers.mapDispatchToArrayControlProps
 import com.chobantonov.jsonfroms.core.mappers.mapStateToArrayControlProps
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.reducers.findMatchingUISchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.testers.RankedTester
@@ -119,10 +121,7 @@ fun MaterialArrayLayoutRenderer(props: ComposeJsonFormsRendererProps) {
     val detailUiSchema = getDetailUiSchema(control)
         ?: findMatchingUISchema(stateProps.uischemas)(stateProps.schema, control.scope, stateProps.path)
         ?: Generate.uiSchema(stateProps.schema, rootSchema = stateProps.rootSchema)
-    val childLabelProp = (control.options["childLabelProp"] as? JsonPrimitive)
-        ?.contentOrNull
-        ?.takeIf { it.isNotBlank() }
-        ?: getFirstPrimitiveProp(stateProps.schema)
+    val childLabelProp = resolveChildLabelProp(control, stateProps.schema)
     val translator = props.state.jsonforms.i18n.translate
     val prefix = stateProps.i18nKeyPrefix
     val values = mapOf("label" to stateProps.label)
@@ -377,6 +376,15 @@ internal fun computeChildLabel(item: JsonElement, index: Int, childLabelProp: St
     val propValue = childLabelProp?.let { Resolve.data(item, it) } as? JsonPrimitive
     return propValue?.contentOrNull?.takeIf { it.isNotBlank() } ?: "Item ${index + 1}"
 }
+
+internal fun resolveChildLabelProp(uischema: UiSchemaElement, schema: JsonSchema): String? =
+    (uischema.options["elementLabelProp"] as? JsonPrimitive)
+        ?.contentOrNull
+        ?.takeIf { it.isNotBlank() }
+        ?: (uischema.options["childLabelProp"] as? JsonPrimitive)
+            ?.contentOrNull
+            ?.takeIf { it.isNotBlank() }
+        ?: getFirstPrimitiveProp(schema)
 
 internal fun errorsForArrayItem(errors: List<ErrorObject>, itemPath: String): List<ErrorObject> =
     errors.filter { error ->

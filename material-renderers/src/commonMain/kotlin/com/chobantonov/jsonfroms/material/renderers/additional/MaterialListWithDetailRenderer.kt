@@ -47,6 +47,7 @@ import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
 import com.chobantonov.jsonfroms.material.renderers.ActionText
 import com.chobantonov.jsonfroms.material.renderers.translatedActionText
 import com.chobantonov.jsonfroms.material.renderers.translatedText
+import com.chobantonov.jsonfroms.material.renderers.layouts.resolveChildLabelProp
 import com.chobantonov.jsonfroms.core.generators.Generate
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
@@ -66,7 +67,6 @@ import com.chobantonov.jsonfroms.core.testers.schemaTypeIs
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.util.Resolve
 import com.chobantonov.jsonfroms.core.util.composePaths
-import com.chobantonov.jsonfroms.core.util.getFirstPrimitiveProp
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -120,9 +120,7 @@ fun MaterialListWithDetailRenderer(props: ComposeJsonFormsRendererProps) {
     )
     val noDataText = translatedText(translator, prefix, "noDataMessage", "No data", values)
     val noSelectionText = translatedText(translator, prefix, "noSelectionMessage", "No selection", values)
-    val childLabelProp = listWithDetail.stringOption("childLabelProp")
-        ?: listWithDetail.stringOption("elementLabelProp")
-        ?: getFirstPrimitiveProp(stateProps.schema)
+    val childLabelProp = resolveChildLabelProp(listWithDetail, stateProps.schema)
     var selectedIndex by remember(stateProps.schema, stateProps.path) {
         mutableStateOf(if (items.isEmpty()) null else 0)
     }
@@ -316,9 +314,6 @@ private fun DetailPane(
         ),
     )
 }
-
-private fun ListWithDetailElement.stringOption(name: String): String? =
-    (options[name] as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
 
 internal fun computeItemLabel(item: JsonElement, index: Int, childLabelProp: String?): String {
     if (childLabelProp == null) return (index + 1).toString()
