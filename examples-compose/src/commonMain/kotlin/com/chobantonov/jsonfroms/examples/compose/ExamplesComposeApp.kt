@@ -13,24 +13,36 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.cupertino.renderers.CupertinoSwitch
 import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoCells
-import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
+import com.chobantonov.jsonfroms.extended.renderers.cupertinoExtendedRenderers
+import com.chobantonov.jsonfroms.extended.renderers.materialExtendedRenderers
+import com.chobantonov.jsonfroms.extended.renderers.ExtendedActionHandler
+import com.chobantonov.jsonfroms.extended.renderers.ExtendedActionHandlerConfigKey
+import com.chobantonov.jsonfroms.extended.renderers.ExtendedFilePicker
+import com.chobantonov.jsonfroms.extended.renderers.ExtendedFilePickerConfigKey
 import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoAppTheme
 import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoThemePreset
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.UiSchemaElement
+import com.chobantonov.jsonfroms.core.models.toUiSchemaElement
 import com.chobantonov.jsonfroms.core.reducers.defaultMiddleware
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.Translator
@@ -39,7 +51,6 @@ import com.chobantonov.jsonfroms.examples.ExampleDescription
 import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialCells
-import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import com.chobantonov.jsonfroms.material.renderers.util.MaterialThemePreset
 import com.chobantonov.jsonfroms.material.renderers.util.materialColorScheme
 import com.russhwolf.settings.Settings
@@ -51,6 +62,7 @@ import kotlinx.serialization.json.*
 private val prettyJson = Json { prettyPrint = true; prettyPrintIndent = "  " }
 private val CompactWidth = 840.dp
 private const val GitHubUrl = "https://github.com/kchobantonov/jsonforms-kotlin"
+internal expect fun createDemoFilePicker(): ExtendedFilePicker?
 private val LocalDemoUiStyle = compositionLocalOf { DemoUiStyle.Material }
 
 internal enum class DemoThemeMode(val displayName: String) {
@@ -151,6 +163,8 @@ fun ExamplesComposeApp(
     examples: List<ExampleDescription> = getBuiltInExamples(),
     selectedExampleName: String? = null,
     onExampleSelected: (String) -> Unit = {},
+    showLandingWhenUnselected: Boolean = false,
+    onHomeSelected: (() -> Unit)? = null,
 ) {
     val preferences = remember { DemoPreferences(Settings()) }
     var settings by remember(preferences) { mutableStateOf(preferences.load()) }
@@ -171,6 +185,7 @@ fun ExamplesComposeApp(
         var localSelectedName by remember(examples) { mutableStateOf(examples.first().name) }
         val effectiveSelectedName = selectedExampleName ?: localSelectedName
         val selected = examples.firstOrNull { it.name == effectiveSelectedName } ?: examples.first()
+        val showLanding = showLandingWhenUnselected && selectedExampleName == null
         val originalState = remember(selected.name) { selected.toStateProps() }
         var state by remember(selected.name) { mutableStateOf(originalState) }
         var editorDrafts by remember(selected.name) { mutableStateOf(EditorDrafts.from(state)) }
@@ -195,20 +210,26 @@ fun ExamplesComposeApp(
             }
             Column(Modifier.fillMaxSize()) {
                 DemoTopBar(
-                    navigationVisible, formOnly, settingsOpen,
+                    navigationVisible, formOnly && !showLanding, settingsOpen,
                     { navigationVisible = !navigationVisible },
-                    { formOnly = !formOnly },
+                    {
+                        if (showLanding) selectExample(examples.first())
+                        formOnly = !formOnly
+                    },
                     { settingsOpen = !settingsOpen },
+                    onHomeSelected?.let { home -> { formOnly = false; home() } },
                 )
                 if (compact) {
                     CompactLayout(
                         examples, selected, originalState, state, navigationVisible && !formOnly, formOnly, settings,
-                        editorDrafts, { editorDrafts = it }, selectExample, updateState,
+                        editorDrafts, { editorDrafts = it }, selectExample, updateState, { settings = it },
+                        showLanding, { formOnly = false; selectExample(examples.first()) },
                     )
                 } else {
                     ExpandedLayout(
                         examples, selected, originalState, state, navigationVisible && !formOnly, formOnly, settings,
-                        editorDrafts, { editorDrafts = it }, selectExample, updateState,
+                        editorDrafts, { editorDrafts = it }, selectExample, updateState, { settings = it },
+                        showLanding, { formOnly = false; selectExample(examples.first()) },
                     )
                 }
             }
@@ -259,6 +280,7 @@ private fun DemoTopBar(
     onNavigation: () -> Unit,
     onFormOnly: () -> Unit,
     onSettings: () -> Unit,
+    onHome: (() -> Unit)?,
 ) {
     val uriHandler = LocalUriHandler.current
     val cupertino = LocalDemoUiStyle.current == DemoUiStyle.Cupertino
@@ -271,10 +293,15 @@ private fun DemoTopBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ToolbarButton(MenuIcon, if (navigationVisible) "Hide example menu" else "Show example menu", navigationVisible, onNavigation)
-            Text("//", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 8.dp))
+            Icon(
+                KotlinLogo,
+                contentDescription = if (onHome != null) "Go to welcome page" else "Kotlin logo",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(40.dp).clickable(enabled = onHome != null) { onHome?.invoke() }.padding(6.dp),
+            )
             Text("JSON Forms Kotlin", style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f).clickable(enabled = onHome != null) { onHome?.invoke() })
             ToolbarButton(PanelsIcon, if (formOnly) "Show full UI" else "Show form only", formOnly, onFormOnly)
             ToolbarButton(GitHubIcon, "Open GitHub") { uriHandler.openUri(GitHubUrl) }
             ToolbarButton(SettingsIcon, if (settingsOpen) "Close settings" else "Open settings", settingsOpen, onSettings)
@@ -311,6 +338,8 @@ private fun CompactLayout(
     navigationVisible: Boolean, formOnly: Boolean, settings: DemoSettings,
     editorDrafts: EditorDrafts, onEditorDraftsChange: (EditorDrafts) -> Unit,
     onSelected: (ExampleDescription) -> Unit, onStateChange: (StateProps) -> Unit,
+    onSettingsChange: (DemoSettings) -> Unit,
+    showLanding: Boolean, onOpenDemo: () -> Unit,
 ) {
     if (navigationVisible) {
         // On a phone the picker is the current navigation surface. Keeping the
@@ -318,10 +347,12 @@ private fun CompactLayout(
         // when the list is short.
         ExampleNavigation(
             examples = examples,
-            selected = selected,
+            selected = selected.takeUnless { showLanding },
             onSelected = onSelected,
             modifier = Modifier.fillMaxSize(),
         )
+    } else if (showLanding) {
+        DemoLandingPage(onOpenDemo, Modifier.fillMaxSize())
     } else {
         var selectedPane by remember(selected.name) { mutableStateOf(DemoPane.Demo) }
         Column(
@@ -333,20 +364,20 @@ private fun CompactLayout(
                 DemoPaneSelector(selectedPane) { selectedPane = it }
             }
             when {
-                formOnly -> FormCard(state, true, settings, onStateChange)
+                formOnly -> FormCard(state, true, settings, onStateChange, onSettingsChange)
                 selectedPane.isEditor -> EditorCard(
                     selectedPane, originalState, state, editorDrafts, onEditorDraftsChange, onStateChange,
                     Modifier.fillMaxWidth().heightIn(min = 520.dp),
                 )
                 settings.demoLayout == DemoLayout.DemoAndData -> {
-                    FormCard(state, true, settings, onStateChange)
+                    FormCard(state, true, settings, onStateChange, onSettingsChange)
                     EditorCard(
                         DemoPane.Data, originalState, state, editorDrafts,
                         onEditorDraftsChange, onStateChange,
                         Modifier.fillMaxWidth().heightIn(min = 520.dp),
                     )
                 }
-                selectedPane == DemoPane.Demo -> FormCard(state, true, settings, onStateChange)
+                selectedPane == DemoPane.Demo -> FormCard(state, true, settings, onStateChange, onSettingsChange)
             }
         }
     }
@@ -358,15 +389,19 @@ private fun ExpandedLayout(
     navigationVisible: Boolean, formOnly: Boolean, settings: DemoSettings,
     editorDrafts: EditorDrafts, onEditorDraftsChange: (EditorDrafts) -> Unit,
     onSelected: (ExampleDescription) -> Unit, onStateChange: (StateProps) -> Unit,
+    onSettingsChange: (DemoSettings) -> Unit,
+    showLanding: Boolean, onOpenDemo: () -> Unit,
 ) {
     var selectedPane by remember(selected.name) { mutableStateOf(DemoPane.Demo) }
     Row(
         Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (navigationVisible) ExampleNavigation(
-            examples, selected, onSelected, Modifier.width(260.dp).fillMaxHeight(),
+            examples, selected.takeUnless { showLanding }, onSelected, Modifier.width(260.dp).fillMaxHeight(),
         )
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (showLanding) {
+            DemoLandingPage(onOpenDemo, Modifier.fillMaxSize())
+        } else Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (!formOnly) ExampleHeader(selected)
             if (!formOnly) {
                 DemoPaneSelector(selectedPane) { selectedPane = it }
@@ -380,7 +415,7 @@ private fun ExpandedLayout(
                 Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 FormCard(
-                    state, false, settings, onStateChange,
+                    state, false, settings, onStateChange, onSettingsChange,
                     Modifier.weight(if (formOnly) 1f else 3f).fillMaxHeight(), true,
                 )
                 if (!formOnly) EditorCard(
@@ -390,7 +425,7 @@ private fun ExpandedLayout(
                 )
             } else if (selectedPane == DemoPane.Demo) {
                 FormCard(
-                    state, false, settings, onStateChange,
+                    state, false, settings, onStateChange, onSettingsChange,
                     Modifier.weight(1f).fillMaxWidth(), true,
                 )
             }
@@ -400,19 +435,27 @@ private fun ExpandedLayout(
 
 @Composable
 private fun DemoPaneSelector(selected: DemoPane, onSelected: (DemoPane) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    SecondaryScrollableTabRow(
+        selectedTabIndex = DemoPane.entries.indexOf(selected),
+        modifier = Modifier.fillMaxWidth(),
+        edgePadding = 0.dp,
+        minTabWidth = 80.dp,
+        containerColor = Color.Transparent,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         DemoPane.entries.forEach { pane ->
-            DemoChoiceChip(selected == pane, { onSelected(pane) }) { Text(pane.displayName) }
+            Tab(
+                selected = selected == pane,
+                onClick = { onSelected(pane) },
+                text = { Text(pane.displayName) },
+            )
         }
     }
 }
 
 @Composable
 private fun ExampleNavigation(
-    examples: List<ExampleDescription>, selected: ExampleDescription,
+    examples: List<ExampleDescription>, selected: ExampleDescription?,
     onSelected: (ExampleDescription) -> Unit, modifier: Modifier,
 ) {
     var query by remember { mutableStateOf("") }
@@ -431,7 +474,7 @@ private fun ExampleNavigation(
                 if (filtered.isEmpty()) Text("No examples found.", modifier = Modifier.padding(8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 filtered.forEach { example ->
-                    val isSelected = example.name == selected.name
+                    val isSelected = example.name == selected?.name
                     Surface(
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -463,12 +506,80 @@ private fun ExampleHeader(example: ExampleDescription) {
 }
 
 @Composable
+private fun DemoLandingPage(onOpenDemo: () -> Unit, modifier: Modifier = Modifier) {
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+        val compact = maxWidth < 600.dp
+        Column(
+            Modifier.fillMaxWidth().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(if (compact) 14.dp else 20.dp),
+        ) {
+            Icon(
+                KotlinLogo,
+                contentDescription = "Kotlin logo",
+                modifier = Modifier.size(if (compact) 88.dp else 120.dp),
+                tint = Color.Unspecified,
+            )
+            Text(
+                "JSON FORMS RENDERER SET",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 2.sp,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                "Welcome to JSON Forms Kotlin",
+                style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(max = 800.dp),
+            )
+            Text(
+                "Compose Multiplatform renderers for JSON Forms.",
+                style = if (compact) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            Button(onClick = onOpenDemo) { Text("Open Demo") }
+        }
+    }
+}
+
+@Composable
 private fun FormCard(
     state: StateProps, compact: Boolean, settings: DemoSettings,
-    onStateChange: (StateProps) -> Unit, modifier: Modifier = Modifier.fillMaxWidth(),
+    onStateChange: (StateProps) -> Unit, onSettingsChange: (DemoSettings) -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     scrollContent: Boolean = false,
 ) {
     val cupertino = settings.effectiveUiStyle() == DemoUiStyle.Cupertino
+    val picker = remember { createDemoFilePicker() }
+    val actionHandler = ExtendedActionHandler { action, params ->
+        if (action == "changeLang") {
+            val language = (params["lang"] as? JsonPrimitive)?.contentOrNull
+            DemoLocale.entries.firstOrNull { it.languageTag == language }?.let { locale ->
+                onSettingsChange(settings.copy(locale = locale))
+            }
+        }
+        val data = (state.data as? JsonObject).orEmpty()
+        val status = when (action) {
+            "applyStatus", "simulateHttpSubmit", "changeLang" -> {
+                val locale = settings.locale.languageTag ?: "en"
+                ((params["statusByLocale"] as? JsonObject)?.get(locale) as? JsonPrimitive)?.contentOrNull
+                    ?: "Action completed"
+            }
+            "runScript" -> "Updated from host action"
+            else -> "Action: $action"
+        }
+        onStateChange(state.copy(data = JsonObject(data + mapOf(
+            "status" to JsonPrimitive(status),
+            "lastTriggeredBy" to JsonPrimitive(action),
+        ))))
+    }
+    val extendedConfig = settings.applyTo(state.config) + mapOf(
+        ExtendedActionHandlerConfigKey to actionHandler,
+        ExtendedFilePickerConfigKey to picker,
+    )
     Card(modifier) {
         val configuredI18n = exampleI18nForLocale(
             state,
@@ -491,9 +602,9 @@ private fun FormCard(
             JsonForms(
                 data = state.data, dataProvided = state.dataProvided, schema = state.schema,
                 uischema = state.uischema, uischemas = state.uischemas,
-                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 cells = if (cupertino) cupertinoCells else materialCells,
-                config = settings.applyTo(state.config), readonly = state.readonly || settings.readonly,
+                config = extendedConfig, readonly = state.readonly || settings.readonly,
                 validationMode = settings.validationMode, i18n = configuredI18n,
                 additionalErrors = state.additionalErrors, middleware = state.middleware ?: defaultMiddleware,
                 onChange = { onStateChange(state.copy(data = it.data, dataProvided = it.dataProvided)) },
@@ -566,13 +677,20 @@ private fun EditorCard(
     }
 }
 
-private fun editorText(pane: DemoPane, state: StateProps): String {
+internal fun editorText(pane: DemoPane, state: StateProps): String {
     val json = when (pane) {
         DemoPane.Data -> state.data.takeIf { state.dataProvided }
         DemoPane.Schema -> state.schema?.toJsonObject()
         DemoPane.UiSchema -> state.uischema?.toJsonObject()
         DemoPane.UiSchemas -> JsonArray(state.uischemas.map { it.uischema.toJsonObject() })
-        DemoPane.Internationalization -> JsonObject(state.translations.mapValues { JsonPrimitive(it.value) })
+        DemoPane.Internationalization -> {
+            val byLocale = state.localizedTranslations.ifEmpty {
+                if (state.translations.isEmpty()) emptyMap() else mapOf("en" to state.translations)
+            }
+            JsonObject(byLocale.mapValues { (_, translations) ->
+                JsonObject(translations.mapValues { (_, value) -> JsonPrimitive(value) })
+            })
+        }
         DemoPane.Config -> state.config.toJsonObject()
         else -> error("$pane is not a JSON editor")
     }
@@ -603,19 +721,22 @@ internal fun applyEditorDraft(pane: DemoPane, text: String, state: StateProps): 
             })
         }
         DemoPane.Internationalization -> {
-            val values = parseJsonObject(text, "Internationalization").mapValues { (key, value) ->
-                (value as? JsonPrimitive)?.takeIf { it.isString }?.content
-                    ?: throw IllegalArgumentException("Internationalization.$key must be a string")
+            val values = parseJsonObject(text, "Internationalization").mapValues { (locale, entries) ->
+                (entries as? JsonObject)?.mapValues { (key, value) ->
+                    (value as? JsonPrimitive)?.takeIf { it.isString }?.content
+                        ?: throw IllegalArgumentException("Internationalization.$locale.$key must be a string")
+                } ?: throw IllegalArgumentException("Internationalization.$locale must be an object")
             }
+            val english = values["en"].orEmpty()
             state.copy(
-                translations = values,
-                localizedTranslations = emptyMap(),
+                translations = english,
+                localizedTranslations = values,
                 i18n = (state.i18n ?: JsonFormsI18nState()).copy(
-                    translate = Translator { id, defaultMessage, _ -> values[id] ?: defaultMessage },
+                    translate = Translator { id, defaultMessage, _ -> english[id] ?: defaultMessage },
                 ),
             )
         }
-        DemoPane.Config -> state.copy(config = parseJsonObject(text, "Config").toKotlinMap())
+        DemoPane.Config -> state.copy(config = parseJsonObject(text, "Config").toConfigMap(state.config))
         else -> error("$pane is not a JSON editor")
     }
 }
@@ -633,6 +754,7 @@ private fun Map<String, Any?>.toJsonObject() = JsonObject(mapValues { (_, value)
 private fun Any?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull
     is JsonElement -> this
+    is UiSchemaElement -> toJsonObject()
     is Boolean -> JsonPrimitive(this)
     is Number -> JsonPrimitive(this)
     is String -> JsonPrimitive(this)
@@ -640,8 +762,18 @@ private fun Any?.toJsonElement(): JsonElement = when (this) {
         (key as? String ?: throw IllegalArgumentException("Config object keys must be strings")) to value.toJsonElement()
     })
     is List<*> -> JsonArray(map { it.toJsonElement() })
-    else -> JsonPrimitive(toString())
+    else -> throw IllegalArgumentException("Config value of type ${this::class.simpleName} cannot be edited as JSON")
 }
+
+private fun JsonObject.toConfigMap(original: Map<String, Any?>): Map<String, Any?> =
+    mapValues { (key, value) ->
+        if (original[key] is UiSchemaElement) {
+            (value as? JsonObject)?.toUiSchemaElement()
+                ?: throw IllegalArgumentException("Config.$key must be a UI schema object")
+        } else {
+            value.toKotlinValue()
+        }
+    }
 
 private fun JsonObject.toKotlinMap(): Map<String, Any?> = mapValues { (_, value) -> value.toKotlinValue() }
 
@@ -878,7 +1010,7 @@ private fun ExampleDescription.toStateProps() = StateProps(
     dataProvided = dataProvided,
     schema = schema,
     uischema = uischema,
-    renderers = materialRenderers,
+    renderers = materialExtendedRenderers,
     cells = materialCells,
     config = config,
     uischemas = uischemas,
@@ -899,16 +1031,39 @@ private fun EmptyExamplesState() {
 }
 
 private val MenuIcon = lineIcon("Menu") { moveTo(4f, 6f); horizontalLineTo(20f); moveTo(4f, 12f); horizontalLineTo(20f); moveTo(4f, 18f); horizontalLineTo(20f) }
+private val KotlinLogo = ImageVector.Builder("Kotlin logo", 48.dp, 48.dp, 48f, 48f).apply {
+    addPath(
+        pathData = PathParser().parsePathString("M40 40H8V8H40L23.67 23.765L40 40Z").toNodes(),
+        fill = Brush.radialGradient(
+            0f to Color(0xFFE44857),
+            0.504494f to Color(0xFFC711E1),
+            1f to Color(0xFF7F52FF),
+            center = Offset(40f, 8f),
+            radius = 32f,
+        ),
+    )
+}.build()
 private val SearchIcon = lineIcon("Search") {
     moveTo(10.5f, 4f); curveTo(6.91f, 4f, 4f, 6.91f, 4f, 10.5f); curveTo(4f, 14.09f, 6.91f, 17f, 10.5f, 17f)
     curveTo(14.09f, 17f, 17f, 14.09f, 17f, 10.5f); curveTo(17f, 6.91f, 14.09f, 4f, 10.5f, 4f); moveTo(15.5f, 15.5f); lineTo(21f, 21f)
 }
 private val PanelsIcon = lineIcon("Form only") { moveTo(3f, 4f); horizontalLineTo(21f); verticalLineTo(20f); horizontalLineTo(3f); close(); moveTo(8f, 4f); verticalLineTo(20f); moveTo(8f, 10f); horizontalLineTo(21f) }
-private val GitHubIcon = lineIcon("GitHub") {
-    moveTo(12f, 2.5f); curveTo(6.75f, 2.5f, 2.5f, 6.75f, 2.5f, 12f); curveTo(2.5f, 16.2f, 5.22f, 19.76f, 9f, 21f)
-    moveTo(15f, 21f); curveTo(18.78f, 19.76f, 21.5f, 16.2f, 21.5f, 12f); curveTo(21.5f, 6.75f, 17.25f, 2.5f, 12f, 2.5f)
-    moveTo(9f, 21f); verticalLineTo(17.5f); curveTo(7f, 16.8f, 6.5f, 15f, 6.5f, 13.5f); moveTo(15f, 21f); verticalLineTo(17.5f)
-}
+private val GitHubIcon = ImageVector.Builder("GitHub", 24.dp, 24.dp, 16f, 16f).apply {
+    addPath(
+        pathData = PathParser().parsePathString(
+            "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 " +
+                "0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13" +
+                "-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66" +
+                ".07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15" +
+                "-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 2-.27" +
+                "c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12" +
+                ".51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48" +
+                " 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8" +
+                "c0-4.42-3.58-8-8-8z",
+        ).toNodes(),
+        fill = SolidColor(Color.Black),
+    )
+}.build()
 private val SettingsIcon = lineIcon("Settings") { moveTo(4f, 6f); horizontalLineTo(20f); moveTo(4f, 12f); horizontalLineTo(20f); moveTo(4f, 18f); horizontalLineTo(20f); moveTo(8f, 3f); verticalLineTo(9f); moveTo(16f, 9f); verticalLineTo(15f); moveTo(10f, 15f); verticalLineTo(21f) }
 private val CloseIcon = lineIcon("Close") { moveTo(5f, 5f); lineTo(19f, 19f); moveTo(19f, 5f); lineTo(5f, 19f) }
 

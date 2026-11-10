@@ -201,6 +201,10 @@ private fun mapUiSchema(
             uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
         is com.chobantonov.jsonfroms.core.models.CategorizationElement ->
             uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
+        is com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement ->
+            if (uiSchema.elements.isEmpty()) transformLeaf(uiSchema) else uiSchema.copy(
+                elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) },
+            )
         else -> transformLeaf(uiSchema)
     }
 
@@ -224,7 +228,12 @@ private fun jsonObjectToUiSchema(element: JsonObject): UiSchemaElement? {
             label = (element["label"] as? JsonPrimitive)?.content,
             elements = element.uiSchemaElements(),
         )
-        else -> null
+        else -> com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement(
+            type = type,
+            options = (element["options"] as? JsonObject).orEmpty(),
+            properties = JsonObject(element.filterKeys { it !in setOf("type", "options", "elements") }),
+            elements = element.uiSchemaElements(),
+        )
     }
 }
 

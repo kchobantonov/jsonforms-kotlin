@@ -12,6 +12,7 @@ import com.chobantonov.jsonfroms.examples.examples.datesExample
 import com.chobantonov.jsonfroms.examples.examples.defaultExample
 import com.chobantonov.jsonfroms.examples.examples.enumExample
 import com.chobantonov.jsonfroms.examples.examples.enumInArrayExample
+import com.chobantonov.jsonfroms.examples.examples.extendedRendererExamples
 import com.chobantonov.jsonfroms.examples.examples.generateExample
 import com.chobantonov.jsonfroms.examples.examples.generateUiExample
 import com.chobantonov.jsonfroms.examples.examples.hugeExample
@@ -76,7 +77,7 @@ private val builtInExamples =
         stringArrayExample,
         stringExample,
         textExample,
-    ) + layoutExamples + upstreamSnapshotExamples
+    ) + layoutExamples + upstreamSnapshotExamples + extendedRendererExamples
 
 fun registerBuiltInExamples() {
     clearExamples()

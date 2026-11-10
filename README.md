@@ -16,6 +16,10 @@ Kotlin Multiplatform port of JSON Forms.
   layout mirrors `:material-renderers`; boolean, enum, slider, date, time, and date-time inputs use
   Compose Cupertino widgets, while complex controls preserve the same behavior with Cupertino
   presentation.
+- `:extended-renderers` is an optional renderer project. It exports `materialExtendedRenderers`
+  and `cupertinoExtendedRenderers`, which add button, color, duration, file, null, split, and slot
+  renderers to the corresponding base registry.
+- `:webcomponent` packages the Material renderer registry as a Kotlin/JS custom element.
 - `:examples` contains shared example definitions based on the TypeScript examples package.
 - `:examples-compose` contains the shared Compose demo app.
 - `:examples-compose-android` contains the thin Android launcher app for the demo.
@@ -24,7 +28,7 @@ Kotlin Multiplatform port of JSON Forms.
 ## Example catalog parity
 
 The demo contains all 78 examples registered by the sibling JSON Forms TypeScript examples
-package. Hand-written Kotlin examples are retained where they provide Kotlin-specific behavior;
+package plus 7 extended renderer examples. Hand-written Kotlin examples are retained where they provide Kotlin-specific behavior;
 the remaining examples are generated into a portable snapshot. Mixed-type schemas and dynamic
 `additionalProperties`/`patternProperties` objects have dedicated renderers in both Material and
 Cupertino, including type selection and add, rename, and delete operations.
@@ -75,6 +79,8 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :core:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :compose:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :material-renderers:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :cupertino-renderers:build
+GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :extended-renderers:build
+GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :webcomponent:jsBrowserProductionWebpack
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose:build
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose-android:assembleDebug
@@ -87,6 +93,29 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew kotlinUpgradeYarnLock
 ```
 
 ## Run Demo
+
+The Kotlin/JS demo is built with `:examples-compose:jsBrowserProductionWebpack`. Pushes to
+`master` deploy the demo to GitHub Pages; the web component sample is available under
+`/webcomponent/` on the same site.
+The root web page opens on a welcome screen; **Open Demo** selects the first example, and example
+links such as `#/examples/i18n` open a form directly.
+
+The web component is an optional integration for plain HTML and other web apps. Its separate
+sample page shows attribute input, categories, conditional rules, and change/action events.
+It renders the Compose canvas inside a custom element. The main examples page remains the Compose
+demo. Run the standalone sample locally with:
+
+```bash
+GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :webcomponent:jsBrowserRun
+```
+
+To embed the web component, copy the entire `:webcomponent` production bundle so its Skiko assets
+stay beside `jsonforms-kotlin-webcomponent.js`, then load `register.js` followed by
+`jsonforms-kotlin-webcomponent.js` and use `<jsonforms-kotlin>`
+with JSON strings in `data`, `schema`, and optional `uischema` attributes. Changes emit a bubbling
+`jsonforms-change` event whose `detail.data` is the
+updated value. Button actions emit `jsonforms-action` with `detail.action` and `detail.params`.
+The element fills the size assigned by its host page.
 
 The demo's Settings panel has an **Interface Style** selector:
 

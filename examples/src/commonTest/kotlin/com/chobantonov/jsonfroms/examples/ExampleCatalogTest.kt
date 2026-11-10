@@ -8,11 +8,15 @@ import kotlin.test.assertTrue
 
 class ExampleCatalogTest {
     @Test
-    fun builtInCatalogMatchesUpstreamNamesExactly() {
+    fun builtInCatalogContainsUpstreamAndExtendedRendererExamples() {
         val examples = getBuiltInExamples()
+        val extendedNames = setOf(
+            "button", "color", "duration", "extended-control-options",
+            "file", "null-control", "split-layout",
+        )
 
-        assertEquals(upstreamSnapshotExampleNames.size, examples.size)
-        assertEquals(upstreamSnapshotExampleNames, examples.map(ExampleDescription::name).toSet())
+        assertEquals(upstreamSnapshotExampleNames.size + extendedNames.size, examples.size)
+        assertEquals(upstreamSnapshotExampleNames + extendedNames, examples.map(ExampleDescription::name).toSet())
     }
 
     @Test
@@ -21,6 +25,14 @@ class ExampleCatalogTest {
 
         assertEquals(examples.size, examples.map(ExampleDescription::name).distinct().size)
         assertEquals(examples.size, examples.map(ExampleDescription::label).distinct().size)
+    }
+
+    @Test
+    fun extendedExamplesPreserveCustomUiSchemaElements() {
+        val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
+        val button = examples.getValue("button").uischema
+
+        assertNotNull(button)
     }
 
     @Test

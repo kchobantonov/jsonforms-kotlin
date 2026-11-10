@@ -4,6 +4,7 @@ import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.examples.StateProps
+import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.examples.examples.ruleUiSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
@@ -92,5 +93,68 @@ class EditorDraftTest {
 
         assertEquals(false, result.config["restrict"])
         assertEquals(mapOf("count" to 2L), result.config["nested"])
+    }
+
+    @Test
+    fun `config editor preserves UI schema values as structured objects`() {
+        val configuredState = state.copy(config = mapOf("withSort" to originalUiSchema))
+        val text = editorText(DemoPane.Config, configuredState)
+        val json = Json.parseToJsonElement(text).jsonObject
+
+        assertEquals("VerticalLayout", json["withSort"]?.jsonObject?.get("type")?.jsonPrimitive?.content)
+        assertEquals(originalUiSchema, applyEditorDraft(DemoPane.Config, text, configuredState)
+            .getOrThrow().config["withSort"])
+        assertTrue(applyEditorDraft(DemoPane.Config, """{"withSort":"not a schema"}""", configuredState).isFailure)
+    }
+
+    @Test
+    fun `internationalization editor groups translations by locale`() {
+        val translatedState = state.copy(
+            translations = mapOf("name.label" to "Name"),
+            localizedTranslations = mapOf(
+                "en" to mapOf("name.label" to "Name"),
+                "bg" to mapOf("name.label" to "Име"),
+            ),
+        )
+
+        val text = editorText(DemoPane.Internationalization, translatedState)
+        val json = Json.parseToJsonElement(text).jsonObject
+
+        assertEquals(setOf("en", "bg"), json.keys)
+        assertEquals("Име", json["bg"]?.jsonObject?.get("name.label")?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `additional properties example exposes its available locales`() {
+        val example = getBuiltInExamples().first { it.name == "additional-properties" }
+        val exampleState = state.copy(
+            translations = example.translations,
+            localizedTranslations = example.localizedTranslations,
+        )
+
+        val json = Json.parseToJsonElement(editorText(DemoPane.Internationalization, exampleState)).jsonObject
+
+        assertEquals(setOf("en", "de", "bg"), json.keys)
+        assertEquals("Име на свойство", json["bg"]?.jsonObject?.get("root.additionalProperties.propertyNameLabel")?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `internationalization draft updates each locale and keeps the English fallback`() {
+        val result = applyEditorDraft(
+            DemoPane.Internationalization,
+            """{"en":{"name.label":"Full name"},"bg":{"name.label":"Пълно име"}}""",
+            state,
+        ).getOrThrow()
+
+        assertEquals("Full name", result.translations["name.label"])
+        assertEquals("Пълно име", result.localizedTranslations["bg"]?.get("name.label"))
+        assertEquals("Пълно име", exampleI18nForLocale(result, "bg").translate?.translate("name.label", null, emptyMap()))
+        assertEquals("Full name", exampleI18nForLocale(result, "en").translate?.translate("name.label", null, emptyMap()))
+    }
+
+    @Test
+    fun `internationalization draft rejects flat and non-string values`() {
+        assertTrue(applyEditorDraft(DemoPane.Internationalization, """{"name.label":"Name"}""", state).isFailure)
+        assertTrue(applyEditorDraft(DemoPane.Internationalization, """{"bg":{"name.label":42}}""", state).isFailure)
     }
 }

@@ -52,6 +52,7 @@ kotlin {
             implementation(project(":compose"))
             implementation(project(":material-renderers"))
             implementation(project(":cupertino-renderers"))
+            implementation(project(":extended-renderers"))
             implementation(project(":examples"))
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.multiplatform.settings.no.arg)

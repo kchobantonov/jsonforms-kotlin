@@ -26,9 +26,14 @@ fun main() {
         }
         ExamplesComposeApp(
             selectedExampleName = selectedExampleName,
+            showLandingWhenUnselected = true,
             onExampleSelected = { name ->
                 selectedExampleName = name
                 window.location.hash = exampleHash(name)
+            },
+            onHomeSelected = {
+                selectedExampleName = null
+                window.location.hash = ""
             },
         )
     }

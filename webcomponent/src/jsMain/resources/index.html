@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JSON Forms Kotlin Web Component</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #242036; background: #f7f4fb; }
+    body { margin: 0; }
+    header { padding: 24px clamp(16px, 4vw, 48px); background: #fff; border-bottom: 1px solid #e6e0ee; }
+    h1 { margin: 0 0 6px; font-size: 1.5rem; }
+    p { margin: 0; color: #625b70; }
+    main { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 20px;
+      max-width: 1400px; margin: 24px auto; padding: 0 20px; }
+    section { min-width: 0; padding: 20px; background: #fff; border: 1px solid #e6e0ee; border-radius: 14px; }
+    h2 { margin: 0 0 16px; font-size: 1rem; }
+    jsonforms-kotlin { display: block; min-height: 540px; }
+    pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; }
+    #last-action { margin-top: 16px; }
+    @media (max-width: 850px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>JSON Forms Kotlin Web Component</h1>
+    <p>A standalone HTML page embedding the Kotlin renderer through a custom element.</p>
+  </header>
+  <main>
+    <section>
+      <h2>Form</h2>
+      <jsonforms-kotlin id="contact-form"></jsonforms-kotlin>
+    </section>
+    <section>
+      <h2>Current data</h2>
+      <pre id="current-data"></pre>
+      <h2 id="last-action">Last action</h2>
+      <pre id="action-output">No action yet</pre>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#contact-form');
+    const initialData = { name: 'Ada', email: 'ada@example.com', newsletter: true };
+    form.setAttribute('data', JSON.stringify(initialData));
+    form.setAttribute('schema', JSON.stringify({
+      type: 'object', properties: {
+        name: { type: 'string', title: 'Name' },
+        email: { type: 'string', format: 'email', title: 'Email' },
+        newsletter: { type: 'boolean', title: 'Subscribe to updates' }
+      }
+    }));
+    form.setAttribute('uischema', JSON.stringify({
+      type: 'VerticalLayout', elements: [
+        { type: 'Categorization', elements: [
+          { type: 'Category', label: 'Profile', elements: [
+            { type: 'Control', scope: '#/properties/name' },
+            { type: 'Control', scope: '#/properties/newsletter' }
+          ] },
+          { type: 'Category', label: 'Contact', elements: [
+            { type: 'Control', scope: '#/properties/email', rule: {
+              effect: 'SHOW', condition: { scope: '#/properties/newsletter', expectedValue: true }
+            } }
+          ] }
+        ] },
+        { type: 'Button', label: 'Send action', action: 'submitContact', params: { source: 'webcomponent-demo' } }
+      ]
+    }));
+    document.querySelector('#current-data').textContent = JSON.stringify(initialData, null, 2);
+    form.addEventListener('jsonforms-change', event => {
+      document.querySelector('#current-data').textContent = JSON.stringify(event.detail.data, null, 2);
+    });
+    form.addEventListener('jsonforms-action', event => {
+      document.querySelector('#action-output').textContent = JSON.stringify(event.detail, null, 2);
+    });
+  </script>
+  <script src="register.js"></script>
+  <script src="jsonforms-kotlin-webcomponent.js"></script>
+</body>
+</html>

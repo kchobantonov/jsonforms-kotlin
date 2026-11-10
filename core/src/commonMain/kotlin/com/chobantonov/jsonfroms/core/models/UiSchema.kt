@@ -1,6 +1,7 @@
 package com.chobantonov.jsonfroms.core.models
 
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 enum class RuleEffect {
     SHOW,
@@ -198,4 +199,6 @@ data class UnknownUiSchemaElement(
     override val type: String,
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
+    val properties: JsonObject = JsonObject(emptyMap()),
+    val elements: List<UiSchemaElement> = emptyList(),
 ) : UiSchemaElement

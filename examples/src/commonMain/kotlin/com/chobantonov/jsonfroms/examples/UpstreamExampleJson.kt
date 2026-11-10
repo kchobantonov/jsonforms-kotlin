@@ -282,7 +282,7 @@ private fun additionalPropertiesTranslations(
     )
 }
 
-private fun JsonObject.toUiSchemaElement(): UiSchemaElement {
+internal fun JsonObject.toUiSchemaElement(): UiSchemaElement {
     val type = requiredString("type")
     val rule = optionalObject("rule")?.toRule()
     val options = optionalObject("options").orEmpty()
@@ -299,7 +299,13 @@ private fun JsonObject.toUiSchemaElement(): UiSchemaElement {
         "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options)
         "Control" -> ControlElement(requiredString("scope"), controlLabel(), optionalString("i18n"), rule, options)
         "ListWithDetail" -> ListWithDetailElement(requiredString("scope"), optionalString("i18n"), rule, options)
-        else -> UnknownUiSchemaElement(type, rule, options)
+        else -> UnknownUiSchemaElement(
+            type = type,
+            rule = rule,
+            options = options,
+            properties = JsonObject(filterKeys { it !in setOf("type", "rule", "options", "elements") }),
+            elements = elements,
+        )
     }
 }
 

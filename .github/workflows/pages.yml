@@ -1,0 +1,66 @@
+name: Build and deploy web demo
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
+      - name: Test renderer and example modules
+        run: ./gradlew :extended-renderers:jvmTest :examples:jvmTest :examples-compose:jvmTest
+      - name: Compile browser modules
+        run: ./gradlew :examples-compose:compileKotlinJs :webcomponent:compileKotlinJs
+      - name: Build Kotlin/JS demo and web component
+        if: github.event_name != 'pull_request'
+        run: ./gradlew :examples-compose:jsBrowserDistribution :webcomponent:jsBrowserDistribution
+      - name: Assemble Pages site
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p .pages/webcomponent
+          cp -R examples-compose/build/dist/js/productionExecutable/. .pages/
+          cp -R webcomponent/build/dist/js/productionExecutable/. .pages/webcomponent/
+          touch .pages/.nojekyll
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .pages
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
