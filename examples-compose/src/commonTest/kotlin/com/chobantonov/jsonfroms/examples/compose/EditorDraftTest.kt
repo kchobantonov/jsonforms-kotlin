@@ -5,7 +5,7 @@ import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
-import com.chobantonov.jsonfroms.examples.examples.ruleUiSchema
+import com.chobantonov.jsonfroms.examples.upstream.behavior.ruleUiSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject

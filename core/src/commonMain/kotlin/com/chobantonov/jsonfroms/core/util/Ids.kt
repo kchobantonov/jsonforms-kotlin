@@ -1,30 +1,41 @@
 package com.chobantonov.jsonfroms.core.util
 
-private val usedIds: MutableSet<String> = linkedSetOf()
+private data class PrefixState(val used: MutableSet<Int> = mutableSetOf(), var next: Int = 0)
 
-private fun makeId(
-    idBase: String,
-    iteration: Int,
-): String = if (iteration <= 1) idBase else idBase + iteration.toString()
+private val idSlots = mutableMapOf<String, Pair<String, Int>>()
+private val prefixStates = mutableMapOf<String, PrefixState>()
 
-private fun isUniqueId(
-    idBase: String,
-    iteration: Int,
-): Boolean = makeId(idBase, iteration) !in usedIds
+private fun makeId(base: String, index: Int): String = if (index <= 1) base else "$base$index"
 
 fun createId(proposedId: String?): String {
-    val safeId = proposedId ?: "undefined"
-    var tries = 0
-    while (!isUniqueId(safeId, tries)) {
-        tries++
-    }
-    val newId = makeId(safeId, tries)
-    usedIds += newId
-    return newId
+    val base = proposedId ?: "undefined"
+    val state = prefixStates.getOrPut(base) { PrefixState() }
+    var index = state.next
+    while (index in state.used || makeId(base, index) in idSlots) index++
+    val id = makeId(base, index)
+    state.used += index
+    state.next = index + 1
+    idSlots[id] = base to index
+    return id
 }
 
-fun removeId(id: String): Boolean = usedIds.remove(id)
+fun removeId(id: String): Boolean {
+    val (base, index) = idSlots.remove(id) ?: return false
+    val state = prefixStates[base] ?: return true
+    state.used.remove(index)
+    state.next = minOf(state.next, index)
+    if (state.used.isEmpty()) prefixStates.remove(base)
+    return true
+}
 
 fun clearAllIds() {
-    usedIds.clear()
+    idSlots.clear()
+    prefixStates.clear()
+}
+
+/** Override these functions when a host needs its own control ID strategy. */
+object Id {
+    var createId: (String?) -> String = { com.chobantonov.jsonfroms.core.util.createId(it) }
+    var removeId: (String) -> Boolean = { com.chobantonov.jsonfroms.core.util.removeId(it) }
+    var clearAllIds: () -> Unit = { com.chobantonov.jsonfroms.core.util.clearAllIds() }
 }

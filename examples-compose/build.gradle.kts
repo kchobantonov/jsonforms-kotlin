@@ -78,3 +78,11 @@ compose.desktop {
         mainClass = "com.chobantonov.jsonfroms.examples.compose.desktop.MainKt"
     }
 }
+
+tasks.named<Copy>("jsProcessResources") {
+    dependsOn(":webcomponent:jsBrowserDistribution")
+    from(project(":webcomponent").layout.buildDirectory.dir("dist/js/productionExecutable")) {
+        into("webcomponent")
+        exclude("index.html")
+    }
+}

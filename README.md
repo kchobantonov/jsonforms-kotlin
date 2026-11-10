@@ -27,21 +27,28 @@ Kotlin Multiplatform port of JSON Forms.
 
 ## Example catalog parity
 
-The demo contains all 78 examples registered by the sibling JSON Forms TypeScript examples
-package plus 7 extended renderer examples. Hand-written Kotlin examples are retained where they provide Kotlin-specific behavior;
-the remaining examples are generated into a portable snapshot. Mixed-type schemas and dynamic
+The demo contains all 79 examples registered by `@jsonforms/examples` 3.9.0-alpha.2,
+39 portable spec fixtures. The sidebar starts with All examples
+and can filter by Spec examples or JSON Forms examples. Hand-written Kotlin examples are retained where they provide Kotlin-specific behavior;
+each upstream JSON Forms example has its own Kotlin file under
+[`examples/upstream`](examples/src/commonMain/kotlin/com/chobantonov/jsonfroms/examples/upstream), while the spec fixtures live as readable JSON in
+[`examples/spec`](examples/spec). Gradle generates their Kotlin catalog during compilation. See [core/UPSTREAM.md](core/UPSTREAM.md)
+and [examples/UPSTREAM.md](examples/UPSTREAM.md) for upstream commits and parity notes. Mixed-type schemas and dynamic
 `additionalProperties`/`patternProperties` objects have dedicated renderers in both Material and
 Cupertino, including type selection and add, rename, and delete operations.
 
-After updating the sibling JSON Forms checkout, refresh the portable examples with:
+After updating the sibling upstream checkouts, refresh the examples with:
 
 ```bash
 node scripts/sync-upstream-examples.mjs
+node scripts/sync-spec-examples.mjs
 ```
 
 Set `JSONFORMS_EXAMPLES_BUNDLE` when the upstream bundle is not located at the default sibling
 path (`../jsonforms/packages/examples/lib/jsonforms-examples.cjs.js`). Catalog tests compare the
-Kotlin names to the upstream snapshot so omissions and duplicates fail the build.
+registered Kotlin names to the generated upstream index so omissions and duplicates fail the build.
+Set `JSONFORMS_SPEC_EXAMPLES_DIR` to override the default sibling spec fixtures directory.
+The spec sync copies portable JSON into `examples/spec`; it does not create a checked-in Kotlin snapshot.
 
 ## Build
 
@@ -100,10 +107,10 @@ The Kotlin/JS demo is built with `:examples-compose:jsBrowserProductionWebpack`.
 The root web page opens on a welcome screen; **Open Demo** selects the first example, and example
 links such as `#/examples/i18n` open a form directly.
 
+The browser demo's top toolbar can switch the active form between Compose and the web component.
 The web component is an optional integration for plain HTML and other web apps. Its separate
 sample page shows attribute input, categories, conditional rules, and change/action events.
-It renders the Compose canvas inside a custom element. The main examples page remains the Compose
-demo. Run the standalone sample locally with:
+It renders the Compose canvas inside a custom element. Run the standalone sample locally with:
 
 ```bash
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :webcomponent:jsBrowserRun
@@ -111,7 +118,7 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :webcomponent:jsBrowserRun
 
 To embed the web component, copy the entire `:webcomponent` production bundle so its Skiko assets
 stay beside `jsonforms-kotlin-webcomponent.js`, then load `register.js` followed by
-`jsonforms-kotlin-webcomponent.js` and use `<jsonforms-kotlin>`
+`jsonforms-kotlin-webcomponent.js` and use `<jsonforms-kotlin-compose>`
 with JSON strings in `data`, `schema`, and optional `uischema` attributes. Changes emit a bubbling
 `jsonforms-change` event whose `detail.data` is the
 updated value. Button actions emit `jsonforms-action` with `detail.action` and `detail.params`.
@@ -148,6 +155,11 @@ Web with Kotlin/JS:
 ```bash
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :examples-compose:jsBrowserDevelopmentRun
 ```
+
+If the development page fails at startup inside Kotlin/JS library code after switching
+between production and development builds, stop the dev server and rebuild its shared
+webpack package with `./gradlew clean :examples-compose:jsBrowserDevelopmentWebpack`.
+Then restart `jsBrowserDevelopmentRun` and reload the page.
 
 The JS browser page is served from:
 - [index.html](/Users/kchobantonov/dev/workspaces/kchobantonov/jsonforms-kotlin/examples-compose/src/jsMain/resources/index.html)

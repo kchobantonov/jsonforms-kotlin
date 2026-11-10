@@ -1,0 +1,6 @@
+{
+  "showUnfocusedDescription": true,
+  "filterErrorKeywordsBeforeTouch": [
+    "required"
+  ]
+}

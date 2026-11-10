@@ -32,8 +32,7 @@ import com.chobantonov.jsonfroms.core.store.ValidationMode
 import com.chobantonov.jsonfroms.core.store.getConfig
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.TesterContext
-import com.chobantonov.jsonfroms.core.util.createId
-import com.chobantonov.jsonfroms.core.util.removeId
+import com.chobantonov.jsonfroms.core.util.Id
 import com.chobantonov.jsonfroms.core.testers.isControl
 import com.chobantonov.jsonfroms.core.validation.ErrorObject
 import kotlinx.serialization.json.JsonElement
@@ -379,11 +378,11 @@ private fun rememberControlId(
     }
     val control = uischema as ControlElement
     val id = remember(control.scope, schema) {
-        createId(control.scope)
+        Id.createId(control.scope)
     }
     androidx.compose.runtime.DisposableEffect(id) {
         onDispose {
-            removeId(id)
+            Id.removeId(id)
         }
     }
     return id

@@ -28,6 +28,7 @@ import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.JsonFormsUISchemaRegistryEntry
 import com.chobantonov.jsonfroms.core.store.Translator
 import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
+import com.chobantonov.jsonfroms.examples.upstream.behavior.i18nExample
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -35,28 +36,79 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
-internal fun parseUpstreamExamples(snapshot: String): List<ExampleDescription> =
+/** Builds one checked-in Kotlin example from its readable JSON fields. */
+internal fun upstreamExample(
+    name: String,
+    label: String,
+    dataJson: String? = null,
+    schemaJson: String? = null,
+    uischemaJson: String? = null,
+    configJson: String? = null,
+): ExampleDescription = parseUpstreamExample(buildJsonObject {
+    put("name", name)
+    put("label", label)
+    dataJson?.let { put("data", Json.parseToJsonElement(it)) }
+    schemaJson?.let { put("schema", Json.parseToJsonElement(it)) }
+    uischemaJson?.let { put("uischema", Json.parseToJsonElement(it)) }
+    configJson?.let { put("config", Json.parseToJsonElement(it)) }
+})
+
+private fun parseUpstreamExample(example: JsonObject): ExampleDescription =
+    ExampleDescription(
+        name = example.requiredString("name"),
+        label = example.requiredString("label"),
+        data = example["data"] ?: JsonNull,
+        dataProvided = "data" in example,
+        schema = example.optionalObject("schema")?.let(::JsonSchema),
+        uischema = example.optionalObject("uischema")?.toUiSchemaElement(),
+        config = example.optionalObject("config")?.toKotlinMap().orEmpty(),
+        readonly = example.optionalBoolean("readonly") ?: false,
+        translations = example.optionalObject("translations")
+            ?.mapValues { (_, value) -> (value as? JsonPrimitive)?.content.orEmpty() }
+            .orEmpty(),
+    ).withPortableUpstreamBehavior(
+        example.optionalObject("config")?.optionalObject("withSort")?.toUiSchemaElement(),
+    )
+
+internal fun parseSpecExamples(snapshot: String): List<ExampleDescription> =
     Json.parseToJsonElement(snapshot).requiredArray("examples").mapIndexed { index, element ->
         val example = element.requiredObject("examples[$index]")
+        val localizedTranslations = example.optionalObject("translations")?.mapValues { (locale, entries) ->
+            (entries as? JsonObject)?.mapValues { (_, value) ->
+                (value as? JsonPrimitive)?.content.orEmpty()
+            } ?: error("translations.$locale must be an object")
+        }.orEmpty()
         ExampleDescription(
             name = example.requiredString("name"),
             label = example.requiredString("label"),
+            source = ExampleSource.Spec,
             data = example["data"] ?: JsonNull,
             dataProvided = "data" in example,
             schema = example.optionalObject("schema")?.let(::JsonSchema),
             uischema = example.optionalObject("uischema")?.toUiSchemaElement(),
             config = example.optionalObject("config")?.toKotlinMap().orEmpty(),
-            readonly = example.optionalBoolean("readonly") ?: false,
-            translations = example.optionalObject("translations")
-                ?.mapValues { (_, value) -> (value as? JsonPrimitive)?.content.orEmpty() }
-                .orEmpty(),
-        ).withPortableUpstreamBehavior()
+            translations = localizedTranslations["en"].orEmpty(),
+            localizedTranslations = localizedTranslations,
+        )
     }
 
-private fun ExampleDescription.withPortableUpstreamBehavior(): ExampleDescription = when (name) {
-    // The generated snapshot predates preservation of JavaScript `undefined`; keep the
-    // upstream JSON Editor's absent initial value distinct from an explicit JSON null.
+private fun ExampleDescription.withPortableUpstreamBehavior(sortUiSchema: UiSchemaElement?): ExampleDescription = when (name) {
+    "array", "array-with-sorting" -> copy(actions = listOf(
+        ExampleAction("Enable Sorting") { state -> state.copy(uischema = sortUiSchema ?: state.uischema) },
+        ExampleAction("Disable Sorting") { state -> state.copy(uischema = uischema) },
+    ) + if (name == "array") listOf(ExampleAction("Toggle readonly") { it.copy(readonly = !it.readonly) }) else emptyList())
+    "array-with-detail" -> copy(actions = listOf(
+        ExampleAction("Toggle readonly") { it.copy(readonly = !it.readonly) },
+    ))
+    "i18n" -> copy(
+        i18n = i18nExample.i18n,
+        translations = i18nExample.translations,
+        localizedTranslations = i18nExample.localizedTranslations,
+    )
+    // Keep the upstream JSON Editor's absent initial value distinct from an explicit JSON null.
     "json-editor" -> copy(dataProvided = false)
     "additional-properties" -> withLocalizedTranslations(
         english = additionalPropertiesTranslations(

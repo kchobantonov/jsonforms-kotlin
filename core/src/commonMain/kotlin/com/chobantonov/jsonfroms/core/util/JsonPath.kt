@@ -115,7 +115,8 @@ object JsonPath {
     internal fun parse(path: String): List<String> =
         path.split('.').filter(String::isNotEmpty)
 
-    private fun String.toArrayIndex(): Int? = toIntOrNull()?.takeIf { it >= 0 }
+    private fun String.toArrayIndex(): Int? =
+        takeIf { it.matches(Regex("(?:0|[1-9][0-9]*)")) }?.toIntOrNull()
 
     private fun containerFor(schema: JsonSchema?): JsonElement =
         if (schema?.let(::deriveTypes)?.contains("array") == true) {

@@ -15,6 +15,11 @@ data class ExampleAction(
     val apply: (StateProps) -> StateProps,
 )
 
+enum class ExampleSource(val displayName: String) {
+    Spec("Spec examples"),
+    JsonForms("JSON Forms examples"),
+}
+
 data class ExampleDescription(
     val name: String,
     val label: String,
@@ -31,6 +36,7 @@ data class ExampleDescription(
     val translations: Map<String, String> = emptyMap(),
     val localizedTranslations: Map<String, Map<String, String>> = emptyMap(),
     val dataProvided: Boolean = true,
+    val source: ExampleSource = ExampleSource.JsonForms,
 )
 
 data class StateProps(

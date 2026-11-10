@@ -1,0 +1,133 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Label",
+      "i18n": "intro",
+      "text": "Attach local files and inspect the stored value. Each main attachment is limited to 1 MiB; the small text attachment must contain 1–1023 bytes."
+    },
+    {
+      "type": "Categorization",
+      "elements": [
+        {
+          "type": "Category",
+          "label": "Multiple files",
+          "i18n": "featureNavigation.section1",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "multipleIntro",
+              "text": "Select several files at once. Each array requires 1–3 files. The restricted picker prevents crossing the limits; the validation-only picker allows it and shows schema errors."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/documents",
+              "i18n": "documents",
+              "options": {
+                "restrict": true,
+                "formatMaximum": 1048576
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/unrestrictedDocuments",
+              "i18n": "unrestrictedDocuments",
+              "options": {
+                "restrict": false,
+                "formatMaximum": 1048576
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "label": "Single-file encodings",
+          "i18n": "featureNavigation.section2",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/logo",
+              "options": {
+                "formatMaximum": 1048576
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/contract",
+              "options": {
+                "formatMaximum": 1048576
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/payload",
+              "options": {
+                "formatMaximum": 1048576
+              }
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/receipt",
+              "options": {
+                "formatMaximum": 1048576
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "label": "File-size limits",
+          "i18n": "featureNavigation.section3",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/bounded",
+              "options": {
+                "formatExclusiveMinimum": 0,
+                "formatExclusiveMaximum": 1024
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "label": "Table cells",
+          "i18n": "featureNavigation.section4",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "tableIntro",
+              "text": "The table edits the documents. Related files shows filename pills; add files, remove one, or clear the selection."
+            },
+            {
+              "type": "Categorization",
+              "elements": [
+                {
+                  "type": "Category",
+                  "label": "Table",
+                  "i18n": "tableTab",
+                  "elements": [
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/attachments",
+                      "i18n": "attachments",
+                      "options": {
+                        "table": true,
+                        "pagination": {
+                          "pageSize": 3
+                        },
+                        "cells": {
+                          "files": {}
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

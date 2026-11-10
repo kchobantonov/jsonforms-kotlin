@@ -48,6 +48,7 @@ import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.Translator
 import com.chobantonov.jsonfroms.core.store.ValidationMode
 import com.chobantonov.jsonfroms.examples.ExampleDescription
+import com.chobantonov.jsonfroms.examples.ExampleSource
 import com.chobantonov.jsonfroms.examples.StateProps
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialCells
@@ -191,6 +192,7 @@ fun ExamplesComposeApp(
         var editorDrafts by remember(selected.name) { mutableStateOf(EditorDrafts.from(state)) }
         var formOnly by remember { mutableStateOf(false) }
         var settingsOpen by remember { mutableStateOf(false) }
+        var webComponentMode by remember { mutableStateOf(false) }
 
         BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).safeDrawingPadding()) {
             val compact = maxWidth < CompactWidth
@@ -218,6 +220,8 @@ fun ExamplesComposeApp(
                     },
                     { settingsOpen = !settingsOpen },
                     onHomeSelected?.let { home -> { formOnly = false; home() } },
+                    webComponentMode,
+                    { webComponentMode = !webComponentMode },
                 )
                 if (compact) {
                     CompactLayout(
@@ -246,6 +250,22 @@ fun ExamplesComposeApp(
                     Modifier.zIndex(3f).align(Alignment.TopEnd)
                         .padding(top = 68.dp, end = 12.dp, bottom = 12.dp)
                         .width(if (compact) maxWidth - 24.dp else 390.dp).fillMaxHeight(),
+                )
+            }
+            if (webComponentMode && supportsWebComponentView) {
+                WebComponentOverlay(
+                    input = WebComponentInput(
+                        data = state.data.toString(),
+                        schema = state.schema?.toJsonObject()?.toString(),
+                        uischema = state.uischema?.toJsonObject()?.toString(),
+                        readonly = state.readonly || settings.readonly,
+                    ),
+                    onClose = { webComponentMode = false },
+                    onDataChange = { value ->
+                        runCatching { Json.parseToJsonElement(value) }.getOrNull()?.let { data ->
+                            updateState(state.copy(data = data, dataProvided = true))
+                        }
+                    },
                 )
             }
         }
@@ -281,6 +301,8 @@ private fun DemoTopBar(
     onFormOnly: () -> Unit,
     onSettings: () -> Unit,
     onHome: (() -> Unit)?,
+    webComponentMode: Boolean,
+    onWebComponentToggle: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     val cupertino = LocalDemoUiStyle.current == DemoUiStyle.Cupertino
@@ -303,6 +325,10 @@ private fun DemoTopBar(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f).clickable(enabled = onHome != null) { onHome?.invoke() })
             ToolbarButton(PanelsIcon, if (formOnly) "Show full UI" else "Show form only", formOnly, onFormOnly)
+            if (supportsWebComponentView) {
+                ToolbarButton(WebComponentIcon, if (webComponentMode) "Show Compose form" else "Show web component",
+                    webComponentMode, onWebComponentToggle)
+            }
             ToolbarButton(GitHubIcon, "Open GitHub") { uriHandler.openUri(GitHubUrl) }
             ToolbarButton(SettingsIcon, if (settingsOpen) "Close settings" else "Open settings", settingsOpen, onSettings)
         }
@@ -459,9 +485,26 @@ private fun ExampleNavigation(
     onSelected: (ExampleDescription) -> Unit, modifier: Modifier,
 ) {
     var query by remember { mutableStateOf("") }
-    val filtered = remember(examples, query) { filterExamples(examples, query) }
+    var source by remember { mutableStateOf<ExampleSource?>(null) }
+    var sourceMenuOpen by remember { mutableStateOf(false) }
+    LaunchedEffect(selected?.source) { source = selected?.source }
+    val filtered = remember(examples, query, source) { filterExamples(examples, query, source) }
     Surface(modifier, tonalElevation = 1.dp, shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Example source", style = MaterialTheme.typography.labelMedium)
+            Box {
+                OutlinedButton(onClick = { sourceMenuOpen = true }) {
+                    Text(source?.displayName ?: "All examples")
+                }
+                DropdownMenu(expanded = sourceMenuOpen, onDismissRequest = { sourceMenuOpen = false }) {
+                    listOf(ExampleSource.Spec, ExampleSource.JsonForms, null).forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option?.displayName ?: "All examples") },
+                            onClick = { source = option; sourceMenuOpen = false },
+                        )
+                    }
+                }
+            }
             OutlinedTextField(
                 query, { query = it }, Modifier.fillMaxWidth(), singleLine = true,
                 placeholder = { Text("Search examples...") },
@@ -487,10 +530,14 @@ private fun ExampleNavigation(
     }
 }
 
-internal fun filterExamples(examples: List<ExampleDescription>, query: String): List<ExampleDescription> {
+internal fun filterExamples(
+    examples: List<ExampleDescription>, query: String, source: ExampleSource? = null,
+): List<ExampleDescription> {
     val value = query.trim().lowercase()
-    if (value.isEmpty()) return examples
-    return examples.filter { it.name.lowercase().contains(value) || it.label.lowercase().contains(value) }
+    return examples.filter { example ->
+        (source == null || example.source == source) &&
+            (value.isEmpty() || example.name.lowercase().contains(value) || example.label.lowercase().contains(value))
+    }
 }
 
 @Composable
@@ -555,26 +602,21 @@ private fun FormCard(
     val cupertino = settings.effectiveUiStyle() == DemoUiStyle.Cupertino
     val picker = remember { createDemoFilePicker() }
     val actionHandler = ExtendedActionHandler { action, params ->
-        if (action == "changeLang") {
-            val language = (params["lang"] as? JsonPrimitive)?.contentOrNull
-            DemoLocale.entries.firstOrNull { it.languageTag == language }?.let { locale ->
-                onSettingsChange(settings.copy(locale = locale))
+        val requestedLocale = requestedDemoLocale(action, params)
+        requestedLocale?.let { onSettingsChange(settings.copy(locale = it)) }
+        if (action != "setLocale") {
+            val data = (state.data as? JsonObject).orEmpty()
+            val status = when (action) {
+                "applyStatus", "simulateHttpSubmit", "changeLang" ->
+                    demoActionStatus(params, requestedLocale ?: settings.locale)
+                "runScript" -> "Updated from host action"
+                else -> "Action: $action"
             }
+            onStateChange(state.copy(data = JsonObject(data + mapOf(
+                "status" to JsonPrimitive(status),
+                "lastTriggeredBy" to JsonPrimitive(action),
+            ))))
         }
-        val data = (state.data as? JsonObject).orEmpty()
-        val status = when (action) {
-            "applyStatus", "simulateHttpSubmit", "changeLang" -> {
-                val locale = settings.locale.languageTag ?: "en"
-                ((params["statusByLocale"] as? JsonObject)?.get(locale) as? JsonPrimitive)?.contentOrNull
-                    ?: "Action completed"
-            }
-            "runScript" -> "Updated from host action"
-            else -> "Action: $action"
-        }
-        onStateChange(state.copy(data = JsonObject(data + mapOf(
-            "status" to JsonPrimitive(status),
-            "lastTriggeredBy" to JsonPrimitive(action),
-        ))))
     }
     val extendedConfig = settings.applyTo(state.config) + mapOf(
         ExtendedActionHandlerConfigKey to actionHandler,
@@ -1005,6 +1047,20 @@ internal fun exampleI18nForLocale(state: StateProps, languageTag: String): JsonF
     return (state.i18n ?: JsonFormsI18nState()).copy(locale = languageTag, translate = translator)
 }
 
+internal fun requestedDemoLocale(action: String, params: JsonObject): DemoLocale? {
+    val parameter = when (action) {
+        "changeLang" -> "lang"
+        "setLocale" -> "locale"
+        else -> return null
+    }
+    val language = (params[parameter] as? JsonPrimitive)?.contentOrNull
+    return DemoLocale.entries.firstOrNull { it.languageTag == language }
+}
+
+internal fun demoActionStatus(params: JsonObject, locale: DemoLocale): String =
+    ((params["statusByLocale"] as? JsonObject)?.get(locale.languageTag ?: "en") as? JsonPrimitive)?.contentOrNull
+        ?: "Action completed"
+
 private fun ExampleDescription.toStateProps() = StateProps(
     data = data,
     dataProvided = dataProvided,
@@ -1048,6 +1104,11 @@ private val SearchIcon = lineIcon("Search") {
     curveTo(14.09f, 17f, 17f, 14.09f, 17f, 10.5f); curveTo(17f, 6.91f, 14.09f, 4f, 10.5f, 4f); moveTo(15.5f, 15.5f); lineTo(21f, 21f)
 }
 private val PanelsIcon = lineIcon("Form only") { moveTo(3f, 4f); horizontalLineTo(21f); verticalLineTo(20f); horizontalLineTo(3f); close(); moveTo(8f, 4f); verticalLineTo(20f); moveTo(8f, 10f); horizontalLineTo(21f) }
+private val WebComponentIcon = lineIcon("Web component") {
+    moveTo(3f, 4f); horizontalLineTo(21f); verticalLineTo(20f); horizontalLineTo(3f); close()
+    moveTo(9f, 9f); lineTo(6f, 12f); lineTo(9f, 15f)
+    moveTo(15f, 9f); lineTo(18f, 12f); lineTo(15f, 15f)
+}
 private val GitHubIcon = ImageVector.Builder("GitHub", 24.dp, 24.dp, 16f, 16f).apply {
     addPath(
         pathData = PathParser().parsePathString(

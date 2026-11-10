@@ -1,0 +1,8 @@
+{
+  "restrict": true,
+  "jsonformsExtended": {
+    "dynamic": {
+      "enabled": true
+    }
+  }
+}

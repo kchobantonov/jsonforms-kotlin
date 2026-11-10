@@ -1,0 +1,11 @@
+{
+  "jsonformsExtended": {
+    "confirmation": {
+      "renderers": {
+        "oneOf": {
+          "branchChange": "always"
+        }
+      }
+    }
+  }
+}

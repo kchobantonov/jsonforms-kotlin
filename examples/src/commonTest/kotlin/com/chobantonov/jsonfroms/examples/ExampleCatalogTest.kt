@@ -1,5 +1,8 @@
 package com.chobantonov.jsonfroms.examples
 
+import com.chobantonov.jsonfroms.core.models.Categorization
+import com.chobantonov.jsonfroms.core.models.Layout
+import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -8,15 +11,27 @@ import kotlin.test.assertTrue
 
 class ExampleCatalogTest {
     @Test
-    fun builtInCatalogContainsUpstreamAndExtendedRendererExamples() {
+    fun builtInCatalogContainsUpstreamAndPortableSpecExamples() {
         val examples = getBuiltInExamples()
-        val extendedNames = setOf(
-            "button", "color", "duration", "extended-control-options",
-            "file", "null-control", "split-layout",
-        )
 
-        assertEquals(upstreamSnapshotExampleNames.size + extendedNames.size, examples.size)
-        assertEquals(upstreamSnapshotExampleNames + extendedNames, examples.map(ExampleDescription::name).toSet())
+        assertEquals(79, upstreamExampleNames.size)
+        assertEquals(upstreamExampleNames.size + specSnapshotExampleNames.size, examples.size)
+        assertEquals(upstreamExampleNames + specSnapshotExampleNames,
+            examples.map(ExampleDescription::name).toSet())
+        assertEquals(ExampleSource.JsonForms, examples.first { it.name == "array" }.source)
+        assertEquals(ExampleSource.Spec, examples.first { it.name == "spec-additional-properties" }.source)
+        val nestedValidation = examples.first { it.name == "validation-nested-same-name" }
+        assertEquals(ExampleSource.JsonForms, nestedValidation.source)
+        assertEquals("Validation - 3x nested properties with same name", nestedValidation.label)
+        assertNotNull(nestedValidation.schema)
+        assertNotNull(nestedValidation.uischema)
+        assertEquals("http://json-schema.org/draft-07/schema#",
+            examples.first { it.name == "mixed-object" }.schema?.schemaUri)
+        assertEquals(39, specSnapshotExampleNames.size)
+        assertTrue(specSnapshotExampleNames.none { it in setOf(
+            "spec-ag-grid", "spec-code-editor", "spec-template-layout", "spec-template-slots",
+            "spec-job-application", "spec-kitchen-sink", "spec-array-controls",
+        ) })
     }
 
     @Test
@@ -28,11 +43,20 @@ class ExampleCatalogTest {
     }
 
     @Test
-    fun extendedExamplesPreserveCustomUiSchemaElements() {
+    fun portableFileExampleUsesNormalTable() {
         val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
-        val button = examples.getValue("button").uischema
-
-        assertNotNull(button)
+        val fileUi = assertNotNull(examples.getValue("spec-file-control").uischema)
+        fun flatten(element: UiSchemaElement): List<UiSchemaElement> {
+            val children = when (element) {
+                is Layout -> element.elements
+                is Categorization -> element.elements
+                else -> emptyList()
+            }
+            return listOf(element) + children.flatMap(::flatten)
+        }
+        val elements = flatten(fileUi)
+        assertTrue(elements.any { it.options["table"]?.toString() == "true" })
+        assertFalse(elements.any { it.options["variant"]?.toString()?.contains("ag-grid") == true })
     }
 
     @Test
@@ -45,6 +69,11 @@ class ExampleCatalogTest {
         assertNotNull(examples.getValue("enum-i18n").i18n?.translate)
         assertNotNull(examples.getValue("array-i18n").i18n?.translate)
         assertNotNull(examples.getValue("array-with-translated-custom-element-label").i18n?.translate)
+        assertEquals(3, examples.getValue("array").actions.size)
+        assertEquals(2, examples.getValue("array-with-sorting").actions.size)
+        assertEquals(2, examples.getValue("rule-enable").actions.size)
+        assertTrue(examples.getValue("additional-errors").actions.isNotEmpty())
+        assertNotNull(examples.getValue("categorization").i18n?.translate)
     }
 
     @Test

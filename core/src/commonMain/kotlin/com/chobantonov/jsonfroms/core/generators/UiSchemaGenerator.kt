@@ -40,11 +40,13 @@ private fun generateUiSchema(
     }
 
     val types = deriveTypes(jsonSchema)
-    if (types.isEmpty() || types.size > 1) {
+    val nonNullTypes = types.filterNot { it == "null" }
+    val effectiveTypes = nonNullTypes.ifEmpty { types }
+    if (effectiveTypes.isEmpty() || effectiveTypes.size > 1) {
         return createControlElement(currentRef)
     }
 
-    if (currentRef == "#" && types.first() == "object") {
+    if (currentRef == "#" && effectiveTypes.first() == "object") {
         val elements = mutableListOf<UiSchemaElement>()
         val properties = jsonSchema["properties"] as? JsonObject
         if (properties != null && properties.size > 1 && schemaName.isNotBlank()) {

@@ -31,8 +31,8 @@ private external class BrowserCustomEvent(type: String, options: dynamic)
 fun main() {
     val factory: dynamic = js("window.jsonFormsKotlinElementFactory")
     val registry: dynamic = js("customElements")
-    if (registry.get("jsonforms-kotlin") == null) {
-        registry.define("jsonforms-kotlin", factory { element: dynamic -> mountForm(element) })
+    if (registry.get("jsonforms-kotlin-compose") == null) {
+        registry.define("jsonforms-kotlin-compose", factory { element: dynamic -> mountForm(element) })
     }
 }
 

@@ -19,7 +19,7 @@ fun getControlPath(error: ErrorObject): String {
     controlPath = controlPath.replace('/', '.')
 
     val invalidProperty = getInvalidProperty(error)
-    if (invalidProperty != null && !controlPath.endsWith(invalidProperty)) {
+    if (invalidProperty != null) {
         controlPath = if (controlPath.isBlank()) {
             invalidProperty
         } else {

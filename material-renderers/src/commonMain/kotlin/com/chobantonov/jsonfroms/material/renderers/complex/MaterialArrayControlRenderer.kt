@@ -92,7 +92,8 @@ fun MaterialArrayControlRenderer(
 
     val items = (stateProps.data as? JsonArray).orEmpty()
     val columns = arrayColumns(stateProps.schema, stateProps.rootSchema)
-    val renderAsTable = shouldRenderArrayItemsAsTable(stateProps.schema, stateProps.rootSchema)
+    val renderAsTable = control.booleanOption("table", stateProps.config) ||
+        shouldRenderArrayItemsAsTable(stateProps.schema, stateProps.rootSchema)
     val actionsEnabled = stateProps.enabled && !stateProps.readonly
     val showSortButtons = control.booleanOption("showSortButtons", stateProps.config)
     val actionColumnWidth = if (showSortButtons) SortAndDeleteActionColumnWidth else DeleteActionColumnWidth
