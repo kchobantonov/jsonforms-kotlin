@@ -473,7 +473,7 @@ fun mapStateToControlProps(
         com.chobantonov.jsonfroms.core.util.Runtime.isVisible(uischema, rootData, getValidator(state))
     } else {
         ownProps.own.visible
-    } ?: true
+    }
     val rootSchema = getSchema(state)
     val required = isRequired(ownProps.own.schema ?: rootSchema, uischema.scope, rootSchema)
     val resolvedSchema = com.chobantonov.jsonfroms.core.util.Resolve.schema(
@@ -511,7 +511,7 @@ fun mapStateToControlProps(
         errors = i18nErrorMessage,
         rootSchema = rootSchema,
         id = ownProps.id ?: path,
-        label = i18nLabel ?: label,
+        label = i18nLabel,
         description = i18nDescription,
         required = required,
         i18nKeyPrefix = i18nKeyPrefix,
@@ -771,7 +771,7 @@ fun mapStateToLayoutProps(
         com.chobantonov.jsonfroms.core.util.Runtime.isVisible(uischema, rootData, getValidator(state))
     } else {
         ownProps.own.visible
-    } ?: true
+    }
     val config = getConfig(state)
     val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, null, rootData, config)
     val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, null, rootData, config)

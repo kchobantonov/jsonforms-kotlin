@@ -78,7 +78,7 @@ fun useInputVariant(
     config: Map<String, Any?>,
     uischema: ControlElement,
 ): MaterialInputVariant {
-    val optionVariant = uischema.options["variant"] as? String
+    val optionVariant = (uischema.options["variant"] as? kotlinx.serialization.json.JsonPrimitive)?.content
     val configVariant = config["variant"] as? String
     return parseInputVariant(optionVariant)
         ?: parseInputVariant(configVariant)

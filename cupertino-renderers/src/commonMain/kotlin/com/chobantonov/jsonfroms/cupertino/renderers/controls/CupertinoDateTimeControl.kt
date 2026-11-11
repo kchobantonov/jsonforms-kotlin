@@ -110,7 +110,7 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps) {
             { showPicker = false },
         ) { millis, hour, minute ->
             val date = pickerMillisToDate(millis)
-            commit(initial.copy(year = date.year, month = date.monthNumber, day = date.day, hour = hour, minute = minute))
+            commit(initial.copy(year = date.year, month = date.month.ordinal + 1, day = date.day, hour = hour, minute = minute))
             showPicker = false
         }
     }

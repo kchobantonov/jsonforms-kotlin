@@ -2,7 +2,7 @@ package com.chobantonov.jsonfroms.material.renderers.layouts
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -72,7 +72,7 @@ fun MaterialCategorizationLayout(
         deriveLabelForUISchemaElement(category, translator) ?: category.label
     }
 
-    TabRow(selectedTabIndex = safeCategory) {
+    PrimaryTabRow(selectedTabIndex = safeCategory) {
         categories.forEachIndexed { index, _ ->
             Tab(
                 selected = index == safeCategory,

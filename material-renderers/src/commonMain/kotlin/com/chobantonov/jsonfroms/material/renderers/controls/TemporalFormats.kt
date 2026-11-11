@@ -122,7 +122,7 @@ fun formatTemporal(value: TemporalValue, format: String, timeZone: TimeZone = Ti
     if (format == DEFAULT_DATE_TIME_SAVE_FORMAT) {
         val utc = value.dateTime.toInstant(timeZone).toLocalDateTime(TimeZone.UTC)
         return buildString {
-            append(utc.year.pad(4)); append('-'); append(utc.monthNumber.pad()); append('-'); append(utc.day.pad())
+            append(utc.year.pad(4)); append('-'); append((utc.month.ordinal + 1).pad()); append('-'); append(utc.day.pad())
             append('T'); append(utc.hour.pad()); append(':'); append(utc.minute.pad()); append(':'); append(utc.second.pad()); append('Z')
         }
     }
@@ -220,4 +220,4 @@ private fun replaceTokens(format: String, replacements: Map<String, String>): St
 
 private fun Int.pad(length: Int = 2): String = toString().padStart(length, '0')
 
-private fun LocalDateTime.toTemporalValue() = TemporalValue(year, monthNumber, day, hour, minute, second)
+private fun LocalDateTime.toTemporalValue() = TemporalValue(year, month.ordinal + 1, day, hour, minute, second)

@@ -15,9 +15,14 @@ kotlin {
     }
 
     jvm()
-    js(IR) { browser() }
-    wasmJs { browser() }
-    iosX64()
+    js(IR) {
+        browser()
+        binaries.executable()
+    }
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
     iosArm64()
     iosSimulatorArm64()
 

@@ -30,11 +30,6 @@ kotlin {
         binaries.executable()
     }
 
-    iosX64 {
-        binaries.framework {
-            baseName = "ExamplesComposeApp"
-        }
-    }
     iosArm64 {
         binaries.framework {
             baseName = "ExamplesComposeApp"

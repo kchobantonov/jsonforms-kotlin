@@ -140,7 +140,7 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
                 onDismiss = { pickerStep = null },
                 onConfirm = { millis ->
                     val date = pickerMillisToDate(millis)
-                    pendingValue = initial.copy(year = date.year, month = date.monthNumber, day = date.day)
+                    pendingValue = initial.copy(year = date.year, month = date.month.ordinal + 1, day = date.day)
                     pickerStep = PickerStep.Time
                 },
             )

@@ -146,7 +146,7 @@ fun mapStateToCellProps(
         config["separateReadonlyFromDisabled"] != true && state.jsonforms.readonly -> false
         ownProps.own.enabled != null -> ownProps.own.enabled
         else -> isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, schema, rootData, config)
-    } ?: true
+    }
 
     val readonly = ownProps.own.readonly
         ?: isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, schema, rootData, config)

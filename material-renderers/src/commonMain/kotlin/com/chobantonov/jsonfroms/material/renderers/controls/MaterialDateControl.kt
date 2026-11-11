@@ -124,7 +124,7 @@ fun MaterialDateControl(props: ComposeJsonFormsRendererProps) {
             onDismiss = { showPicker = false },
             onConfirm = { millis ->
                 val date = pickerMillisToDate(millis)
-                commit(TemporalValue(date.year, date.monthNumber, date.day))
+                commit(TemporalValue(date.year, date.month.ordinal + 1, date.day))
                 showPicker = false
             },
         )

@@ -25,7 +25,11 @@ fun getUISchemas(state: JsonFormsState<*, *>): List<JsonFormsUISchemaRegistryEnt
     state.jsonforms.uischemas
 
 fun getConfig(state: JsonFormsState<*, *>): Map<String, Any?> =
-    state.jsonforms.config as? Map<String, Any?> ?: emptyMap()
+    (state.jsonforms.config as? Map<*, *>)
+        ?.entries
+        ?.mapNotNull { (key, value) -> (key as? String)?.let { it to value } }
+        ?.toMap()
+        ?: emptyMap()
 
 fun getErrorAt(
     instancePath: String,
