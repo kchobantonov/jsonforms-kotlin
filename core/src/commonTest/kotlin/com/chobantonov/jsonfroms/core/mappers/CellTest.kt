@@ -7,6 +7,7 @@ import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.LeafCondition
 import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.RuleEffect
+import com.chobantonov.jsonfroms.core.models.ValidateFunctionCondition
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.store.JsonFormsCoreState
@@ -43,6 +44,32 @@ class CellTest {
     )
 
     private val coreUiSchema = ControlElement(scope = "#/properties/firstName")
+
+    @Test
+    fun `function rules receive cell path and config`() {
+        val condition = ValidateFunctionCondition(scope = "#", validate = { context ->
+            context.path == "person" && (context.config as? Map<*, *>)?.get("allow") == true
+        })
+        fun mapped(effect: RuleEffect, allow: Boolean): StatePropsOfCell {
+            val ui = coreUiSchema.copy(rule = Rule(effect, condition))
+            val original = createState(ui)
+            val state = original.copy(jsonforms = original.jsonforms.copy(config = mapOf(
+                "allow" to allow,
+                "separateReadonlyFromDisabled" to true,
+            )))
+            return mapStateToCellProps(state, OwnPropsOfCell(
+                controlUiSchema = ui,
+                own = OwnPropsOfRenderer(path = "person"),
+            ))
+        }
+
+        assertTrue(mapped(RuleEffect.SHOW, true).visible)
+        assertFalse(mapped(RuleEffect.SHOW, false).visible)
+        assertTrue(mapped(RuleEffect.ENABLE, true).enabled)
+        assertFalse(mapped(RuleEffect.ENABLE, false).enabled)
+        assertTrue(mapped(RuleEffect.READONLY, true).readonly)
+        assertFalse(mapped(RuleEffect.READONLY, false).readonly)
+    }
 
     @Test
     fun `mapStateToCellProps - visible via ownProps `() {
@@ -142,6 +169,19 @@ class CellTest {
         )
 
         assertFalse(props.enabled)
+    }
+
+    @Test
+    fun `cell own readonly false cannot override form or UI readonly`() {
+        val own = OwnPropsOfCell(controlUiSchema = coreUiSchema,
+            own = OwnPropsOfRenderer(readonly = false))
+        val global = mapStateToCellProps(createState(coreUiSchema, readonly = true), own)
+        assertTrue(global.readonly)
+
+        val ui = coreUiSchema.copy(options = mapOf("readonly" to JsonPrimitive(true)))
+        val local = mapStateToCellProps(createState(ui), own.copy(controlUiSchema = ui))
+        assertTrue(local.readonly)
+        assertFalse(mapStateToCellProps(createState(coreUiSchema), own).readonly)
     }
 
     @Test

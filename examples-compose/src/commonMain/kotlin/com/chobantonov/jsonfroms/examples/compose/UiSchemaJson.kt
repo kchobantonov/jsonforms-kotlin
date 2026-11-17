@@ -9,12 +9,16 @@ import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.DescriptionControlLabel
 import com.chobantonov.jsonfroms.core.models.GroupElement
 import com.chobantonov.jsonfroms.core.models.HorizontalLayout
+import com.chobantonov.jsonfroms.core.models.ImageViewElement
 import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.models.LeafCondition
 import com.chobantonov.jsonfroms.core.models.ListWithDetailElement
+import com.chobantonov.jsonfroms.core.models.LinkElement
 import com.chobantonov.jsonfroms.core.models.OrCondition
 import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
+import com.chobantonov.jsonfroms.core.models.SeparatorElement
+import com.chobantonov.jsonfroms.core.models.SpacerElement
 import com.chobantonov.jsonfroms.core.models.StringControlLabel
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement
@@ -52,6 +56,21 @@ internal fun UiSchemaElement.toJsonObject(): JsonObject = buildJsonObject {
             put("text", element.text)
             element.i18n?.let { put("i18n", it) }
         }
+        is SpacerElement -> element.size?.let { put("size", it) }
+        is SeparatorElement -> Unit
+        is LinkElement -> {
+            put("href", element.href)
+            element.label?.let { put("label", it) }
+            element.target?.let { put("target", it) }
+            element.rel?.let { put("rel", it) }
+            element.i18n?.let { put("i18n", it) }
+        }
+        is ImageViewElement -> {
+            element.src?.let { put("src", it) }
+            element.scope?.let { put("scope", it) }
+            element.alt?.let { put("alt", it) }
+            element.i18n?.let { put("i18n", it) }
+        }
         is GroupElement -> {
             element.label?.let { put("label", it) }
             element.i18n?.let { put("i18n", it) }
@@ -71,14 +90,17 @@ internal fun UiSchemaElement.toJsonObject(): JsonObject = buildJsonObject {
         is HorizontalLayout -> put("elements", JsonArray(element.elements.map(UiSchemaElement::toJsonObject)))
         is UnknownUiSchemaElement -> {
             element.properties.forEach { (name, value) -> put(name, value) }
-            if (element.elements.isNotEmpty()) {
+            if (element.elementsPresent || element.elements.isNotEmpty()) {
                 put("elements", JsonArray(element.elements.map(UiSchemaElement::toJsonObject)))
             }
         }
         else -> throw IllegalArgumentException("Unsupported UI schema element '${element.type}'")
     }
+    name?.let { put("name", it) }
     rule?.let { put("rule", it.toJsonObject()) }
-    if (options.isNotEmpty()) put("options", JsonObject(options))
+    if (options.isNotEmpty() || (this@toJsonObject as? UnknownUiSchemaElement)?.optionsPresent == true) {
+        put("options", JsonObject(options))
+    }
 }
 
 private fun Rule.toJsonObject() = buildJsonObject {

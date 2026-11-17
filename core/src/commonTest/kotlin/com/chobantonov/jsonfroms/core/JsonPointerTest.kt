@@ -35,4 +35,23 @@ class JsonPointerTest {
 
         assertEquals("\"two\"", resolved.toString())
     }
+
+    @Test
+    fun emptyPointerSegmentsAddressEmptyPropertyNames() {
+        val payload = buildJsonObject {
+            put("", buildJsonObject {
+                put("name", "Ada")
+                put("", "nested empty")
+            })
+            put("name", "root")
+        }
+
+        assertEquals(payload, JsonPointer.resolve(payload, ""))
+        assertEquals(payload, JsonPointer.resolve(payload, "#"))
+        assertEquals(payload[""], JsonPointer.resolve(payload, "/"))
+        assertEquals(payload[""], JsonPointer.resolve(payload, "#/"))
+        assertEquals(JsonPrimitive("Ada"), JsonPointer.resolve(payload, "//name"))
+        assertEquals(JsonPrimitive("nested empty"), JsonPointer.resolve(payload, "//"))
+        assertEquals(JsonPrimitive("root"), JsonPointer.resolve(payload, "/name"))
+    }
 }

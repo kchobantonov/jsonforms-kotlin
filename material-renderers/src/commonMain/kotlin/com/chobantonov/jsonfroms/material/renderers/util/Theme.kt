@@ -5,6 +5,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 enum class MaterialThemePreset(val displayName: String) {
     Blue("Blue"),
@@ -78,8 +80,18 @@ fun useInputVariant(
     config: Map<String, Any?>,
     uischema: ControlElement,
 ): MaterialInputVariant {
-    val optionVariant = (uischema.options["variant"] as? kotlinx.serialization.json.JsonPrimitive)?.content
-    val configVariant = config["variant"] as? String
+    fun member(value: Any?, key: String): Any? = when (value) {
+        is JsonObject -> value[key]
+        is Map<*, *> -> value[key]
+        else -> null
+    }
+    fun string(value: Any?): String? = when (value) {
+        is String -> value
+        is JsonPrimitive -> value.takeIf { it.isString }?.content
+        else -> null
+    }
+    val optionVariant = string(member(uischema.options["material"], "inputVariant"))
+    val configVariant = string(member(member(config["jsonformsExtended"], "material"), "inputVariant"))
     return parseInputVariant(optionVariant)
         ?: parseInputVariant(configVariant)
         ?: defaultInputVariant

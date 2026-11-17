@@ -9,73 +9,98 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellProps
+import com.chobantonov.jsonfroms.compose.asRendererProps
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
+import com.chobantonov.jsonfroms.compose.rememberPendingEditOwner
+import com.chobantonov.jsonfroms.compose.useJsonForms
+import com.chobantonov.jsonfroms.core.i18n.translateTemporalControlText
+import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
+import com.chobantonov.jsonfroms.core.mappers.invalidStringStoredValue
+import com.chobantonov.jsonfroms.core.util.resolveRestrict
+import com.chobantonov.jsonfroms.core.validation.ErrorObject
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.isDateTimeControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
-import com.chobantonov.jsonfroms.material.renderers.translatedActionText
-import com.chobantonov.jsonfroms.material.renderers.translatedText
+import com.chobantonov.jsonfroms.material.renderers.ActionText
 import kotlinx.serialization.json.JsonPrimitive
 
 val MaterialDateTimeControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props -> MaterialDateTimeControl(props) }
 
 @Composable
-fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
+internal fun MaterialDateTimeCell(props: ComposeJsonFormsCellProps) =
+    MaterialDateTimeControl(props.asRendererProps(), compact = true)
+
+@Composable
+fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boolean = false) {
     val bindings = materialControlBindings(props, "MaterialDateTimeControl")
+    val controller = useJsonForms().controller
     val controlProps = bindings.controlProps
+    if (!controlProps.visible) return
     val options = controlProps.config + controlProps.uischema.options
     val displayFormat = options.stringOption("dateTimeFormat") ?: DEFAULT_DATE_TIME_DISPLAY_FORMAT
-    val saveFormat = options.stringOption("dateTimeSaveFormat") ?: DEFAULT_DATE_TIME_SAVE_FORMAT
-    val translator = props.state.jsonforms.i18n.translate
+    val saveFormat = temporalSaveFormatForControl(controlProps.schema.format,
+        options.stringOption("dateTimeSaveFormat"), DEFAULT_DATE_TIME_SAVE_FORMAT,
+        bindings.stateProps.path, props.config)
+    val timeViews = resolveTimeViews(options["views"], displayFormat)
+    val pickerTimeViews = timeViews ?: defaultTimeViews(displayFormat)
+    val dateMode = resolveDateViewMode(options["views"], displayFormat)
+    val showActions = options.booleanOption("showActions") == true
     val i18nKeyPrefix = bindings.stateProps.i18nKeyPrefix
     val translationValues = mapOf("label" to bindings.stateProps.label, "format" to displayFormat)
-    val pickerText = translatedActionText(
-        translator,
-        i18nKeyPrefix,
-        "chooseDateTimeTooltip",
-        "chooseDateTimeAriaLabel",
-        "Choose date and time",
-        values = translationValues,
-    )
-    val invalidDateTimeText = translatedText(
-        translator,
-        i18nKeyPrefix,
-        "invalidDateTime",
-        "Invalid date and time. Expected $displayFormat.",
-        translationValues,
-    )
+    fun text(key: String, fallback: String) = translateTemporalControlText(props.state.jsonforms.i18n,
+        i18nKeyPrefix, key, fallback, displayFormat, translationValues)
+    val pickerText = ActionText(text("chooseDateTimeTooltip", "Choose date and time"),
+        text("chooseDateTimeAriaLabel", "Choose date and time"))
+    val invalidDateTimeText = text("invalidDateTime", "Invalid date and time. Expected $displayFormat.")
+    val pickerRangeText = text("dateTime.outOfRange", "Select a date and time within the allowed range.")
     val cancelText = options.stringOption("cancelLabel")
-        ?: translatedText(translator, i18nKeyPrefix, "cancel", "Cancel", translationValues)
-    val nextText = translatedText(translator, i18nKeyPrefix, "next", "Next", translationValues)
+        ?: text("cancel", "Cancel")
+    val nextText = text("next", "Next")
     val okText = options.stringOption("okLabel")
-        ?: translatedText(translator, i18nKeyPrefix, "ok", "OK", translationValues)
-    val selectTimeText = translatedText(
-        translator,
-        i18nKeyPrefix,
-        "selectTime",
-        "Select time",
-        translationValues,
-    )
+        ?: text("ok", "OK")
+    val selectTimeText = text("selectTime", "Select time")
+    val selectDateText = text("selectDate", "Select date")
     val committedValue = bindings.stateProps.data.toMaterialInputString()
+    val invalidStatus = invalidStringStoredValue(bindings.stateProps.data, bindings.stateProps.dataProvided)
+        ?.let { "${translateControlInvalidValue(props.state.jsonforms.i18n)}: $it" }
     val committedTemporal = parseDateTimeValue(
         committedValue,
         listOf(saveFormat, DEFAULT_DATE_TIME_SAVE_FORMAT, "YYYY-MM-DDTHH:mm:ss.SSSZ", "YYYY-MM-DDTHH:mm:ss"),
     )
+    val restrict = resolveRestrict(controlProps.uischema.options["restrict"], controlProps.config)
+    fun rangeError(value: TemporalValue): ErrorObject? = temporalRangeViolation(value,
+        controlProps.schema, TemporalBoundKind.DateTime, controller.state.jsonforms.core.data,
+        bindings.stateProps.path)?.let { violation -> ErrorObject(
+        keyword = violation.keyword,
+        message = temporalViolationMessage(props.state.jsonforms.i18n,
+            i18nKeyPrefix, displayFormat, TemporalBoundKind.DateTime, violation),
+        params = mapOf("bound" to violation.bound),
+    ) }
     val displayValue = committedTemporal?.let { formatTemporal(it, displayFormat) } ?: committedValue
-    var draftValue by remember(bindings.stateProps.path) { mutableStateOf(displayValue) }
-    var observedCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
-    var pickerStep by remember { mutableStateOf<PickerStep?>(null) }
-    var pendingValue by remember { mutableStateOf<TemporalValue?>(null) }
+    var draftValue by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(displayValue) }
+    var observedCommittedValue by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(committedValue) }
+    var pickerStep by remember(bindings.stateProps.path, props.uischema) { mutableStateOf<PickerStep?>(null) }
+    var pendingValue by remember(bindings.stateProps.path, props.uischema) { mutableStateOf<TemporalValue?>(null) }
     val maskInput = options.booleanOption("mask") != false
-    val localError = draftValue
-        .takeIf { it.isNotEmpty() && parseDateTimeValue(it, listOf(displayFormat)) == null }
-        ?.let { invalidDateTimeText }
+    val parsedDraft = draftValue.takeIf(String::isNotEmpty)?.let { parseDateTimeValue(it, listOf(displayFormat)) }
+    val localError = when {
+        draftValue.isEmpty() -> null
+        parsedDraft == null -> invalidDateTimeText
+        else -> rangeError(parsedDraft)?.message
+    }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
-
-    LaunchedEffect(committedValue, displayValue) {
+    val setPending = rememberPendingEditOwner("temporal:date-time:${bindings.stateProps.path}:${props.id}")
+    LaunchedEffect(props.uischema) { setPending(false) }
+    LaunchedEffect(committedValue, displayValue, props.state.jsonforms.core.data) {
         if (committedValue != observedCommittedValue) {
             draftValue = displayValue
             observedCommittedValue = committedValue
+            setPending(false)
+        } else if (draftValue != displayValue && parseDateTimeValue(draftValue, listOf(displayFormat)) == null) {
+            setPending(true)
         }
     }
 
@@ -83,6 +108,7 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
         val saved = formatTemporal(temporal, saveFormat)
         observedCommittedValue = saved
         draftValue = formatTemporal(temporal, displayFormat)
+        setPending(false)
         bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(saved))
     }
 
@@ -105,12 +131,16 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
         },
         showDescriptionOnlyWhenFocused = true,
         localError = localError,
+        storedValueStatus = invalidStatus,
+        compact = compact,
+        inputModifier = if (compact) Modifier.testTag("material-temporal-cell") else Modifier,
         clearLabel = bindings.clearLabel,
         onChange = { value ->
             if (!isAllowedTemporalEdit(draftValue, value, displayFormat, maskInput)) return@MaterialInputControl
             draftValue = value
             when {
                 value.isEmpty() -> {
+                    setPending(false)
                     observedCommittedValue = ""
                     bindings.dispatchProps.handleChange(
                         bindings.stateProps.path,
@@ -122,8 +152,7 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
                     if (temporal != null) {
                         commit(temporal)
                     } else {
-                        observedCommittedValue = value
-                        bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
+                        setPending(true)
                     }
                 }
             }
@@ -133,13 +162,63 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
     when (pickerStep) {
         PickerStep.Date -> {
             val initial = pendingValue ?: currentTemporalValue()
-            MaterialDatePickerDialog(
+            if (dateMode != DateViewMode.Day) MaterialDateViewsDialog(
+                initial = initial,
+                mode = dateMode,
+                titleLabel = selectDateText,
+                yearLabel = text("year", "Year"),
+                monthLabel = text("month", "Month"),
+                previousLabel = if (dateMode == DateViewMode.Year) text("previousYears", "Previous 12 years")
+                    else text("previousYear", "Previous"),
+                nextLabel = if (dateMode == DateViewMode.Year) text("nextYears", "Next 12 years")
+                    else text("nextYear", "Next"),
+                cancelLabel = cancelText,
+                okLabel = nextText,
+                invalidSelectionMessage = pickerRangeText,
+                canConfirm = { true },
+                showDismissAction = showActions,
+                commitOnSelection = !showActions,
+                onSelectionChange = { selected ->
+                    if (!showActions) {
+                        pendingValue = selected
+                        if (!restrict || rangeError(selected) == null) commit(selected)
+                    }
+                },
+                onDismiss = { pickerStep = null },
+                onConfirm = { selected ->
+                    pendingValue = selected
+                    pickerStep = PickerStep.Time
+                },
+            ) else MaterialDatePickerDialog(
                 initialDateMillis = initial.date.toPickerMillis(),
                 cancelLabel = cancelText,
                 okLabel = nextText,
+                invalidSelectionMessage = pickerRangeText,
+                isSelectableDate = { millis ->
+                    !restrict || timeViews != null || pickerMillisToDate(millis).let { date ->
+                        temporalDateHasSelectableMinute(TemporalValue(date.year, date.month.ordinal + 1, date.day),
+                            controlProps.schema, controller.state.jsonforms.core.data,
+                            bindings.stateProps.path, initial.second)
+                    }
+                },
+                showDismissAction = showActions,
+                commitOnSelection = !showActions,
+                onSelectionChange = { millis ->
+                    if (!showActions) {
+                        val date = pickerMillisToDate(millis)
+                        val selected = initial.copy(year = date.year, month = date.month.ordinal + 1,
+                            day = date.day)
+                        pendingValue = selected
+                        if (!restrict || rangeError(selected) == null) commit(selected)
+                    }
+                },
                 onDismiss = { pickerStep = null },
                 onConfirm = { millis ->
                     val date = pickerMillisToDate(millis)
+                    if (restrict && timeViews == null && !temporalDateHasSelectableMinute(
+                            TemporalValue(date.year, date.month.ordinal + 1, date.day), controlProps.schema,
+                        controller.state.jsonforms.core.data, bindings.stateProps.path, initial.second))
+                        return@MaterialDatePickerDialog
                     pendingValue = initial.copy(year = date.year, month = date.month.ordinal + 1, day = date.day)
                     pickerStep = PickerStep.Time
                 },
@@ -147,16 +226,31 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps) {
         }
         PickerStep.Time -> {
             val initial = pendingValue ?: currentTemporalValue()
-            MaterialTimePickerDialog(
-                initialHour = initial.hour,
-                initialMinute = initial.minute,
-                is24Hour = options.booleanOption("ampm") == false,
+            MaterialTimeViewsDialog(
+                initial = initial,
+                views = pickerTimeViews,
+                is24Hour = options.booleanOption("ampm") != true,
                 cancelLabel = cancelText,
                 okLabel = okText,
                 titleLabel = selectTimeText,
+                viewLabel = { view -> when (view) {
+                    TimeView.Hours -> text("hours", "Hours")
+                    TimeView.Minutes -> text("minutes", "Minutes")
+                    TimeView.Seconds -> text("seconds", "Seconds")
+                } },
+                invalidSelectionMessage = pickerRangeText,
+                canConfirm = { !restrict || rangeError(it) == null },
+                showActions = showActions,
+                onSelectionChange = { selected ->
+                    if (!showActions && (!restrict || rangeError(selected) == null)) {
+                        pendingValue = selected
+                        commit(selected)
+                    }
+                },
                 onDismiss = { pickerStep = null },
-                onConfirm = { hour, minute ->
-                    commit(initial.copy(hour = hour, minute = minute))
+                onConfirm = { selected ->
+                    if (restrict && rangeError(selected) != null) return@MaterialTimeViewsDialog
+                    commit(selected)
                     pickerStep = null
                 },
             )

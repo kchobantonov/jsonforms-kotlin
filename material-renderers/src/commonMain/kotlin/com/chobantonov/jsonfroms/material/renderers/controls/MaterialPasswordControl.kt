@@ -2,6 +2,7 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,26 +17,41 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellProps
+import com.chobantonov.jsonfroms.compose.asRendererProps
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
+import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.compose.OtpPasswordInput
+import com.chobantonov.jsonfroms.core.i18n.translatePasswordActionText
+import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
+import com.chobantonov.jsonfroms.core.mappers.invalidStringStoredValue
 import com.chobantonov.jsonfroms.core.testers.RankedTester
-import com.chobantonov.jsonfroms.core.testers.and
-import com.chobantonov.jsonfroms.core.testers.formatIs
-import com.chobantonov.jsonfroms.core.testers.isStringControl
+import com.chobantonov.jsonfroms.core.testers.isPasswordControl
 import com.chobantonov.jsonfroms.core.testers.rankWith
+import com.chobantonov.jsonfroms.core.util.acceptsRestrictedStringEdit
+import com.chobantonov.jsonfroms.core.util.resolveRestrict
 import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
-import com.chobantonov.jsonfroms.material.renderers.translatedActionText
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 
 val MaterialPasswordControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialPasswordControl(props)
 }
 
 @Composable
+internal fun MaterialPasswordCell(props: ComposeJsonFormsCellProps) =
+    MaterialPasswordControl(props.asRendererProps(), compact = true)
+
+@Composable
 fun MaterialPasswordControl(
     props: ComposeJsonFormsRendererProps,
+    compact: Boolean = false,
 ) {
     val bindings = materialControlBindings(
         props = props,
@@ -44,31 +60,55 @@ fun MaterialPasswordControl(
     val controlProps = bindings.controlProps
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     var passwordVisible by remember(bindings.stateProps.path) { mutableStateOf(false) }
-    val translator = props.state.jsonforms.i18n.translate
     val translationValues = mapOf("label" to bindings.stateProps.label)
-    val visibilityText = if (passwordVisible) {
-        translatedActionText(
-            translator = translator,
-            i18nKeyPrefix = bindings.stateProps.i18nKeyPrefix,
-            tooltipKey = "hidePasswordTooltip",
-            ariaLabelKey = "hidePasswordAriaLabel",
-            tooltipFallback = "Hide password",
-            values = translationValues,
-        )
-    } else {
-        translatedActionText(
-            translator = translator,
-            i18nKeyPrefix = bindings.stateProps.i18nKeyPrefix,
-            tooltipKey = "showPasswordTooltip",
-            ariaLabelKey = "showPasswordAriaLabel",
-            tooltipFallback = "Show password",
-            values = translationValues,
-        )
+    val visibilityText = translatePasswordActionText(props.state.jsonforms.i18n,
+        bindings.stateProps.i18nKeyPrefix, passwordVisible, translationValues)
+    val current = bindings.stateProps.data.toMaterialInputString()
+    val invalidStatus = invalidStringStoredValue(bindings.stateProps.data, bindings.stateProps.dataProvided)
+        ?.let { "${translateControlInvalidValue(props.state.jsonforms.i18n)}: $it" }
+    val otpCount = bindings.stateProps.schema.maxLength?.takeIf { count ->
+        !compact &&
+        count > 0 && bindings.stateProps.schema.minLength?.let { it in 0..count } == true &&
+            (controlProps.uischema.options["variant"] as? JsonPrimitive)?.contentOrNull == "otp"
+    }
+    val clearable = (controlProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val onPasswordChange: (String) -> Boolean = { value ->
+        if (!acceptsRestrictedStringEdit(current, value,
+                bindings.stateProps.schema.maxLength,
+                resolveRestrict(controlProps.uischema.options["restrict"], controlProps.config))) false
+        else {
+            bindings.dispatchProps.handleChange(bindings.stateProps.path,
+                if (value.isNotEmpty() || preserveEmptyValue) JsonPrimitive(value) else null)
+            true
+        }
+    }
+
+    if (otpCount != null) {
+        val colors = MaterialTheme.colorScheme
+        OtpPasswordInput(controlProps, current, otpCount, passwordVisible,
+            textColor = colors.onSurface, mutedColor = colors.onSurfaceVariant,
+            borderColor = colors.outline, focusColor = colors.primary, errorColor = colors.error,
+            storedValueStatus = invalidStatus,
+            trailingContent = {
+                if (clearable && current.isNotEmpty() && controlProps.enabled && !controlProps.readonly)
+                    ActionTooltip(bindings.clearLabel) {
+                        IconButton(onClick = { onPasswordChange("") }) {
+                            Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
+                        }
+                    }
+                ActionTooltip(visibilityText.tooltip) {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(if (passwordVisible) PasswordHiddenIcon else PasswordVisibleIcon,
+                            visibilityText.ariaLabel)
+                    }
+                }
+            }, onChange = onPasswordChange)
+        return
     }
 
     MaterialInputControl(
         props = controlProps,
-        value = bindings.stateProps.data.toMaterialInputString(),
+        value = current,
         keyboardType = KeyboardType.Password,
         visualTransformation = if (passwordVisible) {
             VisualTransformation.None
@@ -86,18 +126,16 @@ fun MaterialPasswordControl(
             }
         },
         clearLabel = bindings.clearLabel,
-        onChange = { value ->
-            bindings.dispatchProps.handleChange(
-                bindings.stateProps.path,
-                if (value.isNotEmpty() || preserveEmptyValue) JsonPrimitive(value) else null,
-            )
-        },
+        storedValueStatus = invalidStatus,
+        compact = compact,
+        inputModifier = if (compact) Modifier.testTag("material-password-cell") else Modifier,
+        onChange = { onPasswordChange(it) },
     )
 }
 
 val materialPasswordControlTester: RankedTester = rankWith(
     2,
-    and(isStringControl, formatIs("password")),
+    isPasswordControl,
 )
 
 private val PasswordVisibleIcon: ImageVector by lazy {

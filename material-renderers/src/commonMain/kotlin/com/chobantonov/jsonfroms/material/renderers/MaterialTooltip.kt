@@ -8,29 +8,23 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
+import com.chobantonov.jsonfroms.core.i18n.translateScopedText
 import com.chobantonov.jsonfroms.core.store.Translator
 
-internal data class ActionText(
+data class ActionText(
     val tooltip: String,
     val ariaLabel: String,
 )
 
-internal fun translatedText(
+fun translatedText(
     translator: Translator?,
     i18nKeyPrefix: String?,
     key: String,
     fallback: String,
     values: Map<String, Any?> = emptyMap(),
-): String {
-    val id = i18nKeyPrefix
-        ?.takeIf { it.isNotBlank() }
-        ?.let { "$it.$key" }
-        ?: key
-    return (translator ?: defaultTranslator).translate(id, fallback, values) ?: fallback
-}
+): String = translateScopedText(translator, i18nKeyPrefix, key, fallback, values)
 
-internal fun translatedActionText(
+fun translatedActionText(
     translator: Translator?,
     i18nKeyPrefix: String?,
     tooltipKey: String,

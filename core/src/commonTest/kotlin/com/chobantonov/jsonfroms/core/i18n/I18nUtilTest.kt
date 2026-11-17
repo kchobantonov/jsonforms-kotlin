@@ -3,8 +3,10 @@ package com.chobantonov.jsonfroms.core.i18n
 import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.GroupElement
+import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.Translator
+import com.chobantonov.jsonfroms.core.validation.ErrorObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -17,6 +19,8 @@ class I18nUtilTest {
             "categoryLabelKey" -> "Basic"
             "address.label" -> "Address"
             "group.label" -> "Translated group"
+            "intro.text" -> "Translated introduction"
+            "server.email" -> "Translated server error"
             else -> defaultMessage
         }
     }
@@ -40,6 +44,35 @@ class I18nUtilTest {
         val group = GroupElement(label = "Fallback", i18n = "group")
 
         assertEquals("Translated group", deriveLabelForUISchemaElement(group, translator))
+    }
+
+    @Test
+    fun `label uses i18n text key and falls back to authored text`() {
+        val label = LabelElement(text = "Original", i18n = "intro")
+        assertEquals("Translated introduction", deriveLabelForUISchemaElement(label, translator))
+        assertEquals("Original", deriveLabelForUISchemaElement(label, defaultTranslator))
+    }
+
+    @Test
+    fun `additional error with explicit i18n key follows locale translation`() {
+        val error = ErrorObject(instancePath = "/email", message = "Server error", params = mapOf("i18nKey" to "server.email"))
+        assertEquals("Translated server error", defaultErrorTranslator.translate(error, translator, null))
+        assertEquals("Server error", defaultErrorTranslator.translate(error, defaultTranslator, null))
+    }
+
+    @Test
+    fun scopedTextUsesPrefixValuesAndFallback() {
+        var observedValues: Map<String, Any?> = emptyMap()
+        val scoped = Translator { id, _, values ->
+            observedValues = values
+            if (id == "root.invalidDate") "Невалидна дата" else null
+        }
+        val values = mapOf<String, Any?>("format" to "YYYY-MM-DD")
+
+        assertEquals("Невалидна дата", translateScopedText(scoped, "root", "invalidDate", "Invalid date", values))
+        assertEquals(values, observedValues)
+        assertEquals("Fallback", translateScopedText(scoped, "root", "unknown", "Fallback"))
+        assertEquals("Fallback", translateScopedText(null, null, "unknown", "Fallback"))
     }
 
     @Test

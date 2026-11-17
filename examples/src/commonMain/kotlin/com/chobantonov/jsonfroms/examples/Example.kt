@@ -20,6 +20,17 @@ enum class ExampleSource(val displayName: String) {
     JsonForms("JSON Forms examples"),
 }
 
+enum class ExampleFeatureGroup {
+    Controls,
+    Collections,
+    Layout,
+    Composition,
+    Validation,
+    Internationalization,
+    Advanced,
+    Other,
+}
+
 data class ExampleDescription(
     val name: String,
     val label: String,
@@ -37,6 +48,10 @@ data class ExampleDescription(
     val localizedTranslations: Map<String, Map<String, String>> = emptyMap(),
     val dataProvided: Boolean = true,
     val source: ExampleSource = ExampleSource.JsonForms,
+    val featureGroup: ExampleFeatureGroup = ExampleFeatureGroup.Other,
+    val sourceUrl: String? = null,
+    val capabilityNotice: Map<String, String> = emptyMap(),
+    val invalidData: JsonElement? = null,
 )
 
 data class StateProps(

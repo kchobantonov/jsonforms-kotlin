@@ -16,20 +16,35 @@ fun JsonObject.toUiSchemaElement(): UiSchemaElement {
     }.orEmpty() }
 
     return when (type) {
-        "VerticalLayout" -> VerticalLayout(rule, options, elements)
-        "HorizontalLayout" -> HorizontalLayout(rule, options, elements)
-        "Group" -> GroupElement(optionalString("label"), optionalString("i18n"), rule, options, elements)
-        "Category" -> CategoryElement(requiredString("label"), optionalString("i18n"), rule, options, elements)
-        "Categorization" -> CategorizationElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements)
-        "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options)
-        "Control" -> ControlElement(requiredString("scope"), controlLabel(), optionalString("i18n"), rule, options)
-        "ListWithDetail" -> ListWithDetailElement(requiredString("scope"), optionalString("i18n"), rule, options)
+        "VerticalLayout" -> VerticalLayout(rule, options, elements, optionalString("name"))
+        "HorizontalLayout" -> HorizontalLayout(rule, options, elements, optionalString("name"))
+        "Group" -> GroupElement(optionalString("label"), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Category" -> CategoryElement(requiredString("label"), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Categorization" -> CategorizationElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options, optionalString("name"))
+        "Spacer" -> SpacerElement(this["size"], rule, options, optionalString("name"))
+        "Separator" -> SeparatorElement(rule, options, optionalString("name"))
+        "Link" -> LinkElement(requiredString("href"), optionalString("label"), optionalString("target"),
+            optionalString("rel"), optionalString("i18n"), rule, options, optionalString("name"))
+        "ImageView" -> ImageViewElement(
+            src = optionalImageField("src"),
+            scope = optionalImageField("scope"),
+            alt = optionalImageField("alt"),
+            i18n = optionalString("i18n"),
+            rule = rule,
+            options = options,
+            name = optionalString("name"),
+        )
+        "Control" -> ControlElement(requiredString("scope"), controlLabel(), optionalString("i18n"), rule, options, optionalString("name"))
+        "ListWithDetail" -> ListWithDetailElement(requiredString("scope"), optionalString("i18n"), rule, options, optionalString("name"))
         else -> UnknownUiSchemaElement(
             type = type,
             rule = rule,
             options = options,
             properties = JsonObject(filterKeys { it !in setOf("type", "rule", "options", "elements") }),
             elements = elements,
+            elementsPresent = "elements" in this,
+            optionsPresent = "options" in this,
         )
     }
 }
@@ -78,14 +93,22 @@ private fun JsonObject.requiredConditions(): List<Condition> =
 private fun JsonObject.requiredString(name: String): String =
     optionalString(name) ?: throw IllegalArgumentException("$name must be a string")
 
+private fun JsonObject.optionalImageField(name: String): String? {
+    if (name !in this) return null
+    return optionalString(name) ?: throw IllegalArgumentException("$name must be a string")
+}
+
 private fun JsonObject.optionalString(name: String): String? =
     (this[name] as? JsonPrimitive)?.takeIf { it.isString }?.content
 
-private fun JsonObject.optionalBoolean(name: String): Boolean? = when ((this[name] as? JsonPrimitive)?.content) {
-    "true" -> true
-    "false" -> false
-    else -> null
-}
+private fun JsonObject.optionalBoolean(name: String): Boolean? =
+    (this[name] as? JsonPrimitive)?.takeUnless { it.isString }?.let {
+        when (it.content) {
+            "true" -> true
+            "false" -> false
+            else -> null
+        }
+    }
 
 private fun JsonObject.optionalObject(name: String): JsonObject? = when (val value = this[name]) {
     null, JsonNull -> null

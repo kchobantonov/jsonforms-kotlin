@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "title": "Deployment contact",
+  "properties": {
+    "contact": {
+      "type": "object",
+      "title": "Contact",
+      "properties": {
+        "email": {
+          "type": "string",
+          "title": "Email"
+        },
+        "phone": {
+          "type": "string",
+          "title": "Phone"
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "title": "Summary",
+      "minLength": 5
+    }
+  },
+  "required": [
+    "summary"
+  ]
+}

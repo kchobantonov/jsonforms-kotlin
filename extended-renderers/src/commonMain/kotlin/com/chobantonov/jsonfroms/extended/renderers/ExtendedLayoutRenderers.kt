@@ -5,9 +5,11 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 internal data class ExtendedLayoutRenderers(
     val split: ComposeJsonFormsRenderer,
     val slot: ComposeJsonFormsRenderer,
+    val template: ComposeJsonFormsRenderer,
 )
 
 internal val extendedLayouts = ExtendedLayoutRenderers(
     split = ComposeJsonFormsRenderer { SplitLayout(it) },
     slot = ComposeJsonFormsRenderer { NamedContent(it, ExtendedSlotsConfigKey, "slot") },
+    template = ComposeJsonFormsRenderer { TemplateContent(it) },
 )

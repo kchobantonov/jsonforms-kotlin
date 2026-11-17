@@ -28,11 +28,15 @@ private fun generateUiSchema(
     schemaName: String,
     layoutType: String,
     rootSchema: JsonSchema,
+    resolvingRefs: Set<String> = emptySet(),
 ): UiSchemaElement {
     val ref = (jsonSchema["\$ref"] as? JsonPrimitive)?.content
     if (ref != null) {
-        val resolved = resolveSchema(rootSchema, ref, rootSchema) ?: jsonSchema
-        return generateUiSchema(resolved, currentRef, schemaName, layoutType, rootSchema)
+        if (ref in resolvingRefs) return createControlElement(currentRef)
+        val resolved = resolveSchema(rootSchema, ref, rootSchema)
+            ?: return createControlElement(currentRef)
+        return generateUiSchema(resolved, currentRef, schemaName, layoutType, rootSchema,
+            resolvingRefs + ref)
     }
 
     if (isCombinator(jsonSchema)) {

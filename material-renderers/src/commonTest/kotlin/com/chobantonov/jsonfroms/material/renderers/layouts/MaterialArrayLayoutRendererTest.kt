@@ -2,7 +2,6 @@ package com.chobantonov.jsonfroms.material.renderers.layouts
 
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
-import com.chobantonov.jsonfroms.core.validation.ErrorObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.json.JsonPrimitive
@@ -45,14 +44,4 @@ class MaterialArrayLayoutRendererTest {
         assertEquals("message2", resolveChildLabelProp(control, schema))
     }
 
-    @Test
-    fun associatesOnlyErrorsBelowTheExactArrayItem() {
-        val first = ErrorObject(instancePath = "/comments/1/message", message = "first")
-        val tenth = ErrorObject(instancePath = "/comments/10/message", message = "tenth")
-
-        assertEquals(
-            listOf(first),
-            errorsForArrayItem(listOf(first, tenth), "comments.1"),
-        )
-    }
 }

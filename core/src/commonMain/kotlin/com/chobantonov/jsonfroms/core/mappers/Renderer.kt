@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.core.mappers
 import com.chobantonov.jsonfroms.core.generators.Generate
 import com.chobantonov.jsonfroms.core.i18n.defaultErrorTranslator
 import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
+import com.chobantonov.jsonfroms.core.i18n.translateControlEmptyOption
 import com.chobantonov.jsonfroms.core.i18n.deriveLabelForUISchemaElement
 import com.chobantonov.jsonfroms.core.i18n.getCombinedErrorMessage
 import com.chobantonov.jsonfroms.core.i18n.getI18nKey
@@ -35,6 +36,8 @@ import com.chobantonov.jsonfroms.core.store.getSchema
 import com.chobantonov.jsonfroms.core.store.getSubErrorsAt
 import com.chobantonov.jsonfroms.core.store.getValidator
 import com.chobantonov.jsonfroms.core.actions.JsonFormsAction
+import com.chobantonov.jsonfroms.core.actions.MoveArrayContext
+import com.chobantonov.jsonfroms.core.actions.MoveOperation
 import com.chobantonov.jsonfroms.core.actions.UpdateAction
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -130,6 +133,7 @@ data class StatePropsOfControl(
     val renderers: List<JsonFormsRendererRegistryEntry<*>> = emptyList(),
     val cells: List<JsonFormsCellRendererRegistryEntry<*>> = emptyList(),
     val errors: String,
+    val errorsBeforeTouch: String = errors,
     val rootSchema: JsonSchema,
     val id: String,
     val label: String,
@@ -154,6 +158,7 @@ data class ControlProps(
     val renderers: List<JsonFormsRendererRegistryEntry<*>> = emptyList(),
     val cells: List<JsonFormsCellRendererRegistryEntry<*>> = emptyList(),
     val errors: String,
+    val errorsBeforeTouch: String = errors,
     val rootSchema: JsonSchema,
     val id: String,
     val label: String,
@@ -247,6 +252,7 @@ data class StatePropsOfControlWithOptions(
     val uischema: ControlElement,
     val schema: JsonSchema,
     val data: JsonElement,
+    val dataProvided: Boolean = true,
     val enabled: Boolean,
     val readonly: Boolean = false,
     val visible: Boolean,
@@ -254,6 +260,7 @@ data class StatePropsOfControlWithOptions(
     val renderers: List<JsonFormsRendererRegistryEntry<*>> = emptyList(),
     val cells: List<JsonFormsCellRendererRegistryEntry<*>> = emptyList(),
     val errors: String,
+    val errorsBeforeTouch: String = errors,
     val rootSchema: JsonSchema,
     val id: String,
     val label: String,
@@ -318,12 +325,15 @@ fun enumToEnumOptionMapper(
     value: JsonElement,
     translate: Translator? = null,
     i18nKeyPrefix: String? = null,
+    emptyOptionLabel: String = "Empty value",
 ): EnumOption {
-    val fallback = value.toString().trim('"')
+    val emptyString = value is JsonPrimitive && value.isString && value.content.isEmpty()
+    val fallback = if (emptyString) emptyOptionLabel else value.toString().trim('"')
+    val translationKey = if (emptyString) "enum.emptyOption" else fallback
     val translated = if (translate != null && i18nKeyPrefix != null) {
-        translate.translate("$i18nKeyPrefix.$fallback", fallback, emptyMap())
+        translate.translate("$i18nKeyPrefix.$translationKey", fallback, emptyMap())
     } else if (translate != null) {
-        translate.translate(fallback, fallback, emptyMap())
+        translate.translate(translationKey, fallback, emptyMap())
     } else {
         null
     }
@@ -334,13 +344,18 @@ fun oneOfToEnumOptionMapper(
     oneOfSubSchema: JsonSchema,
     translate: Translator? = null,
     i18nKeyPrefix: String? = null,
+    emptyOptionLabel: String = "Empty value",
 ): EnumOption {
     val constValue = oneOfSubSchema["const"] ?: JsonNull
-    val title = (oneOfSubSchema["title"] as? JsonPrimitive)?.content ?: constValue.toString().trim('"')
+    val authoredTitle = (oneOfSubSchema["title"] as? JsonPrimitive)?.content
+    val untitledEmptyString = authoredTitle == null && constValue is JsonPrimitive &&
+        constValue.isString && constValue.content.isEmpty()
+    val title = authoredTitle ?: if (untitledEmptyString) emptyOptionLabel else constValue.toString().trim('"')
+    val translationKey = if (untitledEmptyString) "enum.emptyOption" else title
     val translated = if (translate != null && i18nKeyPrefix != null) {
-        translate.translate("$i18nKeyPrefix.$title", title, mapOf("schema" to oneOfSubSchema))
+        translate.translate("$i18nKeyPrefix.$translationKey", title, mapOf("schema" to oneOfSubSchema))
     } else if (translate != null) {
-        translate.translate(title, title, mapOf("schema" to oneOfSubSchema))
+        translate.translate(translationKey, title, mapOf("schema" to oneOfSubSchema))
     } else {
         null
     }
@@ -400,7 +415,7 @@ fun extractDefaults(
     val resolvedSchema = ((schema["\$ref"] as? JsonPrimitive)?.content?.let {
         resolveSchema(rootSchema, it, rootSchema)
     } ?: schema)
-    resolvedSchema["default"]?.let { return it }
+    resolvedSchema["default"]?.let { return copyInitialValue(it) }
     val properties = resolvedSchema["properties"] as? JsonObject ?: return buildJsonObject { }
     return buildJsonObject {
         properties.forEach { (key, value) ->
@@ -425,7 +440,7 @@ private fun extractExplicitDefault(
     val resolvedSchema = ((schema["\$ref"] as? JsonPrimitive)?.content?.let {
         resolveSchema(rootSchema, it, rootSchema)
     } ?: schema)
-    resolvedSchema["default"]?.let { return it }
+    resolvedSchema["default"]?.let { return copyInitialValue(it) }
 
     if (hasType(resolvedSchema, "object")) {
         val nestedDefaults = extractDefaults(resolvedSchema, rootSchema)
@@ -441,6 +456,13 @@ private fun extractExplicitDefault(
         }
     }
     return null
+}
+
+/** Keep Add's explicit container defaults separate from the schema and other new items. */
+private fun copyInitialValue(value: JsonElement): JsonElement = when (value) {
+    is JsonObject -> JsonObject(value.mapValues { (_, child) -> copyInitialValue(child) })
+    is JsonArray -> JsonArray(value.map(::copyInitialValue))
+    else -> value
 }
 
 private fun isRequired(
@@ -470,7 +492,8 @@ fun mapStateToControlProps(
     val path = composeWithUi(uischema, ownProps.own.path)
     val config = getConfig(state)
     val visible = if (ownProps.own.visible == null || hasShowRule(uischema)) {
-        com.chobantonov.jsonfroms.core.util.Runtime.isVisible(uischema, rootData, getValidator(state))
+        com.chobantonov.jsonfroms.core.util.Runtime.isVisible(
+            uischema, rootData, getValidator(state), ownProps.own.path, config)
     } else {
         ownProps.own.visible
     }
@@ -487,14 +510,20 @@ fun mapStateToControlProps(
     val dataProvided = if (path.isBlank()) state.jsonforms.core.dataProvided else data != null
     val labelDesc = createLabelDescriptionFrom(uischema, resolvedSchema)
     val label = if (labelDesc.show == true) labelDesc.text.orEmpty() else ""
-    val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, resolvedSchema, rootData, config)
-    val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, resolvedSchema, rootData, config)
+    val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, resolvedSchema,
+        rootData, config, ownProps.own.path)
+    val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, resolvedSchema,
+        rootData, config, ownProps.own.path)
     val translator = state.jsonforms.i18n.translate ?: defaultTranslator
     val errorTranslator = state.jsonforms.i18n.translateError ?: defaultErrorTranslator
     val i18nKeyPrefix = getI18nKeyPrefix(resolvedSchema, uischema, path)
     val i18nLabel = translator.translate(getI18nKey(resolvedSchema, uischema, path, "label"), label, emptyMap()) ?: label
     val i18nDescription = translator.translate(getI18nKey(resolvedSchema, uischema, path, "description"), description, emptyMap()) ?: description
     val i18nErrorMessage = getCombinedErrorMessage(errors, errorTranslator, translator, resolvedSchema, uischema, path)
+    val i18nErrorBeforeTouch = getCombinedErrorMessage(
+        filterControlErrorsBeforeTouch(errors, config + uischema.options),
+        errorTranslator, translator, resolvedSchema, uischema, path,
+    )
 
     return StatePropsOfControl(
         config = config,
@@ -509,6 +538,7 @@ fun mapStateToControlProps(
         renderers = ownProps.own.renderers ?: getRenderers(state),
         cells = ownProps.own.cells ?: getCells(state),
         errors = i18nErrorMessage,
+        errorsBeforeTouch = i18nErrorBeforeTouch,
         rootSchema = rootSchema,
         id = ownProps.id ?: path,
         label = i18nLabel,
@@ -537,14 +567,15 @@ fun mapStateToEnumControlProps(
     val props = mapStateToControlProps(state, ownProps)
     val schema = props.schema
     val options = enumProps.options
-        ?: (schema["enum"] as? JsonArray)?.map { enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix) }
-        ?: schema["const"]?.let { listOf(enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix)) }
+        ?: (schema["enum"] as? JsonArray)?.map { enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix, translateControlEmptyOption(state.jsonforms.i18n)) }
+        ?: schema["const"]?.let { listOf(enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix, translateControlEmptyOption(state.jsonforms.i18n))) }
         ?: emptyList()
     return StatePropsOfControlWithOptions(
         config = props.config,
         uischema = props.uischema,
         schema = props.schema,
         data = props.data,
+        dataProvided = props.dataProvided,
         enabled = props.enabled,
         readonly = props.readonly,
         visible = props.visible,
@@ -552,6 +583,7 @@ fun mapStateToEnumControlProps(
         renderers = props.renderers,
         cells = props.cells,
         errors = props.errors,
+        errorsBeforeTouch = props.errorsBeforeTouch,
         rootSchema = props.rootSchema,
         id = props.id,
         label = props.label,
@@ -571,7 +603,7 @@ fun mapStateToOneOfEnumControlProps(
     val oneOf = props.schema["oneOf"] as? JsonArray
     val options = enumProps.options
         ?: oneOf?.mapNotNull(JsonElement::asJsonSchemaOrNull)?.map {
-            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix)
+            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix, translateControlEmptyOption(state.jsonforms.i18n))
         }
         ?: emptyList()
     return StatePropsOfControlWithOptions(
@@ -579,6 +611,7 @@ fun mapStateToOneOfEnumControlProps(
         uischema = props.uischema,
         schema = props.schema,
         data = props.data,
+        dataProvided = props.dataProvided,
         enabled = props.enabled,
         readonly = props.readonly,
         visible = props.visible,
@@ -586,6 +619,7 @@ fun mapStateToOneOfEnumControlProps(
         renderers = props.renderers,
         cells = props.cells,
         errors = props.errors,
+        errorsBeforeTouch = props.errorsBeforeTouch,
         rootSchema = props.rootSchema,
         id = props.id,
         label = props.label,
@@ -608,10 +642,10 @@ fun mapStateToMultiEnumControlProps(
     } ?: items
     val options = enumProps.options
         ?: (items?.get("oneOf") as? JsonArray)?.mapNotNull(JsonElement::asJsonSchemaOrNull)?.map {
-            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix)
+            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix, translateControlEmptyOption(state.jsonforms.i18n))
         }
         ?: (items?.get("enum") as? JsonArray)?.map {
-            enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix)
+            enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, props.i18nKeyPrefix, translateControlEmptyOption(state.jsonforms.i18n))
         }
         ?: emptyList()
     return StatePropsOfControlWithOptions(
@@ -619,6 +653,7 @@ fun mapStateToMultiEnumControlProps(
         uischema = props.uischema,
         schema = props.schema,
         data = props.data,
+        dataProvided = props.dataProvided,
         enabled = props.enabled,
         readonly = props.readonly,
         visible = props.visible,
@@ -626,6 +661,7 @@ fun mapStateToMultiEnumControlProps(
         renderers = props.renderers,
         cells = props.cells,
         errors = props.errors,
+        errorsBeforeTouch = props.errorsBeforeTouch,
         rootSchema = props.rootSchema,
         id = props.id,
         label = props.label,
@@ -738,6 +774,7 @@ fun mapDispatchToArrayControlProps(
             dispatch.dispatch(
                 UpdateAction(
                     path = path,
+                    context = MoveArrayContext(listOf(MoveOperation(toMove, toMove - 1))),
                     updater = { current ->
                         val array = (current as? JsonArray)?.toList().orEmpty()
                         JsonArray(moveUp(array, toMove))
@@ -751,6 +788,7 @@ fun mapDispatchToArrayControlProps(
             dispatch.dispatch(
                 UpdateAction(
                     path = path,
+                    context = MoveArrayContext(listOf(MoveOperation(toMove, toMove + 1))),
                     updater = { current ->
                         val array = (current as? JsonArray)?.toList().orEmpty()
                         JsonArray(moveDown(array, toMove))
@@ -767,14 +805,17 @@ fun mapStateToLayoutProps(
 ): StatePropsOfLayout {
     val uischema = ownProps.own.uischema ?: error("Layout uischema is required")
     val rootData = getData(state)
+    val config = getConfig(state)
     val visible = if (ownProps.own.visible == null || hasShowRule(uischema)) {
-        com.chobantonov.jsonfroms.core.util.Runtime.isVisible(uischema, rootData, getValidator(state))
+        com.chobantonov.jsonfroms.core.util.Runtime.isVisible(
+            uischema, rootData, getValidator(state), ownProps.own.path, config)
     } else {
         ownProps.own.visible
     }
-    val config = getConfig(state)
-    val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, null, rootData, config)
-    val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, null, rootData, config)
+    val enabled = isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, null, rootData,
+        config, ownProps.own.path)
+    val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, null, rootData,
+        config, ownProps.own.path)
     val label = if (isLabelable(uischema)) {
         deriveLabelForUISchemaElement(uischema, state.jsonforms.i18n.translate ?: defaultTranslator)
     } else {

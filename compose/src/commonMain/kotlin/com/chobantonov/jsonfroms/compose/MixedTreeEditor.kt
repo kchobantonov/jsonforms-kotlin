@@ -71,6 +71,7 @@ fun MixedTreeEditor(
     deleteLabel: String,
     confirmLabel: String,
     cancelLabel: String,
+    interactive: Boolean,
     searchLabel: String,
     clearSearchLabel: String,
     showPrimitives: Boolean,
@@ -86,7 +87,7 @@ fun MixedTreeEditor(
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         if (maxWidth < 640.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
+                TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, interactive, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
                 DetailPane(selected, colors, detail)
             }
         } else {
@@ -96,7 +97,7 @@ fun MixedTreeEditor(
                 verticalAlignment = Alignment.Top,
             ) {
                 Box(Modifier.width(280.dp)) {
-                    TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
+                    TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, interactive, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
                 }
                 Box(Modifier.weight(1f)) { DetailPane(selected, colors, detail) }
             }
@@ -113,6 +114,7 @@ private fun TreePane(
     deleteLabel: String,
     confirmLabel: String,
     cancelLabel: String,
+    interactive: Boolean,
     searchLabel: String,
     clearSearchLabel: String,
     showPrimitives: Boolean,
@@ -162,6 +164,7 @@ private fun TreePane(
                         deleteLabel = deleteLabel,
                         confirmLabel = confirmLabel,
                         cancelLabel = cancelLabel,
+                        interactive = interactive,
                         showPrimitives = showPrimitives,
                         showPrimitivesLabel = showPrimitivesLabel,
                         hidePrimitivesLabel = hidePrimitivesLabel,
@@ -188,6 +191,7 @@ private fun TreeNodeRow(
     deleteLabel: String,
     confirmLabel: String,
     cancelLabel: String,
+    interactive: Boolean,
     showPrimitives: Boolean,
     showPrimitivesLabel: String,
     hidePrimitivesLabel: String,
@@ -242,12 +246,13 @@ private fun TreeNodeRow(
                 if (editing) {
                     OutlinedTextField(
                         value = draft,
-                        onValueChange = { draft = it },
+                        onValueChange = { if (interactive) draft = it },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
+                        enabled = interactive,
                     )
                     ActionIcon(JsonFormsActionIcons.Confirm, confirmLabel, colors.text) {
-                        onRename(node, draft)
+                        if (interactive) onRename(node, draft)
                         editing = false
                     }
                     ActionIcon(JsonFormsActionIcons.Cancel, cancelLabel, colors.secondaryText) {
@@ -276,10 +281,10 @@ private fun TreeNodeRow(
                         )
                     }
                     Row(Modifier.graphicsLayer { alpha = if (showActions) 1f else 0f }) {
-                        if (node.canRename) {
+                        if (interactive && node.canRename) {
                             ActionIcon(JsonFormsActionIcons.Rename, renameLabel, colors.secondaryText) { editing = true }
                         }
-                        if (node.canDelete) {
+                        if (interactive && node.canDelete) {
                             ActionIcon(JsonFormsActionIcons.Delete, deleteLabel, colors.danger) { onDelete(node) }
                         }
                     }
@@ -300,6 +305,7 @@ private fun TreeNodeRow(
                 deleteLabel,
                 confirmLabel,
                 cancelLabel,
+                interactive,
                 showPrimitives,
                 showPrimitivesLabel,
                 hidePrimitivesLabel,

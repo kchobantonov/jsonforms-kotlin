@@ -1,0 +1,533 @@
+{
+  "type": "VerticalLayout",
+  "options": {
+    "gap": "1rem"
+  },
+  "elements": [
+    {
+      "type": "Label",
+      "i18n": "intro",
+      "text": "Compare array presentations, complex cells, row dialogs and panels. The tabs share the same data."
+    },
+    {
+      "type": "Categorization",
+      "elements": [
+        {
+          "type": "Category",
+          "name": "table",
+          "i18n": "tableTab",
+          "label": "Table",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "table",
+              "text": "Sessions have a nested Room, which would normally select expandable item forms. options.table keeps it in a column, and cells.room gives that column a one-line summary and a detail dialog."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/sessions",
+              "options": {
+                "table": true,
+                "showSortButtons": true,
+                "cells": {
+                  "room": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    "detail": {
+                      "type": "VerticalLayout",
+                      "elements": [
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/name",
+                          "options": {}
+                        },
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/floor",
+                          "options": {}
+                        }
+                      ]
+                    }
+                  }
+                },
+                "collapsible": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "expandable",
+          "i18n": "expandableTab",
+          "label": "Expandable",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "expandable",
+              "text": "Speakers contain a nested array, so the expandable form is selected without asking. Headers take their label from elementLabelProp."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/speakers",
+              "options": {
+                "elementLabelProp": "name",
+                "showSortButtons": true,
+                "detail": {
+                  "type": "VerticalLayout",
+                  "elements": [
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/track",
+                      "options": {}
+                    },
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/bio",
+                      "options": {
+                        "multi": true
+                      }
+                    },
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/links",
+                      "options": {}
+                    }
+                  ]
+                },
+                "collapsible": true
+              }
+            },
+            {
+              "type": "Label",
+              "i18n": "expandableOptions",
+              "text": "The same renderer with the options inverted: everything starts closed, a new item stays closed, the index marker is hidden, and the child-error summary is suppressed - validation is not."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/announcements",
+              "options": {
+                "elementLabelProp": "text",
+                "collapsed": true,
+                "collapseNewItems": true,
+                "hideAvatar": true,
+                "hideArraySummaryValidation": true,
+                "collapsible": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "listWithDetail",
+          "i18n": "listTab",
+          "label": "List with detail",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "list",
+              "text": "ListWithDetail is chosen by element type, not by a Control option. Pick an item on the left; the form on the right edits that item's own path."
+            },
+            {
+              "type": "ListWithDetail",
+              "scope": "#/properties/sponsors",
+              "options": {
+                "elementLabelProp": "name",
+                "detail": {
+                  "type": "VerticalLayout",
+                  "elements": [
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/tier",
+                      "options": {}
+                    },
+                    {
+                      "type": "Control",
+                      "scope": "#/properties/notes",
+                      "options": {
+                        "multi": true
+                      }
+                    }
+                  ]
+                },
+                "collapsible": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "cells",
+          "label": "Scalar and composite cells",
+          "i18n": "cellsTab",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "cells",
+              "text": "Both views edit the same staff. Try each scalar type, open address and phone details, clear a draft and cancel or apply it, and change grid pages. Sorting changes the view; row dragging changes the stored order."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/staff",
+              "options": {
+                "table": true,
+                "showSortButtons": true,
+                "cells": {
+                  "address": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#/properties/street",
+                      "options": {}
+                    },
+                    "showEmptyButton": true,
+                    "detail": {
+                      "type": "VerticalLayout",
+                      "elements": [
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/street"
+                        },
+                        {
+                          "type": "HorizontalLayout",
+                          "elements": [
+                            {
+                              "type": "Control",
+                              "scope": "#/properties/city"
+                            },
+                            {
+                              "type": "Control",
+                              "scope": "#/properties/postalCode"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/country"
+                        }
+                      ]
+                    }
+                  },
+                  "phoneNumbers": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#"
+                    },
+                    "detail": {
+                      "type": "Control",
+                      "scope": "#"
+                    },
+                    "showEmptyButton": true
+                  }
+                },
+                "collapsible": true
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "bounds",
+          "i18n": "boundsTab",
+          "label": "Add, remove and bounds",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "bounds",
+              "text": "Review rounds allow one to three. With restrict, Add stops at three and Delete stops at one. Add also shows initialization: a new round arrives as {\"active\": true}, and its missing name stays an error."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/rounds",
+              "options": {
+                "elementLabelProp": "name",
+                "showSortButtons": true,
+                "collapsible": true
+              }
+            },
+            {
+              "type": "Label",
+              "i18n": "disabled",
+              "text": "The opening checklist is fixed: disableAdd and disableRemove take the buttons away, and every field stays editable."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/checklist",
+              "options": {
+                "disableAdd": true,
+                "disableRemove": true,
+                "collapsible": true
+              }
+            },
+            {
+              "type": "Label",
+              "i18n": "contains",
+              "text": "The reviewers array must contain a lead. That failure belongs to the array, not to any one reviewer - and it is reported even when the array is empty."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/reviewers",
+              "options": {
+                "collapsible": true
+              },
+              "i18n": "arrayControls.reviewers"
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "rowDialog",
+          "label": "Row and cell dialogs",
+          "i18n": "rowDialogTab",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "rowDialogHelp",
+              "text": "Edit details opens the whole session. Editing Room opens only the complex cell. Both dialogs can be moved by their header, resized from the corner, and maximized or restored. Apply commits; Cancel discards the draft."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/sessions",
+              "options": {
+                "table": true,
+                "showSortButtons": true,
+                "cells": {
+                  "room": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    "detail": {
+                      "type": "VerticalLayout",
+                      "elements": [
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/name",
+                          "options": {}
+                        },
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/floor",
+                          "options": {}
+                        }
+                      ]
+                    },
+                    "dialog": {
+                      "width": 720,
+                      "height": "60vh",
+                      "draggable": true,
+                      "resizable": true,
+                      "maximizable": true
+                    }
+                  }
+                },
+                "collapsible": true,
+                "rowDetail": {
+                  "presentation": "dialog",
+                  "detail": {
+                    "type": "VerticalLayout",
+                    "elements": [
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/title"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/track"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/minutes"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/room"
+                      }
+                    ]
+                  },
+                  "dialog": {
+                    "width": 900,
+                    "height": "75vh",
+                    "draggable": true,
+                    "resizable": true,
+                    "maximizable": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "rowSide",
+          "label": "Side panel",
+          "i18n": "rowSideTab",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "rowSideHelp",
+              "text": "Edit a session in the side panel; changes apply immediately. Room still has its own movable, resizable, maximizable cell dialog."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/sessions",
+              "options": {
+                "table": true,
+                "showSortButtons": true,
+                "cells": {
+                  "room": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    "detail": {
+                      "type": "VerticalLayout",
+                      "elements": [
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/name",
+                          "options": {}
+                        },
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/floor",
+                          "options": {}
+                        }
+                      ]
+                    },
+                    "dialog": {
+                      "width": 720,
+                      "height": "60vh",
+                      "draggable": true,
+                      "resizable": true,
+                      "maximizable": true
+                    }
+                  }
+                },
+                "collapsible": true,
+                "rowDetail": {
+                  "presentation": "panel",
+                  "detail": {
+                    "type": "VerticalLayout",
+                    "elements": [
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/title"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/track"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/minutes"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/room"
+                      }
+                    ]
+                  },
+                  "placement": "right",
+                  "collapsed": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Category",
+          "name": "rowBottom",
+          "label": "Bottom panel",
+          "i18n": "rowBottomTab",
+          "elements": [
+            {
+              "type": "Label",
+              "i18n": "rowBottomHelp",
+              "text": "Edit details opens the initially collapsed bottom panel. Changes apply immediately; Room uses an independent cell dialog."
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/sessions",
+              "options": {
+                "table": true,
+                "showSortButtons": true,
+                "cells": {
+                  "room": {
+                    "summary": {
+                      "type": "Control",
+                      "scope": "#/properties/name",
+                      "options": {}
+                    },
+                    "detail": {
+                      "type": "VerticalLayout",
+                      "elements": [
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/name",
+                          "options": {}
+                        },
+                        {
+                          "type": "Control",
+                          "scope": "#/properties/floor",
+                          "options": {}
+                        }
+                      ]
+                    },
+                    "dialog": {
+                      "width": 720,
+                      "height": "60vh",
+                      "draggable": true,
+                      "resizable": true,
+                      "maximizable": true
+                    }
+                  }
+                },
+                "collapsible": true,
+                "rowDetail": {
+                  "presentation": "panel",
+                  "detail": {
+                    "type": "VerticalLayout",
+                    "elements": [
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/title"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/track"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/minutes"
+                      },
+                      {
+                        "type": "Control",
+                        "scope": "#/properties/room"
+                      }
+                    ]
+                  },
+                  "placement": "bottom",
+                  "collapsed": true
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

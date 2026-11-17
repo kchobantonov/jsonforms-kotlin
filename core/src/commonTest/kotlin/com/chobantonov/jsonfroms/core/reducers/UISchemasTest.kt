@@ -6,6 +6,7 @@ import com.chobantonov.jsonfroms.core.generators.Generate
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.JsonFormsUISchemaRegistryEntry
+import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
 import com.chobantonov.jsonfroms.core.testers.UiSchemaTester
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -100,5 +101,32 @@ class UISchemasTest {
         )
 
         assertEquals(controlA, findMatchingUISchema(before)(null, "#/definitions/foo", ""))
+    }
+
+    @Test
+    fun `registry accepts zero rank and first entry wins ties`() {
+        val first = ControlElement(scope = "#/properties/first")
+        val second = ControlElement(scope = "#/properties/second")
+        val entries = listOf(
+            JsonFormsUISchemaRegistryEntry({ _, _, _ -> 0 }, first),
+            JsonFormsUISchemaRegistryEntry({ _, _, _ -> 0 }, second),
+        )
+
+        assertEquals(first, findMatchingUISchema(entries)(null, "#", "rows.0"))
+        assertEquals(2, entries.size)
+    }
+
+    @Test
+    fun `registry passes selection context and rejects not applicable`() {
+        val selected = ControlElement(scope = "#/properties/name")
+        val entries = listOf(
+            JsonFormsUISchemaRegistryEntry({ _, _, _ -> NOT_APPLICABLE }, ControlElement(scope = "#")),
+            JsonFormsUISchemaRegistryEntry({ _, schemaPath, path ->
+                if (schemaPath == "#/properties/rows/items" && path == "rows.0") 1 else NOT_APPLICABLE
+            }, selected),
+        )
+
+        assertEquals(selected, findMatchingUISchema(entries)(null, "#/properties/rows/items", "rows.0"))
+        assertEquals(null, findMatchingUISchema(entries)(null, "#/properties/rows/items", "rows.1"))
     }
 }

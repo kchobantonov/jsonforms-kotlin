@@ -1,0 +1,24 @@
+{
+  "en": {
+    "intro.text": "A rejected submit publishes field errors alongside schema validation.",
+    "server.submit.label": "Submit (rejected)",
+    "server.clear.label": "Clear them",
+    "serverClear.text": "Edit one field; only that field's server error clears.",
+    "server.email": "That address is already registered.",
+    "server.phone": "We could not reach this number.",
+    "contact.email.label": "Email",
+    "contact.phone.label": "Phone",
+    "summary.label": "Summary"
+  },
+  "bg": {
+    "intro.text": "Отхвърлено изпращане показва грешки по полета наред с проверката по схема.",
+    "server.submit.label": "Изпрати (отхвърлено)",
+    "server.clear.label": "Изчисти грешките",
+    "serverClear.text": "Променете едно поле; изчиства се само неговата сървърна грешка.",
+    "server.email": "Този адрес вече е регистриран.",
+    "server.phone": "Не успяхме да се свържем с този номер.",
+    "contact.email.label": "Имейл",
+    "contact.phone.label": "Телефон",
+    "summary.label": "Обобщение"
+  }
+}

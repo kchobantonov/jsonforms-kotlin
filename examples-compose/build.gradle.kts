@@ -54,15 +54,25 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(libs.compose.material3)
+            implementation(libs.compose.cupertino)
             implementation(compose.ui)
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.multiplatform.settings.test)
+            implementation(libs.compose.ui.test)
+        }
+
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
         }
 
         jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+
+        jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
         }
     }
@@ -75,9 +85,13 @@ compose.desktop {
 }
 
 tasks.named<Copy>("jsProcessResources") {
-    dependsOn(":webcomponent:jsBrowserDistribution")
-    from(project(":webcomponent").layout.buildDirectory.dir("dist/js/productionExecutable")) {
-        into("webcomponent")
-        exclude("index.html")
+    // Mounted UI tests never load the demo webcomponent. Skipping its production
+    // bundle keeps the browser test build independent of the demo distribution.
+    if (providers.gradleProperty("jsonforms.skipWebcomponentResources").orNull != "true") {
+        dependsOn(":webcomponent:jsBrowserDistribution")
+        from(project(":webcomponent").layout.buildDirectory.dir("dist/js/productionExecutable")) {
+            into("webcomponent")
+            exclude("index.html")
+        }
     }
 }

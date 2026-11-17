@@ -16,8 +16,24 @@ import kotlinx.serialization.json.JsonPrimitive
 
 val defaultTranslator: Translator = Translator { _, defaultMessage, _ -> defaultMessage }
 
+fun translateScopedText(
+    translator: Translator?,
+    i18nKeyPrefix: String?,
+    key: String,
+    fallback: String,
+    values: Map<String, Any?> = emptyMap(),
+): String {
+    val id = i18nKeyPrefix?.takeIf(String::isNotBlank)?.let { "$it.$key" } ?: key
+    return (translator ?: defaultTranslator).translate(id, fallback, values) ?: fallback
+}
+
 val defaultErrorTranslator: ErrorTranslator = ErrorTranslator { error, translator, _ ->
-    if (error.keyword == "required" && error.message.startsWith("missing required properties")) {
+    val explicitKey = error.params["i18nKey"]
+    if (explicitKey != null) {
+        translator.translate(explicitKey, null, mapOf("error" to error))
+            ?: translator.translate(error.message, null, mapOf("error" to error))
+            ?: error.message
+    } else if (error.keyword == "required" && error.message.startsWith("missing required properties")) {
         translator.translate("is a required property", "is a required property", mapOf("error" to error))
             ?: "is a required property"
     } else {
@@ -63,13 +79,44 @@ fun getCombinedErrorMessage(
     schema: JsonSchema? = null,
     uiSchema: UiSchemaElement? = null,
     path: String? = null,
-): String = formatErrorMessage(errors.map { error -> errorTranslator.translate(error, translator, uiSchema) })
+): String {
+    if (errors.isEmpty()) return ""
+    val prefix = getI18nKeyPrefix(schema, uiSchema, path)
+    val context = mapOf("schema" to schema, "uischema" to uiSchema, "path" to path, "errors" to errors)
+    translator.translate("$prefix.error.custom", null, context)?.let { return it }
+    return formatErrorMessage(errors.map { error ->
+        translateErrorForPath(error, errorTranslator, translator, schema, uiSchema, path)
+    })
+}
+
+fun translateErrorForPath(
+    error: ErrorObject,
+    errorTranslator: ErrorTranslator,
+    translator: Translator,
+    schema: JsonSchema? = null,
+    uiSchema: UiSchemaElement? = null,
+    path: String? = null,
+): String {
+    if (errorTranslator !== defaultErrorTranslator) return errorTranslator.translate(error, translator, uiSchema)
+    val keyword = error.keyword
+    if (keyword != null) {
+        val prefix = getI18nKeyPrefix(schema, uiSchema, path)
+        val context = mapOf("error" to error, "schema" to schema, "uischema" to uiSchema, "path" to path)
+        translator.translate("$prefix.error.$keyword", null, context)?.let { return it }
+        translator.translate("error.$keyword", null, context)?.let { return it }
+    }
+    return defaultErrorTranslator.translate(error, translator, uiSchema)
+}
 
 fun deriveLabelForUISchemaElement(
     uiSchema: UiSchemaElement,
     translator: Translator,
 ): String? = when (uiSchema) {
-    is LabelElement -> translator.translate(uiSchema.text, uiSchema.text, emptyMap()) ?: uiSchema.text
+    is LabelElement -> translator.translate(
+        uiSchema.i18n?.let { "$it.text" } ?: uiSchema.text,
+        uiSchema.text,
+        mapOf("uischema" to uiSchema),
+    ) ?: uiSchema.text
     is GroupElement -> translateLayoutLabel(uiSchema.label, uiSchema.i18n, uiSchema, translator)
     is CategoryElement -> translateLayoutLabel(uiSchema.label, uiSchema.i18n, uiSchema, translator)
     else -> null

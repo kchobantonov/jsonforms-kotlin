@@ -52,5 +52,7 @@ fun getSubErrorsAt(
     } else {
         state.jsonforms.core.errors + state.jsonforms.core.additionalErrors
     }
-    errorsAt(instancePath, schema) { path -> path.startsWith("$instancePath.") }(errors)
+    errorsAt(instancePath, schema) { path ->
+        if (instancePath.isEmpty()) path.isNotEmpty() else path.startsWith("$instancePath.")
+    }(errors)
 }

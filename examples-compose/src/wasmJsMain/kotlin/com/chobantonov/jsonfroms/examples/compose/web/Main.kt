@@ -8,31 +8,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.ComposeViewport
 import com.chobantonov.jsonfroms.examples.compose.ExamplesComposeApp
-import com.chobantonov.jsonfroms.examples.compose.exampleHash
-import com.chobantonov.jsonfroms.examples.compose.exampleNameFromHash
+import com.chobantonov.jsonfroms.examples.compose.DemoUrlState
+import com.chobantonov.jsonfroms.examples.compose.DemoUrlViewState
+import com.chobantonov.jsonfroms.examples.compose.parseDemoUrl
+import com.chobantonov.jsonfroms.examples.compose.writeDemoUrl
 import kotlinx.browser.window
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport {
-        var selectedExampleName by remember { mutableStateOf(exampleNameFromHash(window.location.hash)) }
+        var route by remember { mutableStateOf(parseDemoUrl(window.location.search, window.location.hash)) }
+        fun navigate(next: DemoUrlState) {
+            if (next == route) return
+            val (search, hash) = writeDemoUrl(window.location.search, window.location.hash, next)
+            window.history.pushState(null, "", "${window.location.pathname}$search$hash")
+            route = next
+        }
         DisposableEffect(Unit) {
             window.onhashchange = {
-                selectedExampleName = exampleNameFromHash(window.location.hash)
+                route = parseDemoUrl(window.location.search, window.location.hash)
             }
-            onDispose { window.onhashchange = null }
+            window.onpopstate = {
+                route = parseDemoUrl(window.location.search, window.location.hash)
+            }
+            onDispose {
+                window.onhashchange = null
+                window.onpopstate = null
+            }
         }
         ExamplesComposeApp(
-            selectedExampleName = selectedExampleName,
+            selectedExampleName = route.exampleName,
             showLandingWhenUnselected = true,
-            onExampleSelected = { name ->
-                selectedExampleName = name
-                window.location.hash = exampleHash(name)
-            },
-            onHomeSelected = {
-                selectedExampleName = null
-                window.location.hash = ""
-            },
+            browserViewState = route.view,
+            onBrowserViewStateChange = { navigate(route.copy(view = it)) },
+            onExampleSelected = { name -> navigate(route.copy(exampleName = name)) },
+            onHomeSelected = { navigate(DemoUrlState(null, DemoUrlViewState())) },
         )
     }
 }

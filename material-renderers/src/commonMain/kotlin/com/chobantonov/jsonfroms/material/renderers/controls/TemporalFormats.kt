@@ -12,13 +12,14 @@ import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 
 const val DEFAULT_DATE_DISPLAY_FORMAT = "MM/DD/YYYY"
 const val DEFAULT_TIME_DISPLAY_FORMAT = "h:mm A"
 const val DEFAULT_DATE_TIME_DISPLAY_FORMAT = "MM/DD/YYYY h:mm A"
 const val DEFAULT_DATE_SAVE_FORMAT = "YYYY-MM-DD"
-const val DEFAULT_TIME_SAVE_FORMAT = "HH:mm:ss"
+const val DEFAULT_TIME_SAVE_FORMAT = "HH:mm:ssZ"
 const val DEFAULT_DATE_TIME_SAVE_FORMAT = "YYYY-MM-DDTHH:mm:ssZ"
 
 data class TemporalValue(
@@ -42,7 +43,7 @@ fun Map<String, Any?>.stringOption(name: String): String? = when (val value = th
 
 fun Map<String, Any?>.booleanOption(name: String): Boolean? = when (val value = this[name]) {
     is Boolean -> value
-    is JsonPrimitive -> value.contentOrNull?.toBooleanStrictOrNull()
+    is JsonPrimitive -> if (value.isString) null else value.booleanOrNull
     else -> null
 }
 
@@ -52,29 +53,18 @@ fun Map<String, Any?>.booleanOption(name: String): Boolean? = when (val value = 
  */
 fun isAllowedTemporalInput(value: String, format: String, mask: Boolean = true): Boolean {
     if (!mask || value.isEmpty()) return true
-    val literalCharacters = buildSet {
-        var index = 0
-        while (index < format.length) {
-            val token = tokens.firstOrNull { format.startsWith(it, index) }
-            if (token != null) {
-                index += token.length
-            } else {
-                add(format[index++])
-            }
-        }
-    }
-    val allowsPeriod = tokens.any { token ->
-        (token == "A" || token == "a") && format.contains(token)
-    }
-    val maximumLength = format.sumOfTokens { token ->
-        when (token) {
+    val parts = formatParts(format)
+    val literalCharacters = parts.filterIsInstance<FormatPart.Literal>()
+        .flatMap { it.text.toList() }.toSet()
+    val allowsPeriod = parts.any { it is FormatPart.Token && (it.text == "A" || it.text == "a") }
+    val maximumLength = parts.sumOf { part -> when (part) {
+        is FormatPart.Literal -> part.text.length
+        is FormatPart.Token -> when (part.text) {
             "YYYY" -> 4
-            "YY", "MM", "DD", "HH", "hh", "mm", "ss" -> 2
-            "M", "D", "H", "h", "m", "s" -> 2
-            "A", "a" -> 2
-            else -> token.length
+            "YY", "MM", "DD", "HH", "hh", "mm", "ss", "M", "D", "H", "h", "m", "s", "A", "a" -> 2
+            else -> part.text.length
         }
-    }
+    } }
     return value.length <= maximumLength && value.all { character ->
         character.isDigit() ||
             character in literalCharacters ||
@@ -85,29 +75,18 @@ fun isAllowedTemporalInput(value: String, format: String, mask: Boolean = true):
 fun isAllowedTemporalEdit(previous: String, next: String, format: String, mask: Boolean = true): Boolean =
     next.length < previous.length || isAllowedTemporalInput(next, format, mask)
 
-private fun String.sumOfTokens(tokenLength: (String) -> Int): Int {
-    var result = 0
-    var index = 0
-    while (index < length) {
-        val token = tokens.firstOrNull { startsWith(it, index) }
-        if (token != null) {
-            result += tokenLength(token)
-            index += token.length
-        } else {
-            result += 1
-            index += 1
-        }
-    }
-    return result
-}
-
 fun parseDateValue(value: String, formats: List<String>, timeZone: TimeZone = TimeZone.currentSystemDefault()): TemporalValue? {
     parseIsoInstant(value, timeZone)?.let { return it }
     return formats.firstNotNullOfOrNull { parseTemporal(value, it) }
 }
 
-fun parseTimeValue(value: String, formats: List<String>): TemporalValue? =
-    formats.firstNotNullOfOrNull { parseTemporal(value, it) }
+fun parseTimeValue(value: String, formats: List<String>): TemporalValue? {
+    runCatching { Instant.parse("2020-01-01T$value").toLocalDateTime(TimeZone.UTC).time }
+        .getOrNull()?.let { time ->
+            return TemporalValue(hour = time.hour, minute = time.minute, second = time.second)
+        }
+    return formats.firstNotNullOfOrNull { parseTemporal(value, it) }
+}
 
 fun parseDateTimeValue(value: String, formats: List<String>, timeZone: TimeZone = TimeZone.currentSystemDefault()): TemporalValue? {
     parseIsoInstant(value, timeZone)?.let { return it }
@@ -152,27 +131,53 @@ fun currentTemporalValue(timeZone: TimeZone = TimeZone.currentSystemDefault()): 
 
 private val tokens = listOf("YYYY", "YY", "MM", "DD", "HH", "hh", "M", "D", "H", "h", "mm", "ss", "m", "s", "A", "a")
 
+private sealed interface FormatPart {
+    data class Token(val text: String) : FormatPart
+    data class Literal(val text: String) : FormatPart
+}
+
+/** Square brackets quote literal text in the supported Day.js-style format subset. */
+private fun formatParts(format: String): List<FormatPart> = buildList {
+    var index = 0
+    while (index < format.length) {
+        if (format[index] == '[') {
+            val end = format.indexOf(']', index + 1)
+            if (end >= 0) {
+                add(FormatPart.Literal(format.substring(index + 1, end)))
+                index = end + 1
+                continue
+            }
+        }
+        val token = tokens.firstOrNull { format.startsWith(it, index) }
+        if (token != null) {
+            add(FormatPart.Token(token))
+            index += token.length
+        } else {
+            add(FormatPart.Literal(format[index].toString()))
+            index++
+        }
+    }
+}
+
+internal fun temporalFormatTokens(format: String): List<String> =
+    formatParts(format).mapNotNull { (it as? FormatPart.Token)?.text }
+
 private fun parseTemporal(value: String, format: String): TemporalValue? {
     val captures = mutableListOf<String>()
     val pattern = buildString {
         append('^')
-        var index = 0
-        while (index < format.length) {
-            val token = tokens.firstOrNull { format.startsWith(it, index) }
-            if (token != null) {
-                captures += token
-                append(
-                    when (token) {
+        formatParts(format).forEach { part ->
+            when (part) {
+                is FormatPart.Token -> {
+                    captures += part.text
+                    append(when (part.text) {
                         "YYYY" -> "(\\d{4})"
                         "YY" -> "(\\d{2})"
                         "A", "a" -> "([AaPp][Mm])"
                         else -> "(\\d{1,2})"
-                    },
-                )
-                index += token.length
-            } else {
-                append(Regex.escape(format[index].toString()))
-                index++
+                    })
+                }
+                is FormatPart.Literal -> append(Regex.escape(part.text))
             }
         }
         append('$')
@@ -206,14 +211,10 @@ private fun parseTemporal(value: String, format: String): TemporalValue? {
 }
 
 private fun replaceTokens(format: String, replacements: Map<String, String>): String = buildString {
-    var index = 0
-    while (index < format.length) {
-        val token = tokens.firstOrNull { format.startsWith(it, index) }
-        if (token != null) {
-            append(replacements.getValue(token))
-            index += token.length
-        } else {
-            append(format[index++])
+    formatParts(format).forEach { part ->
+        when (part) {
+            is FormatPart.Token -> append(replacements.getValue(part.text))
+            is FormatPart.Literal -> append(part.text)
         }
     }
 }

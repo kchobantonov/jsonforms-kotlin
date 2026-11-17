@@ -1,8 +1,9 @@
 package com.chobantonov.jsonfroms.cupertino.renderers.layouts
 
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
-import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialCategorizationStepperLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialCategorizationStepperTester
 
-val CupertinoCategorizationStepperLayout = ComposeJsonFormsRenderer { MaterialCategorizationStepperLayout.Render(it) }
+val CupertinoCategorizationStepperLayout = ComposeJsonFormsRenderer {
+    CupertinoCategorizationContent(it, stepper = true)
+}
 val cupertinoCategorizationStepperTester = materialCategorizationStepperTester

@@ -35,11 +35,13 @@ val CupertinoHorizontalLayout = ComposeJsonFormsRenderer { props ->
     if (!layoutProps.visible) return@ComposeJsonFormsRenderer
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val stack = (layout.options["stackOnSmallScreen"] as? JsonPrimitive)?.booleanOrNull == true && maxWidth < 600.dp
-        CupertinoLayoutRenderer(
-            props.copy(enabled = layoutProps.enabled),
-            layout.elements,
-            if (stack) LayoutDirection.Column else LayoutDirection.Row,
-        )
+        CupertinoDependencyLayoutFeedback(props, layout.elements) {
+            CupertinoLayoutRenderer(
+                props.copy(enabled = layoutProps.enabled),
+                layout.elements,
+                if (stack) LayoutDirection.Column else LayoutDirection.Row,
+            )
+        }
     }
 }
 

@@ -1,0 +1,4230 @@
+{
+  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "sourceRoot": "../jsonforms-extended-spec",
+  "rule": "Pinned source identifiers only. An entry is not evidence of Kotlin support; map each to the requirement ledger and executed tests.",
+  "sections": [
+    {
+      "line": 70,
+      "text": "## 1. Purpose and portability"
+    },
+    {
+      "line": 183,
+      "text": "## 2. Reference type declarations"
+    },
+    {
+      "line": 220,
+      "text": "## 3. Runtime context and the action contract"
+    },
+    {
+      "line": 262,
+      "text": "## 4. Reuse before adding types"
+    },
+    {
+      "line": 287,
+      "text": "## 5. Established presentation options and canonical variants"
+    },
+    {
+      "line": 500,
+      "text": "## 6. Layout types and sizing"
+    },
+    {
+      "line": 634,
+      "text": "## 7. Wrap, defaults, splitter and Spacer"
+    },
+    {
+      "line": 720,
+      "text": "## 8. Group and Categorization"
+    },
+    {
+      "line": 1096,
+      "text": "## 9. Internationalizable text"
+    },
+    {
+      "line": 1390,
+      "text": "## 10. Markdown policy"
+    },
+    {
+      "line": 1478,
+      "text": "## 11. Dynamic values and path grammar"
+    },
+    {
+      "line": 2093,
+      "text": "## 12. URL and extension security configuration"
+    },
+    {
+      "line": 2157,
+      "text": "## 13. ImageView, Separator, Link and templates"
+    },
+    {
+      "line": 2309,
+      "text": "## 14. Button, actions and script"
+    },
+    {
+      "line": 2507,
+      "text": "## 15. Read-only, restrict and mutation constraints"
+    },
+    {
+      "line": 3439,
+      "text": "## 16. Adaptive behaviour"
+    },
+    {
+      "line": 3462,
+      "text": "## 17. External context, visibility and security"
+    },
+    {
+      "line": 3489,
+      "text": "## 18. Renderer behaviour specifications"
+    },
+    {
+      "line": 7424,
+      "text": "## 19. Honest rendering of invalid and out-of-domain data"
+    },
+    {
+      "line": 7445,
+      "text": "## 20. Optional editor and tooling capability catalogues"
+    },
+    {
+      "line": 7499,
+      "text": "## 21. Diagnostics"
+    },
+    {
+      "line": 7528,
+      "text": "## 22. Runtime state"
+    },
+    {
+      "line": 7537,
+      "text": "## 23. Reserved portable names"
+    },
+    {
+      "line": 7551,
+      "text": "## 24. Examples requirement"
+    },
+    {
+      "line": 7577,
+      "text": "## 25. Conformance suites"
+    },
+    {
+      "line": 7595,
+      "text": "## 26. Normative requirements summary"
+    },
+    {
+      "line": 7623,
+      "text": "## 27. Verification before implementation"
+    },
+    {
+      "line": 7641,
+      "text": "## 28. Capability declarations"
+    },
+    {
+      "line": 7654,
+      "text": "## 29. JSON schema artifacts and validation boundary"
+    },
+    {
+      "line": 7709,
+      "text": "## 30. Host, demo and accessibility contracts"
+    }
+  ],
+  "authoringVectors": [
+    {
+      "id": "nested-sizing",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "invalid-span-0",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "invalid-weight-0",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "invalid-weight--1",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "invalid-width--1",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "invalid-span-1.5",
+      "section": "6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "zero-spacer",
+      "section": "7.4",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "negative-spacer",
+      "section": "7.4",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "named-category",
+      "section": "8.6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "indexed-category",
+      "section": "8.6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "zero-grid-columns",
+      "section": "7.1",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "zero-global-gap",
+      "section": "7.1",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "unknown-namespace",
+      "section": "1.2",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "unknown-renderer-id",
+      "section": "14.3",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "invalid-confirmation",
+      "section": "14.3",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "unknown-element",
+      "section": "1.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "label-object",
+      "section": "2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-show",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-hide",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-enable",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-disable",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-readonly",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "rule-writable",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "invalid-rule",
+      "section": "15.2",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "action-script-conflict",
+      "section": "14",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "image-missing-alt",
+      "section": "13.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "decorative-image",
+      "section": "13.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "image-missing-source",
+      "section": "13.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "link-missing-destination",
+      "section": "13.3",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "link-empty-destination",
+      "section": "13.3",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "nested-detail-invalid",
+      "section": "18.6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "nested-detail-extension",
+      "section": "18.6",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "cell-detail-invalid",
+      "section": "18.13",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "publication-opt-in",
+      "section": "15.6",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "publication-type",
+      "section": "15.6",
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "format-byte-bound",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "color-hex",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "color-hex3",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "color-rgb",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "color-hsb",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "color-output-hsl",
+      "section": "18.27",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "slot-missing-name",
+      "section": "13.4",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-show",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-hide",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-enable",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-disable",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-readonly",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-writable",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-nested",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-rule-nested",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-nested",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-empty-and",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-rule-empty-and",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-empty-and",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-empty-or",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-rule-empty-or",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-empty-or",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "standalone-rule-missing-child-scope",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-missing-child-scope",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-missing-child-scope",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-bad-schema",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-bad-schema",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-bad-schema",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-bad-nested-schema",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-bad-nested-schema",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-bad-nested-schema",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-bad-undefined-flag",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-bad-undefined-flag",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-bad-undefined-flag",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-function-string",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-function-string",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-function-string",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-composite-dispatch",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-composite-dispatch",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-composite-dispatch",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "standalone-rule-leaf-dispatch",
+      "section": null,
+      "schema": "jsonforms-rule.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-rule-leaf-dispatch",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-rule-leaf-dispatch",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-readonly",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-bad-readonly",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-bad-stepper-nav",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-direct-category-control",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-uischema-nested-categorization",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-label-bool",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-uischema-label-dict",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-readonly",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-bad-readonly",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-bad-stepper-nav",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-direct-category-control",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "jsonforms-extended-uischema-nested-categorization",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-label-bool",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "jsonforms-extended-uischema-label-dict",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "config-readonly",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "config-bad-readonly",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "config-separateReadonlyFromDisabled",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "config-bad-separateReadonlyFromDisabled",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "config-showSortButtons",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "config-bad-showSortButtons",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "config-collapsed",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "config-bad-collapsed",
+      "section": null,
+      "schema": "jsonforms-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "cell-known-invalid-option",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "flat-editor-config",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "flat-editor-config-bad-rows",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "flat-editor-config-bad-language",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "flat-restrict",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "flat-restrict-bad-type",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "removed-namespaced-restrict",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "removed-namespaced-restrict-type",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "actual-flat-additional-properties",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "actual-flat-additional-properties-type",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "actual-flat-splitter-type",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "actual-flat-duration-label-type",
+      "section": null,
+      "schema": "jsonforms-extended-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "pagination-five",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "pagination-zero",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "pagination-duplicate-choices",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "row-dialog",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "dialog-no-placement",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "row-panel",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "property-pagination",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "additional-items-pagination-false",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "additional-items-pagination-true",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "additional-items-pagination-{'pagesize': 5}",
+      "section": "18.21.1",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "collection-pagination-config-off",
+      "section": "18.21.1",
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "collection-pagination-config-on",
+      "section": "18.21.1",
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "collection-pagination-config-size",
+      "section": "18.21.1",
+      "schema": "jsonforms-config.schema.json",
+      "valid": true
+    },
+    {
+      "id": "collection-pagination-config-invalid",
+      "section": "18.21.1",
+      "schema": "jsonforms-config.schema.json",
+      "valid": false
+    },
+    {
+      "id": "choice-detail-generate",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "choice-detail-registered",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "choice-missing-identifier",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "choice-both-identifiers",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "choice-null-value",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "ignored-temporal-views",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "cron-format-hint",
+      "section": null,
+      "schema": "jsonforms-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "extended-choice-detail-generate",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "extended-choice-detail-registered",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "extended-choice-missing-identifier",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "extended-choice-both-identifiers",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "extended-choice-null-value",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "extended-ignored-temporal-views",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "extended-cron-format-hint",
+      "section": null,
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    }
+  ],
+  "behaviorVectors": [
+    {
+      "id": "span-gap",
+      "section": "6.3"
+    },
+    {
+      "id": "visible-children",
+      "section": "6.5"
+    },
+    {
+      "id": "expression-own-constructor",
+      "section": "9.7"
+    },
+    {
+      "id": "url-script",
+      "section": "12"
+    },
+    {
+      "id": "script-default-closed",
+      "section": "14.2"
+    },
+    {
+      "id": "markdown-substitution",
+      "section": "9.4"
+    },
+    {
+      "id": "outside-enum",
+      "section": "19"
+    },
+    {
+      "id": "tuple-fill-prefix",
+      "section": "18.11"
+    },
+    {
+      "id": "confirmation-complex-old",
+      "section": "14.3"
+    },
+    {
+      "id": "array-error-boundary",
+      "section": "8.3"
+    },
+    {
+      "id": "duration-unchanged",
+      "section": "18.18.2"
+    },
+    {
+      "id": "pending-delete",
+      "section": "18.4"
+    },
+    {
+      "id": "dialog-cancel",
+      "section": "18.13"
+    },
+    {
+      "id": "accordion-close",
+      "section": "8.8"
+    },
+    {
+      "id": "port-choice-reload",
+      "section": "docs/implementation-pitfalls.md#p01--values-are-compared-by-json-content"
+    },
+    {
+      "id": "port-literal-key",
+      "section": "docs/implementation-pitfalls.md#p02--property-keys-are-literal-data"
+    },
+    {
+      "id": "port-pattern-intersection",
+      "section": "docs/implementation-pitfalls.md#p03--pattern-constraints-intersect"
+    },
+    {
+      "id": "port-numeric-intent",
+      "section": "docs/implementation-pitfalls.md#p05--numeric-editor-intent-is-not-encoded-in-json"
+    },
+    {
+      "id": "port-branch-feedback",
+      "section": "docs/implementation-pitfalls.md#p06--document-validity-and-displayed-branch-feedback-differ"
+    },
+    {
+      "id": "port-summary-search",
+      "section": "docs/implementation-pitfalls.md#p11--summaries-are-part-of-table-behavior"
+    },
+    {
+      "id": "port-cell-error-placement",
+      "section": "docs/implementation-pitfalls.md#p08--errors-belong-to-their-data-location"
+    },
+    {
+      "id": "template-data-subscription-replacement",
+      "section": "13"
+    },
+    {
+      "id": "template-policy-update-preserves-draft",
+      "section": "12, 13"
+    }
+  ],
+  "configPaths": [
+    {
+      "path": "config.:language",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.agGridOptions",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.allowAdditionalPropertiesIfMissing",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.allowEmptyPropertyNames",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.ampm",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.autocomplete",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.cancelLabel",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.clearable",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.collapseNewItems",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.convertJson",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.dateFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.dateSaveFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.dateTimeFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.dateTimeSaveFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.detail",
+      "referenceStatus": "renderer-specific"
+    },
+    {
+      "path": "config.disableAdd",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.disableRemove",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.elementLabelProp",
+      "referenceStatus": "renderer-specific"
+    },
+    {
+      "path": "config.enableFilterErrorsBeforeTouch",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.filterErrorKeywordsBeforeTouch",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.focus",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.height",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.hideArraySummaryValidation",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.hideAvatar",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.hideRequiredAsterisk",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.accept",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.agGridOptions",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.allowAdditionalPropertiesIfMissing",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.allowEmptyPropertyNames",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.cancelLabel",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.cells",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.collapsible",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.colorSaveFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.colorTextEntry",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation.default",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation.renderers",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation.renderers.*.branchChange",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation.renderers.*.delete",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.confirmation.renderers.*.typeChange",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.convertJson",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.defaultTemplateLang",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dynamicValues",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dynamicValues.enabled",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.emptyLabel",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.height",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.initial",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.language",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.layoutDefaults",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.layoutDefaults.gap",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.layoutDefaults.gridColumns",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.layoutDefaults.minItemWidth",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.layoutDefaults.wrap",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.markup",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.markup.markdown",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.markup.markdown.enabled",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.markup.markdown.profile",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.markup.typography",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.autoGrow",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.initActions",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.maxRows",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.minRows",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.options",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.monaco.rows",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.okLabel",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.propagateErrors",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.resizable",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.security",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.security.allowScriptEvaluation",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.security.urlPolicy",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.security.urlPolicy.allowImageDataUrls",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.security.urlPolicy.allowRelative",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.security.urlPolicy.allowedSchemes",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.showActions",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.showBorder",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.showDataIndicator",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.showEmptyButton",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.showValidationIndicator",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.showValidationIndicatorCount",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.table",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.jsonformsExtended.width",
+      "referenceStatus": "unsupported-location"
+    },
+    {
+      "path": "config.language",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.mode",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.autoGrow",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.initActions",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.maxRows",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.minRows",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.options",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.monaco.rows",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.multi",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.okLabel",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.placeholder",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.readonly",
+      "referenceStatus": "core"
+    },
+    {
+      "path": "config.resizable",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.restrict",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.separateReadonlyFromDisabled",
+      "referenceStatus": "core"
+    },
+    {
+      "path": "config.showActions",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.showBorder",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.showNavButtons",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.showSortButtons",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.showUnfocusedDescription",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.suggestion",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.summary",
+      "referenceStatus": "local-only"
+    },
+    {
+      "path": "config.theme",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.timeFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.timeSaveFormat",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.vertical",
+      "referenceStatus": "removed"
+    },
+    {
+      "path": "config.views",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.width",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.pagination",
+      "referenceStatus": "removed"
+    },
+    {
+      "path": "config.additionalProperties",
+      "referenceStatus": "removed"
+    },
+    {
+      "path": "config.jsonformsExtended.pagination",
+      "referenceStatus": "removed"
+    },
+    {
+      "path": "config.jsonformsExtended.additionalProperties",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.tuple",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.tuple.vertical",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.array",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.array.pagination",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.radio",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.radio.vertical",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.additionalItems",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.showTypeIndicator",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.validateActiveBranch",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.conditionalFields",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.accordion",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.accordion.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.array.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.group",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.group.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.mixed",
+      "referenceStatus": "container"
+    },
+    {
+      "path": "config.jsonformsExtended.mixed.collapsed",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.mixed.structuredLayout",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.additionalProperties.pagination",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.additionalItems.pagination",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog.width",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog.height",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog.maximizable",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog.draggable",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dialog.resizable",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dynamic",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dynamic.enabled",
+      "referenceStatus": "consumed"
+    },
+    {
+      "path": "config.jsonformsExtended.dynamic.trusted",
+      "referenceStatus": "consumed"
+    }
+  ],
+  "schemaProperties": [
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/rule"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/name"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/textParams"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/markup"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/textParams"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/0/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/1/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/2/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/3/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/4/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/5/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/6/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/7/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/8/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/9/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/10/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/11/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/12/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/13/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/14/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/15/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/layout/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/layout/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/options/properties/gridColumns"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/elements/items/allOf/1/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/variant"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/initial"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/category/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/category/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/control/properties/scope"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/control/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label/anyOf/2/properties/text"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label/anyOf/2/properties/show"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/format"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/variant"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/focus"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/clearable"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/placeholder"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/multi"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/autocomplete"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/summary"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/elementLabelProp"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/disableAdd"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/disableRemove"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapseNewItems"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideAvatar"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/table"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/cells"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showTypeIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showEmptyButton"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/emptyLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/okLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/cancelLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/confirmation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/layout"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMinimum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMaximum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMinimum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMaximum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/views"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showActions"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/mask"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/monaco"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/language"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/:language"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/convertJson"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/propagateErrors"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/height"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/width"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/theme"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/mode"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/agGridOptions"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/components"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/toggle"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/slider"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/allowAdditionalPropertiesIfMissing"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/allowEmptyPropertyNames"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/returnMaskedValue"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/tokensReplace"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/eager"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/reversed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showUnfocusedDescription"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideRequiredAsterisk"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/enableFilterErrorsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/colorTextEntry"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/timeFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/timeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateTimeFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateTimeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/ampm"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/step"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/filterErrorKeywordsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/suggestion"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/tokens"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/colorSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/pagination"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/rowDetail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/additionalProperties"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/columnDefs"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/additionalItems"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/validateActiveBranch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/object-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/array-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/string-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/number-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/integer-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/boolean-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/null-detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/conditionalFields"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showRadio"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMinimum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMaximum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMinimum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMaximum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/value"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/branch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/disabled"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/content"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/selectedContent"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/summary"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showTypeIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showEmptyButton"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/emptyLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/okLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/cancelLabel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/clearable"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/format"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/variant"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/focus"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/placeholder"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/multi"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/autocomplete"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/elementLabelProp"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/disableAdd"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/disableRemove"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/collapseNewItems"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/hideAvatar"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/table"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/cells"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/confirmation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/layout"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/formatMinimum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/formatMaximum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/formatExclusiveMinimum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/formatExclusiveMaximum"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/views"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showActions"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/mask"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/monaco"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/language"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/:language"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/convertJson"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/propagateErrors"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/height"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/width"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/theme"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/mode"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/agGridOptions"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/components"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/toggle"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/slider"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/allowAdditionalPropertiesIfMissing"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/allowEmptyPropertyNames"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/returnMaskedValue"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/tokensReplace"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/eager"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/reversed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showUnfocusedDescription"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/hideRequiredAsterisk"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/enableFilterErrorsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/colorTextEntry"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dateFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dateSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/timeFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/timeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dateTimeFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dateTimeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/ampm"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/step"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/filterErrorKeywordsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/suggestion"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/tokens"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/colorSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/columnDefs"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/scope"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/elementLabelProp"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/text"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/action"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/script"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/params"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/icon"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/color"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/options/properties/disabled"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/button/properties/options/properties/fullWidth"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/link/properties/href"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/link/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/link/properties/text"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/link/properties/target"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/link/properties/rel"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/src"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/scope"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/alt"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/options/properties/width"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/imageView/properties/options/properties/height"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/spacer/properties/size"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/separator/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/separator/properties/options/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/templateLayout/properties/template"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/templateLayout/properties/lang"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/templateLayout/properties/name"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/templateLayout/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/slot/properties/name"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/slot/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/rows"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/autoGrow"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/minRows"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/maxRows"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/monacoOptions/properties/initActions"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/detail/anyOf/2/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/label/allOf/1/properties/options"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/label/allOf/1/properties/options/properties/markup"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/label/allOf/1/properties/options/properties/typography"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/label/allOf/1/properties/options/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/label/allOf/1/properties/options/properties/textParams"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/summary/oneOf/0/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/summary/oneOf/0/properties/scope"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/summary/oneOf/1/allOf/1/properties/type"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/template/properties/name"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/template/properties/elements"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/presentation"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/detail"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/placement"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/resizable"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/allOf/0/if/properties/presentation"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/jsonformsExtended"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/monaco"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/language"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/:language"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/convertJson"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/height"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/width"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/theme"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/mode"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/agGridOptions"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/allowAdditionalPropertiesIfMissing"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/allowEmptyPropertyNames"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/showActions"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/okLabel"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/cancelLabel"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/allOf/1/properties/resizable"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/security"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/defaultTemplateLang"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/propagateErrors"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/colorTextEntry"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/colorSaveFormat"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/markup"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/dynamicValues"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/extendedOnly/properties/dynamic"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/security/properties/allowScriptEvaluation"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/security/properties/urlPolicy"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/urlPolicy/properties/allowedSchemes"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/urlPolicy/properties/allowRelative"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/urlPolicy/properties/allowImageDataUrls"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/markup/properties/markdown"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/markup/properties/typography"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/markup/properties/markdown/properties/enabled"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/markup/properties/markdown/properties/profile"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/dynamicValues/properties/enabled"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/dynamic/properties/enabled"
+    },
+    {
+      "schema": "jsonforms-extended-config.schema.json",
+      "pointer": "/$defs/dynamic/properties/trusted"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/rule/properties/effect"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/rule/properties/condition"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/scope"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/schema"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/failWhenUndefined"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/validate"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/type"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/properties/conditions"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/anyOf/0/properties/type"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/anyOf/1/properties/type"
+    },
+    {
+      "schema": "jsonforms-rule.schema.json",
+      "pointer": "/$defs/condition/anyOf/2/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/rule"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/name"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/textParams"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/markup"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/textParams"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/element/properties/options/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/0/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/1/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/2/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/3/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/4/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/5/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/6/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/byType/allOf/7/if/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutItemOptions/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutItemOptions/properties/options/properties/layout"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/gap"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/wrap"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/minItemWidth"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/align"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/justify"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/resizable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layoutContainerOptions/properties/gridColumns"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layout/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/layout/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/horizontalLayout/properties/options/properties/gridColumns"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/options/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/elements/items/allOf/1/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/variant"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/initial"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/categorization/properties/options/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/category/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/category/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/control/properties/scope"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/control/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label/anyOf/2/properties/text"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/control/properties/label/anyOf/2/properties/show"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/format"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/variant"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/focus"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/clearable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/placeholder"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/multi"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/autocomplete"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/summary"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/elementLabelProp"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/disableAdd"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/disableRemove"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapseNewItems"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideAvatar"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/table"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/cells"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showTypeIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showEmptyButton"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/emptyLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/okLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/cancelLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/confirmation"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showBorder"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/layout"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMinimum"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMaximum"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMinimum"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMaximum"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/views"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/height"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/width"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/toggle"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/slider"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/allowAdditionalPropertiesIfMissing"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/allowEmptyPropertyNames"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/returnMaskedValue"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/tokensReplace"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/eager"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/reversed"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showUnfocusedDescription"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/hideRequiredAsterisk"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/enableFilterErrorsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showActions"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/colorTextEntry"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/propagateErrors"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/interpolate"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateSaveFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/timeFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/timeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateTimeFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/dateTimeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/ampm"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/mask"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/step"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/filterErrorKeywordsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/suggestion"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/tokens"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/colorSaveFormat"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/showRadio"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/validateActiveBranch"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/structuredLayout"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/recursiveTree"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/object-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/array-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/string-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/number-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/integer-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/boolean-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/null-detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/conditionalFields"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/pagination"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/rowDetail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/additionalItems"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/additionalProperties"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/columnDefs"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMinimum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatMaximum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMinimum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/formatExclusiveMaximum/anyOf/2/properties/$data"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/value"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/branch"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/disabled"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/content"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/selectedContent"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/choices/items/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/recursiveTree/properties/childrenProperty"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/recursiveTree/properties/labelProperty"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/recursiveTree/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/summary"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showTypeIndicator"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/showEmptyButton"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/emptyLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/okLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/cancelLabel"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/clearable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/cellOptions/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/confirmationOperations/properties/typeChange"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/confirmationOperations/properties/branchChange"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/confirmationOperations/properties/delete"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/scope"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/elementLabelProp"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/listWithDetail/properties/options/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/label/properties/text"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/label/properties/options"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/label/properties/options/properties/format"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detail/anyOf/2/properties/elements"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/summary/properties/type"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/summary/properties/scope"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/span"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/weight"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/width"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/minWidth"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/maxWidth"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/height"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/minHeight"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/childLayout/properties/maxHeight"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/pagination/oneOf/1/properties/pageSize"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/pagination/oneOf/1/properties/pageSizeOptions"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/field"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/width"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/minWidth"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/maxWidth"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/scope"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/tableColumnDefinition/properties/headerName"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detailDialog/properties/width"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detailDialog/properties/height"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detailDialog/properties/maximizable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detailDialog/properties/draggable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/detailDialog/properties/resizable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/additionalItemsPresentation/properties/pagination"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/additionalPropertiesPresentation/properties/pagination"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/presentation"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/detail"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/placement"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/resizable"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/rowDetail/allOf/0/if/properties/presentation"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/showTypeIndicator"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/restrict"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/hideRequiredAsterisk"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/showUnfocusedDescription"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/disableAdd"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/disableRemove"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/enableFilterErrorsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/filterErrorKeywordsBeforeTouch"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/dateFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/dateSaveFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/timeFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/timeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/dateTimeFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/dateTimeSaveFormat"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/ampm"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/views"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/jsonformsExtended"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/readonly"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/separateReadonlyFromDisabled"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/showSortButtons"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/collapseNewItems"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/hideAvatar"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/hideArraySummaryValidation"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/clearable"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/placeholder"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/focus"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/multi"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/autocomplete"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/suggestion"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/showNavButtons"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/properties/validateActiveBranch"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/collapsible"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/showDataIndicator"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/showValidationIndicator"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/showValidationIndicatorCount"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/confirmation"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/layoutDefaults"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/additionalProperties"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/tuple"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/array"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/radio"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/additionalItems"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/dialog"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/group"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/mixed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/accordion"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/conditionalFields"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/tuple/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/array/properties/pagination"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/array/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/radio/properties/vertical"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/group/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/mixed/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/mixed/properties/structuredLayout"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/extended/properties/accordion/properties/collapsed"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/confirmation/properties/default"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/confirmation/properties/renderers"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/confirmation/properties/renderers/additionalProperties/properties/typeChange"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/confirmation/properties/renderers/additionalProperties/properties/branchChange"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/confirmation/properties/renderers/additionalProperties/properties/delete"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/layoutDefaults/properties/gap"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/layoutDefaults/properties/wrap"
+    },
+    {
+      "schema": "jsonforms-config.schema.json",
+      "pointer": "/$defs/layoutDefaults/properties/gridColumns"
+    }
+  ],
+  "exampleIds": [
+    "additional-errors",
+    "additional-items-pagination",
+    "additional-properties",
+    "ag-grid",
+    "array-choices",
+    "array-controls",
+    "array-detail-modes",
+    "boolean-controls",
+    "button-actions",
+    "categorization",
+    "choice-controls",
+    "code-editor",
+    "collection-pagination",
+    "color-control",
+    "combinators",
+    "conditional-fields",
+    "container-validation-indicator",
+    "cron-control",
+    "destructive-confirmation",
+    "draft-07-metaschema",
+    "dynamic-playground",
+    "editor-details",
+    "file-control",
+    "group-layout",
+    "job-application",
+    "json-editor",
+    "json-inference",
+    "kitchen-sink",
+    "label-interpolation",
+    "layout-sizing",
+    "markup-label",
+    "mixed-control",
+    "null-control",
+    "numeric-controls",
+    "object-control",
+    "password-control",
+    "pre-touch-errors",
+    "presentation",
+    "property-pagination",
+    "recursive-tree",
+    "split-layout",
+    "string-controls",
+    "table-row-details",
+    "template-layout",
+    "template-slots",
+    "temporal-controls",
+    "tree-max-depth",
+    "tuple-control",
+    "validator-profile"
+  ]
+}

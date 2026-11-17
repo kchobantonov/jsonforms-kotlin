@@ -1,0 +1,40 @@
+{
+  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "adaptations": {
+    "additional-errors": {
+      "title": "Additional errors: server and editor (portable server profile)",
+      "reason": "Retains server-owned field errors and per-value clearing; excludes the Monaco editor diagnostic tabs.",
+      "reasonBg": "Запазва сървърните грешки по полета и изчистването при промяна на стойността; изключва диагностичните раздели с Monaco."
+    },
+    "destructive-confirmation": {
+      "title": "Destructive-change confirmation (native table profile)",
+      "reason": "Use the portable table for the AG Grid charges control; retain all other source controls and confirmation policies.",
+      "reasonBg": "Използва преносимата таблица вместо AG Grid за таксите; запазва останалите контроли и правилата за потвърждение."
+    },
+    "array-controls": {
+      "title": "Array controls (portable profile)",
+      "reason": "Exclude the AG Grid category and duplicate AG Grid staff presentation; preserve portable array controls.",
+      "reasonBg": "Изключва категорията AG Grid и дублираното представяне на персонала; запазва преносимите контроли за масиви."
+    },
+    "kitchen-sink": {
+      "title": "Kitchen sink: job application (portable profile)",
+      "reason": "Exclude the AG Grid reference category and Monaco technical-work-sample category; preserve portable controls and layouts.",
+      "reasonBg": "Изключва категорията за препоръки с AG Grid и категорията за техническа задача с Monaco; запазва преносимите контроли и оформления."
+    },
+    "job-application": {
+      "title": "Job application (portable form)",
+      "reason": "Replace the Ractive TemplateLayout header with native language/theme buttons; preserve the stepper and named Template definitions.",
+      "reasonBg": "Заменя заглавката с Ractive TemplateLayout с нативни бутони за език и тема; запазва стъпките и именуваните дефиниции на Template."
+    },
+    "file-control": {
+      "title": "File control",
+      "reason": "Exclude the AG Grid category; retain portable file controls and the table with filename pills.",
+      "reasonBg": "Изключва категорията AG Grid; запазва преносимите файлови контроли и таблицата с етикети за имена на файлове."
+    },
+    "table-row-details": {
+      "title": "Table row details: recruitment",
+      "reason": "Exclude three AG Grid categories; retain portable dialogs and right/bottom detail panels.",
+      "reasonBg": "Изключва три категории AG Grid; запазва преносимите диалози и панелите за подробности отдясно и отдолу."
+    }
+  }
+}

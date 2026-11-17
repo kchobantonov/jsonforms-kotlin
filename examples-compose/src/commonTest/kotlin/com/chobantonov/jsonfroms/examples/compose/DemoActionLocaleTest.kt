@@ -8,7 +8,12 @@ import kotlinx.serialization.json.JsonPrimitive
 
 class DemoActionLocaleTest {
     @Test
-    fun changeLangUsesRequestedLocaleForStatusOnFirstClick() {
+    fun demoOffersOnlyEnglishAndBulgarian() {
+        assertEquals(listOf(DemoLocale.English, DemoLocale.Bulgarian), DemoLocale.entries)
+    }
+
+    @Test
+    fun statusMessagesUseTheFormLocale() {
         val params = JsonObject(mapOf(
             "lang" to JsonPrimitive("bg"),
             "statusByLocale" to JsonObject(mapOf(
@@ -17,9 +22,8 @@ class DemoActionLocaleTest {
             )),
         ))
 
-        val requestedLocale = requestedDemoLocale("changeLang", params)
-        assertEquals(DemoLocale.Bulgarian, requestedLocale)
-        assertEquals("Езикът е сменен на български", demoActionStatus(params, requestedLocale!!))
+        assertEquals("Езикът е сменен на български",
+            demoActionStatus(params, DemoLocale.Bulgarian))
     }
 
     @Test
@@ -27,6 +31,18 @@ class DemoActionLocaleTest {
         val params = JsonObject(mapOf("locale" to JsonPrimitive("bg")))
 
         assertEquals(DemoLocale.Bulgarian, requestedDemoLocale("setLocale", params))
+        assertEquals(DemoLocale.Bulgarian, requestedDemoLocale("changeLang",
+            JsonObject(mapOf("lang" to JsonPrimitive("bg")))))
+        assertEquals(DemoLocale.Bulgarian, requestedDemoLocale("setLocale",
+            JsonObject(mapOf("locale" to JsonPrimitive("bg-BG")))))
+        assertEquals(DemoLocale.English, requestedDemoLocale("changeLang",
+            JsonObject(mapOf("lang" to JsonPrimitive("en_US")))))
+        assertNull(requestedDemoLocale("changeLang",
+            JsonObject(mapOf("lang" to JsonPrimitive("de")))))
+        assertNull(requestedDemoLocale("setLocale",
+            JsonObject(mapOf("locale" to JsonPrimitive("de-DE")))))
+        assertNull(requestedDemoLocale("setLocale",
+            JsonObject(mapOf("locale" to JsonPrimitive(123)))))
         assertNull(requestedDemoLocale("submit", params))
     }
 }

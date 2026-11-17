@@ -11,18 +11,31 @@ plugins {
 
 val generateSpecExamples = tasks.register("generateSpecExamples") {
     val specDirectory = layout.projectDirectory.dir("spec")
+    val adaptationCatalogFile = layout.projectDirectory.file("spec-adaptations/catalog.json")
     val generatedDirectory = layout.buildDirectory.dir("generated/spec-examples")
     inputs.dir(specDirectory)
+    inputs.file(adaptationCatalogFile)
     outputs.dir(generatedDirectory)
     doLast {
         val parser = JsonSlurper()
         val catalog = parser.parseText(specDirectory.file("catalog.json").asFile.readText()) as Map<*, *>
+        val adaptationCatalog = parser.parseText(adaptationCatalogFile.asFile.readText()) as Map<*, *>
+        check(adaptationCatalog["specCommit"] == catalog["commit"]) {
+            "Adaptation notices target a different spec revision"
+        }
+        val adaptations = adaptationCatalog["adaptations"] as Map<*, *>
         val fixtures = (catalog["examples"] as List<*>).map { entry ->
             val metadata = entry as Map<*, *>
             val id = metadata["id"] as String
             val title = metadata["title"] as String
             linkedMapOf<String, Any?>("name" to "spec-$id", "label" to "Spec: $title").apply {
-                for (key in listOf("data", "schema", "uischema", "config", "translations")) {
+                (adaptations[id] as? Map<*, *>)?.let { adaptation ->
+                    this["capabilityNotice"] = linkedMapOf(
+                        "en" to (adaptation["reason"] as String),
+                        "bg" to (adaptation["reasonBg"] as String),
+                    )
+                }
+                for (key in listOf("data", "invalid-data", "schema", "uischema", "uischemas", "config", "translations")) {
                     val file = specDirectory.file("$id/$key.json").asFile
                     if (file.exists()) this[key] = parser.parseText(file.readText())
                 }

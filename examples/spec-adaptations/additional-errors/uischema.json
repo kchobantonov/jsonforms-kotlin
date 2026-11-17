@@ -1,0 +1,62 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Label",
+      "text": "A rejected submit publishes field errors alongside schema validation.",
+      "i18n": "intro"
+    },
+    {
+      "type": "HorizontalLayout",
+      "elements": [
+        {
+          "type": "Button",
+          "label": "Submit (rejected)",
+          "i18n": "server.submit",
+          "color": "primary",
+          "action": "reportServer",
+          "params": {
+            "errors": [
+              {
+                "instancePath": "/contact/email",
+                "keyword": "server",
+                "message": "That address is already registered.",
+                "params": {
+                  "i18nKey": "server.email"
+                }
+              },
+              {
+                "instancePath": "/contact/phone",
+                "keyword": "server",
+                "message": "We could not reach this number.",
+                "params": {
+                  "i18nKey": "server.phone"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "label": "Clear them",
+          "i18n": "server.clear",
+          "color": "secondary",
+          "action": "clearServer"
+        }
+      ]
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/contact"
+    },
+    {
+      "type": "Label",
+      "text": "Edit one field; only that field's server error clears.",
+      "i18n": "serverClear"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/summary"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ import kotlinx.serialization.json.put
 
 class MaterialListWithDetailRendererTest {
     @Test
-    fun matchesScopedPrimitiveArrays() {
+    fun rejectsScopedPrimitiveArrays() {
         listOf("string", "number").forEach { itemType ->
             val schema = JsonSchema(buildJsonObject {
                 put("type", "object")
@@ -25,13 +25,13 @@ class MaterialListWithDetailRendererTest {
             })
 
             assertEquals(
-                4,
+                -1,
                 materialListWithDetailTester(
                     ListWithDetailElement(scope = "#/properties/items"),
                     schema,
                     TesterContext(rootSchema = schema),
                 ),
-                "ListWithDetail should support arrays of $itemType values",
+                "ListWithDetail is specified for object arrays, not $itemType items",
             )
         }
     }

@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.cupertino.renderers
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.testers.TesterContext
+import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoDateControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoDateTimeControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoEnumControlTester
@@ -12,7 +13,13 @@ import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoOneOfRadi
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoRadioGroupControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoSliderControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoTextControlTester
+import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoMultiTextControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.cupertinoTimeControlTester
+import com.chobantonov.jsonfroms.cupertino.renderers.complex.CupertinoAnyOfRenderer
+import com.chobantonov.jsonfroms.cupertino.renderers.complex.CupertinoOneOfRenderer
+import com.chobantonov.jsonfroms.cupertino.renderers.complex.cupertinoAnyOfControlTester
+import com.chobantonov.jsonfroms.cupertino.renderers.complex.cupertinoObjectControlTester
+import com.chobantonov.jsonfroms.cupertino.renderers.complex.cupertinoOneOfControlTester
 import com.chobantonov.jsonfroms.cupertino.renderers.util.cupertinoColors
 import com.chobantonov.jsonfroms.cupertino.renderers.util.cupertinoMaterialColorScheme
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
@@ -26,6 +33,22 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class CupertinoRenderersTest {
+    @Test
+    fun multilineTextUsesItsDedicatedRenderer() {
+        val schema = JsonSchema(buildJsonObject {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("notes", buildJsonObject { put("type", "string") })
+            })
+        })
+        val context = TesterContext(rootSchema = schema)
+        val multiline = ControlElement("#/properties/notes", options = mapOf("multi" to JsonPrimitive(true)))
+        assertTrue(cupertinoMultiTextControlTester(multiline, schema, context) >
+            cupertinoTextControlTester(multiline, schema, context))
+        assertEquals(NOT_APPLICABLE,
+            cupertinoMultiTextControlTester(ControlElement("#/properties/notes"), schema, context))
+    }
+
     @Test
     fun materialCompatibilitySurfacesUseCupertinoNeutralHierarchy() {
         listOf(false, true).forEach { darkTheme ->
@@ -59,6 +82,32 @@ class CupertinoRenderersTest {
         val materialRank = materialRenderers.maxOf { it.tester(control, schema, context) }
 
         assertTrue(cupertinoRank > materialRank)
+    }
+
+    @Test
+    fun objectCombinatorsOutrankGenericObjectRenderer() {
+        for (keyword in listOf("oneOf", "anyOf")) {
+            val schema = JsonSchema(buildJsonObject {
+                put("type", "object")
+                put("properties", buildJsonObject {
+                    put("value", buildJsonObject {
+                        put("type", "object")
+                        put(keyword, JsonArray(listOf(
+                            buildJsonObject { put("title", "First"); put("properties", buildJsonObject { put("first", buildJsonObject { put("type", "string") }) }) },
+                            buildJsonObject { put("title", "Second"); put("properties", buildJsonObject { put("second", buildJsonObject { put("type", "string") }) }) },
+                        )))
+                    })
+                })
+            })
+            val control = ControlElement("#/properties/value")
+            val context = TesterContext(rootSchema = schema)
+            val combinatorRank = if (keyword == "oneOf")
+                cupertinoOneOfControlTester(control, null, context)
+            else cupertinoAnyOfControlTester(control, null, context)
+            assertTrue(combinatorRank > cupertinoObjectControlTester(control, null, context))
+            assertSame(if (keyword == "oneOf") CupertinoOneOfRenderer else CupertinoAnyOfRenderer,
+                cupertinoRenderers.maxBy { it.tester(control, null, context) }.renderer)
+        }
     }
 
     @Test

@@ -61,7 +61,7 @@ val coreReducer: Reducer<JsonFormsCoreState, JsonFormsAction> = Reducer { state,
             }
             currentState.copy(
                 data = updated,
-                dataProvided = if (action.path.isEmpty()) action.dataProvided ?: true else currentState.dataProvided,
+                dataProvided = action.dataProvided ?: true,
                 errors = validate(currentState.validator, updated),
             )
         }

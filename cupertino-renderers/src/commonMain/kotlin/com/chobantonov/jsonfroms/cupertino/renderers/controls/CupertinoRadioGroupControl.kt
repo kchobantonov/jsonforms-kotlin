@@ -1,8 +1,16 @@
 package com.chobantonov.jsonfroms.cupertino.renderers.controls
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellProps
+import com.chobantonov.jsonfroms.compose.asRendererProps
+import com.chobantonov.jsonfroms.core.i18n.translateRadioUnknownValue
+import com.chobantonov.jsonfroms.core.i18n.translateControlClear
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfEnum
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
@@ -17,7 +25,14 @@ import com.chobantonov.jsonfroms.material.renderers.controls.materialRadioGroupC
 val CupertinoRadioGroupControl = ComposeJsonFormsRenderer { CupertinoRadioGroupControl(it) }
 
 @Composable
-fun CupertinoRadioGroupControl(props: ComposeJsonFormsRendererProps) {
+internal fun CupertinoPlainRadioCell(props: ComposeJsonFormsCellProps) {
+    if (props.schema.enumValues == null && props.schema.oneOf != null)
+        CupertinoOneOfRadioGroupControl(props.asRendererProps(), compact = true)
+    else CupertinoRadioGroupControl(props.asRendererProps(), compact = true)
+}
+
+@Composable
+fun CupertinoRadioGroupControl(props: ComposeJsonFormsRendererProps, compact: Boolean = false) {
     val control = props.uischema as? ControlElement
         ?: error("CupertinoRadioGroupControl can only render Control elements")
     val stateProps = mapStateToEnumControlProps(
@@ -41,11 +56,14 @@ fun CupertinoRadioGroupControl(props: ComposeJsonFormsRendererProps) {
         action
     })
 
+    var touched by remember(stateProps.path) { mutableStateOf(false) }
+    var hasReceivedFocus by remember(stateProps.path) { mutableStateOf(false) }
     CupertinoRadioGroup(
+        focusKey = stateProps.path,
         label = stateProps.label,
         required = stateProps.required,
         description = stateProps.description,
-        errors = stateProps.errors,
+        errors = if (touched) stateProps.errors else stateProps.errorsBeforeTouch,
         visible = stateProps.visible,
         enabled = stateProps.enabled,
         readonly = stateProps.readonly,
@@ -53,7 +71,22 @@ fun CupertinoRadioGroupControl(props: ComposeJsonFormsRendererProps) {
         optionsMap = stateProps.uischema.options,
         options = stateProps.options,
         selectedValue = stateProps.data,
-        onSelect = { option -> dispatchProps.handleChange(stateProps.path, option.value) },
+        dataProvided = stateProps.dataProvided,
+        unknownValueLabel = translateRadioUnknownValue(props.state.jsonforms.i18n),
+        clearLabel = translateControlClear(props.state.jsonforms.i18n),
+        i18n = props.state.jsonforms.i18n,
+        onGroupFocusChanged = { hasFocus ->
+            if (hasFocus) hasReceivedFocus = true
+            else if (hasReceivedFocus) touched = true
+        },
+        onSelect = { option ->
+            dispatchProps.handleChange(stateProps.path, option.value)
+        },
+        onClear = {
+            touched = true
+            dispatchProps.handleChange(stateProps.path, null)
+        },
+        compact = compact,
     )
 }
 

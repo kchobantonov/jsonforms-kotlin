@@ -9,6 +9,7 @@ import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.DescriptionControlLabel
 import com.chobantonov.jsonfroms.core.models.GroupElement
 import com.chobantonov.jsonfroms.core.models.HorizontalLayout
+import com.chobantonov.jsonfroms.core.models.ImageViewElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.JsonSchemaType
 import com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue
@@ -16,10 +17,13 @@ import com.chobantonov.jsonfroms.core.models.LabelDescription
 import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.models.LeafCondition
 import com.chobantonov.jsonfroms.core.models.ListWithDetailElement
+import com.chobantonov.jsonfroms.core.models.LinkElement
 import com.chobantonov.jsonfroms.core.models.OrCondition
 import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.RuleEffect
 import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
+import com.chobantonov.jsonfroms.core.models.SeparatorElement
+import com.chobantonov.jsonfroms.core.models.SpacerElement
 import com.chobantonov.jsonfroms.core.models.StringControlLabel
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement
@@ -28,6 +32,8 @@ import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.JsonFormsUISchemaRegistryEntry
 import com.chobantonov.jsonfroms.core.store.Translator
 import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
+import com.chobantonov.jsonfroms.core.testers.UiSchemaTester
+import com.chobantonov.jsonfroms.core.util.JsonPointer
 import com.chobantonov.jsonfroms.examples.upstream.behavior.i18nExample
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -36,6 +42,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -60,6 +67,7 @@ private fun parseUpstreamExample(example: JsonObject): ExampleDescription =
     ExampleDescription(
         name = example.requiredString("name"),
         label = example.requiredString("label"),
+        sourceUrl = upstreamExampleSourceUrl(example.requiredString("name")),
         data = example["data"] ?: JsonNull,
         dataProvided = "data" in example,
         schema = example.optionalObject("schema")?.let(::JsonSchema),
@@ -76,24 +84,117 @@ private fun parseUpstreamExample(example: JsonObject): ExampleDescription =
 internal fun parseSpecExamples(snapshot: String): List<ExampleDescription> =
     Json.parseToJsonElement(snapshot).requiredArray("examples").mapIndexed { index, element ->
         val example = element.requiredObject("examples[$index]")
+        val name = example.requiredString("name")
         val localizedTranslations = example.optionalObject("translations")?.mapValues { (locale, entries) ->
-            (entries as? JsonObject)?.mapValues { (_, value) ->
-                (value as? JsonPrimitive)?.content.orEmpty()
-            } ?: error("translations.$locale must be an object")
+            flattenSpecTranslations(entries as? JsonObject
+                ?: error("translations.$locale must be an object"))
         }.orEmpty()
         ExampleDescription(
-            name = example.requiredString("name"),
+            name = name,
             label = example.requiredString("label"),
             source = ExampleSource.Spec,
+            sourceUrl = "https://github.com/kchobantonov/jsonforms-extended-spec/tree/" +
+                "$specExamplesCommit/examples/${name.removePrefix("spec-")}",
+            capabilityNotice = example.optionalObject("capabilityNotice")?.mapValues { (_, value) ->
+                (value as? JsonPrimitive)?.content ?: error("Capability notice must be a string")
+            }.orEmpty(),
             data = example["data"] ?: JsonNull,
+            invalidData = example["invalid-data"],
             dataProvided = "data" in example,
             schema = example.optionalObject("schema")?.let(::JsonSchema),
             uischema = example.optionalObject("uischema")?.toUiSchemaElement(),
+            uischemas = example["uischemas"]?.requiredArray("uischemas")?.mapIndexed { entryIndex, entry ->
+                val registryEntry = entry.requiredObject("uischemas[$entryIndex]")
+                val ui = registryEntry["uischema"].requiredObject("uischema").toUiSchemaElement()
+                val tester = registryEntry.optionalObject("match")?.toSpecUiSchemaTester()
+                    ?: { _, _, _ -> NOT_APPLICABLE }
+                JsonFormsUISchemaRegistryEntry(tester, ui)
+            }.orEmpty(),
             config = example.optionalObject("config")?.toKotlinMap().orEmpty(),
             translations = localizedTranslations["en"].orEmpty(),
             localizedTranslations = localizedTranslations,
         )
     }
+
+private fun flattenSpecTranslations(entries: JsonObject): Map<String, String> {
+    val values = mutableMapOf<String, Pair<Int, String>>()
+    fun visit(node: JsonObject, prefix: String, depth: Int) {
+        node.forEach { (key, value) ->
+            val path = if (prefix.isEmpty()) key else "$prefix.$key"
+            when (value) {
+                is JsonObject -> visit(value, path, depth + 1)
+                is JsonPrimitive -> {
+                    require(value.isString) { "Translation $path must be a string" }
+                    val old = values[path]
+                    if (old == null || depth < old.first) values[path] = depth to value.content
+                }
+                else -> error("Translation $path must be a string or object")
+            }
+        }
+    }
+    visit(entries, "", 0)
+    val flattened = values.mapValues { it.value.second }.toMutableMap()
+    // The pinned catalogs also publish schema-pointer keys. Ordinary Controls
+    // look up data-path keys, so expose aliases without overriding authored keys.
+    values.forEach { (key, value) ->
+        schemaTranslationAlias(key)?.let { alias ->
+            if (alias !in flattened) flattened[alias] = value.second
+        }
+    }
+    return flattened
+}
+
+private fun schemaTranslationAlias(key: String): String? {
+    val marker = ".schema.properties."
+    val start = key.indexOf(marker)
+    if (start <= 0) return null
+    val parts = ("properties." + key.substring(start + marker.length)).split('.')
+    val suffix = parts.lastOrNull()?.takeIf { it == "label" || it == "description" } ?: return null
+    val names = mutableListOf<String>()
+    var index = 0
+    val end = parts.lastIndex
+    while (index < end) {
+        when (parts[index]) {
+            "properties" -> {
+                val name = parts.getOrNull(index + 1)?.takeIf(String::isNotEmpty) ?: return null
+                names += name
+                index += 2
+            }
+            "items" -> index++
+            "prefixItems" -> {
+                if (parts.getOrNull(index + 1)?.toIntOrNull() == null) return null
+                index += 2
+            }
+            else -> return null
+        }
+    }
+    return names.takeIf { it.isNotEmpty() }?.joinToString(".")?.plus(".$suffix")
+}
+
+private fun JsonObject.toSpecUiSchemaTester(): UiSchemaTester {
+    val supported = setOf("rank", "schemaPath", "notSchemaPath", "schemaPointer", "exists", "equals")
+    require(keys.all { it in supported }) { "Unknown UI-schema match fields: ${keys - supported}" }
+    val rank = (this["rank"] as? JsonPrimitive)?.intOrNull
+        ?: error("UI-schema match.rank must be an integer")
+    val requiredSchemaPath = optionalString("schemaPath")
+    val excludedSchemaPath = optionalString("notSchemaPath")
+    val pointer = optionalString("schemaPointer")
+    val exists = optionalBoolean("exists")
+    val expectedValue = this["equals"]
+    require(pointer != null || (exists == null && expectedValue == null)) {
+        "UI-schema match.exists and equals require schemaPointer"
+    }
+    return { schema, schemaPath, _ ->
+        val resolved = pointer?.let { path -> schema?.toJsonObject()?.let { JsonPointer.resolve(it, path) } }
+        when {
+            requiredSchemaPath != null && requiredSchemaPath != schemaPath -> NOT_APPLICABLE
+            excludedSchemaPath != null && excludedSchemaPath == schemaPath -> NOT_APPLICABLE
+            exists != null && (resolved != null) != exists -> NOT_APPLICABLE
+            expectedValue != null && expectedValue != resolved -> NOT_APPLICABLE
+            else -> rank
+        }
+    }
+}
 
 private fun ExampleDescription.withPortableUpstreamBehavior(sortUiSchema: UiSchemaElement?): ExampleDescription = when (name) {
     "array", "array-with-sorting" -> copy(actions = listOf(
@@ -116,13 +217,6 @@ private fun ExampleDescription.withPortableUpstreamBehavior(sortUiSchema: UiSche
             add = "Add", rename = "Rename", remove = "Delete", save = "Save", cancel = "Cancel",
             required = "Property name is required", invalid = "Property name is invalid",
             defined = "Property already exists",
-        ),
-        german = additionalPropertiesTranslations(
-            title = "Zusätzliche Eigenschaften", propertyName = "Eigenschaftsname",
-            newPropertyName = "Neuer Eigenschaftsname", add = "Hinzufügen", rename = "Umbenennen",
-            remove = "Löschen", save = "Speichern", cancel = "Abbrechen",
-            required = "Ein Eigenschaftsname ist erforderlich", invalid = "Der Eigenschaftsname ist ungültig",
-            defined = "Die Eigenschaft ist bereits vorhanden",
         ),
         bulgarian = additionalPropertiesTranslations(
             title = "Допълнителни свойства", propertyName = "Име на свойство",
@@ -174,14 +268,6 @@ private fun ExampleDescription.withPortableUpstreamBehavior(sortUiSchema: UiSche
             "countryNoAutocomplete.RU" to "Russia", "countryNoAutocomplete.Other" to "Other Country",
             "status.pending" to "Awaiting Review", "status.approved" to "Approved", "status.rejected" to "Declined",
         ),
-        german = mapOf(
-            "country.DE" to "Deutschland", "country.IT" to "Italien", "country.JP" to "Japan",
-            "country.US" to "Vereinigte Staaten", "country.RU" to "Russland", "country.Other" to "Anderes Land",
-            "countryNoAutocomplete.DE" to "Deutschland", "countryNoAutocomplete.IT" to "Italien",
-            "countryNoAutocomplete.JP" to "Japan", "countryNoAutocomplete.US" to "Vereinigte Staaten",
-            "countryNoAutocomplete.RU" to "Russland", "countryNoAutocomplete.Other" to "Anderes Land",
-            "status.pending" to "Wartet auf Prüfung", "status.approved" to "Genehmigt", "status.rejected" to "Abgelehnt",
-        ),
         bulgarian = mapOf(
             "country.DE" to "Германия", "country.IT" to "Италия", "country.JP" to "Япония",
             "country.US" to "Съединени щати", "country.RU" to "Русия", "country.Other" to "Друга държава",
@@ -199,14 +285,6 @@ private fun ExampleDescription.withPortableUpstreamBehavior(sortUiSchema: UiSche
             "comments.deleteDialogAccept" to "Delete!",
             "comments.deleteDialogDecline" to "Cancel!",
             "comments.deleteDialogMessage" to "Are you sure you want to delete this comment?",
-        ),
-        german = mapOf(
-            "comments.noDataMessage" to "Schreiben Sie den ersten Kommentar",
-            "comments.addTooltip" to "Kommentar hinzufügen",
-            "comments.addAriaLabel" to "Kommentar hinzufügen",
-            "comments.deleteDialogAccept" to "Löschen!",
-            "comments.deleteDialogDecline" to "Abbrechen!",
-            "comments.deleteDialogMessage" to "Möchten Sie diesen Kommentar wirklich löschen?",
         ),
         bulgarian = mapOf(
             "comments.noDataMessage" to "Напишете първия коментар",
@@ -289,11 +367,10 @@ private val jsonSchemaObjectUiSchema: UiSchemaElement by lazy {
 
 private fun ExampleDescription.withLocalizedTranslations(
     english: Map<String, String>,
-    german: Map<String, String>,
     bulgarian: Map<String, String>,
 ): ExampleDescription = copy(
     translations = english,
-    localizedTranslations = mapOf("en" to english, "de" to german, "bg" to bulgarian),
+    localizedTranslations = mapOf("en" to english, "bg" to bulgarian),
     i18n = JsonFormsI18nState(
         locale = "en",
         translate = Translator { key, defaultMessage, _ -> english[key] ?: defaultMessage },
@@ -343,14 +420,20 @@ internal fun JsonObject.toUiSchemaElement(): UiSchemaElement {
     }.orEmpty()
 
     return when (type) {
-        "VerticalLayout" -> VerticalLayout(rule, options, elements)
-        "HorizontalLayout" -> HorizontalLayout(rule, options, elements)
-        "Group" -> GroupElement(optionalString("label"), optionalString("i18n"), rule, options, elements)
-        "Category" -> CategoryElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements)
-        "Categorization" -> CategorizationElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements)
-        "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options)
-        "Control" -> ControlElement(requiredString("scope"), controlLabel(), optionalString("i18n"), rule, options)
-        "ListWithDetail" -> ListWithDetailElement(requiredString("scope"), optionalString("i18n"), rule, options)
+        "VerticalLayout" -> VerticalLayout(rule, options, elements, optionalString("name"))
+        "HorizontalLayout" -> HorizontalLayout(rule, options, elements, optionalString("name"))
+        "Group" -> GroupElement(optionalString("label"), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Category" -> CategoryElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Categorization" -> CategorizationElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options, optionalString("name"))
+        "Spacer" -> SpacerElement(this["size"], rule, options, optionalString("name"))
+        "Separator" -> SeparatorElement(rule, options, optionalString("name"))
+        "Link" -> LinkElement(requiredString("href"), optionalString("label"), optionalString("target"),
+            optionalString("rel"), optionalString("i18n"), rule, options, optionalString("name"))
+        "ImageView" -> ImageViewElement(optionalString("src"), optionalString("scope"), optionalString("alt"),
+            optionalString("i18n"), rule, options, optionalString("name"))
+        "Control" -> ControlElement(requiredString("scope"), controlLabel(), optionalString("i18n"), rule, options, optionalString("name"))
+        "ListWithDetail" -> ListWithDetailElement(requiredString("scope"), optionalString("i18n"), rule, options, optionalString("name"))
         else -> UnknownUiSchemaElement(
             type = type,
             rule = rule,

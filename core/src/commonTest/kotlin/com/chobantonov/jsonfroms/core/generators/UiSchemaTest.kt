@@ -15,6 +15,26 @@ class UiSchemaTest {
     private fun s(value: String) = kotlinx.serialization.json.JsonPrimitive(value)
 
     @Test
+    fun `unresolved property ref remains a finite Control`() {
+        assertUiSchemaEquals(buildJsonSchema {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("name", buildJsonObject { put("\$ref", "#/definitions/absent") })
+            })
+        }, VerticalLayout(elements = listOf(ControlElement("#/properties/name"))))
+    }
+
+    @Test
+    fun `cyclic root refs remain a finite Control`() {
+        assertUiSchemaEquals(buildJsonSchema {
+            put("\$ref", "#/definitions/again")
+            put("definitions", buildJsonObject {
+                put("again", buildJsonObject { put("\$ref", "#/definitions/again") })
+            })
+        }, VerticalLayout(elements = listOf(ControlElement("#"))))
+    }
+
+    @Test
     fun `generate ui schema for Control element by resolving refs`() {
         val schema = buildJsonSchema {
             put("type", "object")

@@ -2,12 +2,37 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Checkbox
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
+import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.core.i18n.translateBooleanNotSet
+import com.chobantonov.jsonfroms.core.i18n.translateBooleanInvalidValue
+import com.chobantonov.jsonfroms.core.i18n.translateControlClear
+import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
+import com.chobantonov.jsonfroms.core.mappers.booleanControlState
 import com.chobantonov.jsonfroms.core.mappers.computeLabel
 import com.chobantonov.jsonfroms.core.mappers.isDescriptionHidden
 import com.chobantonov.jsonfroms.core.testers.RankedTester
@@ -23,6 +48,7 @@ val MaterialBooleanControl: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer 
 @Composable
 fun MaterialBooleanControl(
     props: ComposeJsonFormsRendererProps,
+    compact: Boolean = false,
 ) {
     val bindings = materialControlBindings(
         props = props,
@@ -34,59 +60,106 @@ fun MaterialBooleanControl(
     }
 
     val appliedOptions = controlProps.config + controlProps.uischema.options
-    val showUnfocusedDescription = appliedOptions["showUnfocusedDescription"]?.toBooleanStrictOrNullCompat() ?: false
-    val hideRequiredAsterisk = appliedOptions["hideRequiredAsterisk"]?.toBooleanStrictOrNullCompat() ?: false
+    val showUnfocusedDescription = strictControlBooleanOption(appliedOptions, "showUnfocusedDescription") == true
+    val hideRequiredAsterisk = strictControlBooleanOption(appliedOptions, "hideRequiredAsterisk") ?: false
 
+    var touched by remember(controlProps.path) { mutableStateOf(false) }
+    var hasReceivedFocus by remember(controlProps.path) { mutableStateOf(false) }
+    var focused by remember(controlProps.path) { mutableStateOf(false) }
+    val focusModifier = Modifier.onFocusChanged { state ->
+        focused = state.isFocused
+        if (state.isFocused) hasReceivedFocus = true
+        else if (hasReceivedFocus) touched = true
+    }
+    val visibleError = if (touched) controlProps.errors else controlProps.errorsBeforeTouch
     val description = controlProps.description
-    val isValid = controlProps.errors.isBlank()
     val showDescription = !isDescriptionHidden(
         visible = controlProps.visible,
         description = description,
-        isFocused = false,
+        isFocused = focused,
         showUnfocusedDescription = showUnfocusedDescription,
     )
-    val firstFormHelperText = when {
-        showDescription -> description
-        !isValid -> controlProps.errors
-        else -> null
-    }
-    val secondFormHelperText = if (showDescription && !isValid) controlProps.errors else null
-    val checked = (controlProps.data as? JsonPrimitive)?.booleanOrNull ?: false
-    val label = computeLabel(controlProps.label, controlProps.required, hideRequiredAsterisk)
+    val visibleDescription = description.takeIf { !compact && showDescription && !it.isNullOrBlank() }
+    val booleanState = booleanControlState(props.state.jsonforms.core.data, controlProps.path)
+    val enabled = controlProps.enabled && !controlProps.readonly
+    val focusRequester = rememberInitialControlFocusRequester(controlProps.path, appliedOptions, enabled)
+    val canClear = booleanState.hasValue && enabled &&
+        (appliedOptions["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearLabel = translateControlClear(props.state.jsonforms.i18n)
+    val notSetLabel = translateBooleanNotSet(props.state.jsonforms.i18n)
+    val statusLabel = booleanState.invalidValue?.let {
+        "${translateBooleanInvalidValue(props.state.jsonforms.i18n)}: $it"
+    } ?: notSetLabel.takeIf { booleanState.value == null }
+    val requiredState = if (controlProps.required) translateControlRequired(props.state.jsonforms.i18n) else null
+    val accessibleState = listOfNotNull(requiredState,
+        statusLabel, visibleDescription).joinToString(". ")
+    val clearAffordance = rememberClearAffordanceState(controlProps.path)
+    val label = if (compact) "" else computeLabel(controlProps.label, controlProps.required, hideRequiredAsterisk)
 
-    Column {
+    Column(modifier = if (compact) Modifier.testTag("material-boolean-cell") else Modifier) {
         CheckboxWithLabel(
-            checked = checked,
+            value = booleanState.value,
             label = label,
-            enabled = controlProps.enabled && !controlProps.readonly,
-            onCheckedChange = { value ->
-                bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
+            enabled = enabled,
+            modifier = Modifier.focusRequester(focusRequester).then(focusModifier)
+                .then(clearAffordance.fieldModifier),
+            statusLabel = statusLabel,
+            accessibleState = accessibleState,
+            visibleError = visibleError,
+            onCheckedChange = {
+                bindings.dispatchProps.handleChange(bindings.stateProps.path,
+                    JsonPrimitive(booleanState.value != true))
             },
+            clear = if (canClear) {
+                {
+                    IconButton(
+                        onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path, booleanState.clearValue) },
+                        modifier = clearAffordance.clearModifier(32.dp),
+                    ) {
+                        Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
+                    }
+                }
+            } else null,
         )
 
-        if (!firstFormHelperText.isNullOrBlank()) {
-            Text(firstFormHelperText)
+        if (visibleDescription != null) {
+            Text(visibleDescription)
         }
-        if (!secondFormHelperText.isNullOrBlank()) {
-            Text(secondFormHelperText)
+        if (!compact && visibleError.isNotBlank()) {
+            Text(visibleError)
         }
     }
 }
 
 @Composable
 private fun CheckboxWithLabel(
-    checked: Boolean,
+    value: Boolean?,
     label: String,
     enabled: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier,
+    statusLabel: String?,
+    accessibleState: String,
+    visibleError: String,
+    onCheckedChange: () -> Unit,
+    clear: (@Composable () -> Unit)?,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = checked,
+        TriStateCheckbox(
+            modifier = modifier.semantics {
+                if (accessibleState.isNotEmpty()) stateDescription = accessibleState
+                if (visibleError.isNotBlank()) error(visibleError)
+            },
+            state = when (value) {
+                true -> ToggleableState.On
+                false -> ToggleableState.Off
+                null -> ToggleableState.Indeterminate
+            },
             enabled = enabled,
-            onCheckedChange = onCheckedChange,
+            onClick = onCheckedChange,
         )
-        Text(label)
+        if (label.isNotEmpty()) Text(label)
+        if (statusLabel != null) Text(statusLabel)
+        clear?.invoke()
     }
 }
 

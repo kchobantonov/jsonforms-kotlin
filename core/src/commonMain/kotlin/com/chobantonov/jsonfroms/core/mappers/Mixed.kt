@@ -4,6 +4,7 @@ import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.JsonSchemaType
 import com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue
 import com.chobantonov.jsonfroms.core.models.JsonSchemaOrSchemas
+import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.util.Resolve
 import com.chobantonov.jsonfroms.core.util.composePaths
 import kotlinx.serialization.json.JsonArray
@@ -17,6 +18,12 @@ import kotlinx.serialization.json.longOrNull
 
 fun mixedSchemaTypes(schema: JsonSchema): List<JsonSchemaType> =
     (schema.typeValue as? JsonSchemaTypeValue.Multiple)?.values.orEmpty()
+
+/** Type-specific editor detail overrides the generic detail for this mixed value. */
+fun mixedControlForType(control: ControlElement, type: JsonSchemaType): ControlElement {
+    val specific = control.options["${type.jsonName()}-detail"] ?: return control
+    return control.copy(options = control.options + ("detail" to specific))
+}
 
 fun concreteMixedSchema(schema: JsonSchema, type: JsonSchemaType): JsonSchema {
     val values = schema.toJsonObject().toMutableMap()
@@ -52,6 +59,17 @@ fun JsonSchemaType.displayName(): String = jsonName().replaceFirstChar(Char::upp
  */
 fun mixedTypeSupportsData(selected: JsonSchemaType, dataType: JsonSchemaType): Boolean =
     selected == dataType || (selected == JsonSchemaType.Number && dataType == JsonSchemaType.Integer)
+
+fun isNumericMixedType(type: JsonSchemaType?): Boolean =
+    type == JsonSchemaType.Number || type == JsonSchemaType.Integer
+
+/** Switching between numeric editors is presentation state, not a data replacement. */
+fun isNumericMixedEditorSwitch(
+    selected: JsonSchemaType?,
+    target: JsonSchemaType?,
+    data: JsonElement?,
+): Boolean = isNumericMixedType(selected) && isNumericMixedType(target) &&
+    data is JsonPrimitive && !data.isString && data.doubleOrNull != null
 
 /** Container mixed values expose an editable detail panel as soon as they are selected. */
 fun shouldOpenMixedDetails(type: JsonSchemaType?): Boolean =
@@ -153,7 +171,7 @@ private fun arrayItemSchema(schema: JsonSchema, index: Int, rootSchema: JsonSche
         ?: unconstrainedMixedSchema("Item ${index + 1}")
 }
 
-private fun unconstrainedMixedSchema(title: String): JsonSchema = JsonSchema(
+internal fun unconstrainedMixedSchema(title: String): JsonSchema = JsonSchema(
     JsonObject(
         mapOf(
             "title" to JsonPrimitive(title),

@@ -76,7 +76,6 @@ fun findUISchema(
     findMatchingUISchema(state)(schema, schemaPath, path) ?: Generate.uiSchema(schema)
 
 fun defaultConfig(): Map<String, Any?> = mapOf(
-    "restrict" to false,
     "trim" to false,
     "showUnfocusedDescription" to false,
     "hideRequiredAsterisk" to false,

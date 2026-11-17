@@ -18,11 +18,10 @@ class NumericInputsTest {
     }
 
     @Test
-    fun invalidIntegerIsStoredAsJsonStringAndReportedLocally() {
+    fun invalidIntegerRemainsLocalAndIsReported() {
         val result = parseIntegerInput("not an integer")
 
-        assertEquals(JsonPrimitive("not an integer"), result.data)
-        assertTrue((result.data as JsonPrimitive).isString)
+        assertNull(result.data)
         assertEquals("Invalid integer.", result.error)
     }
 
@@ -36,11 +35,10 @@ class NumericInputsTest {
     }
 
     @Test
-    fun invalidNumberIsStoredAsJsonStringAndReportedLocally() {
+    fun invalidNumberRemainsLocalAndIsReported() {
         val result = parseNumberInput("not a number")
 
-        assertEquals(JsonPrimitive("not a number"), result.data)
-        assertTrue((result.data as JsonPrimitive).isString)
+        assertNull(result.data)
         assertEquals("Invalid number.", result.error)
     }
 
@@ -51,10 +49,10 @@ class NumericInputsTest {
     }
 
     @Test
-    fun visibleWhitespaceIsInvalidDataRatherThanAnImplicitClear() {
-        assertEquals(JsonPrimitive(" "), parseIntegerInput(" ").data)
+    fun visibleWhitespaceRemainsAnInvalidLocalDraft() {
+        assertNull(parseIntegerInput(" ").data)
         assertEquals("Invalid integer.", parseIntegerInput(" ").error)
-        assertEquals(JsonPrimitive(" "), parseNumberInput(" ").data)
+        assertNull(parseNumberInput(" ").data)
         assertEquals("Invalid number.", parseNumberInput(" ").error)
     }
 }

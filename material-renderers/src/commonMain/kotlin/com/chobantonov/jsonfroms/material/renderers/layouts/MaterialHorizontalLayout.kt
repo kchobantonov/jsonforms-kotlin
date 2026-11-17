@@ -45,11 +45,14 @@ fun MaterialHorizontalLayout(
     )
     if (!layoutProps.visible) return
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        MaterialLayoutRenderer(
-            props = props.copy(enabled = layoutProps.enabled),
-            elements = layout.elements,
-            direction = horizontalLayoutDirection(layout, maxWidth),
-        )
+        val direction = horizontalLayoutDirection(layout, maxWidth)
+        MaterialDependencyLayoutFeedback(props, layout.elements) {
+            MaterialLayoutRenderer(
+                props = props.copy(enabled = layoutProps.enabled),
+                elements = layout.elements,
+                direction = direction,
+            )
+        }
     }
 }
 

@@ -1,8 +1,146 @@
 package com.chobantonov.jsonfroms.cupertino.renderers.complex
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
-import com.chobantonov.jsonfroms.material.renderers.complex.MaterialAnyOfRenderer
+import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
+import com.chobantonov.jsonfroms.core.mappers.CombinatorKeyword
+import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
+import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
+import com.chobantonov.jsonfroms.core.mappers.createCombinatorRenderInfos
+import com.chobantonov.jsonfroms.core.mappers.findFittingSchemaIndex
+import com.chobantonov.jsonfroms.core.mappers.mapStateToControlProps
+import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.store.getValidator
+import com.chobantonov.jsonfroms.core.testers.withIncreasedRank
+import com.chobantonov.jsonfroms.material.renderers.complex.CombinatorProperties
+import com.chobantonov.jsonfroms.material.renderers.complex.activeBranchFeedback
 import com.chobantonov.jsonfroms.material.renderers.complex.materialAnyOfControlTester
+import com.slapps.cupertino.CupertinoButton
+import com.slapps.cupertino.CupertinoButtonDefaults
+import com.slapps.cupertino.CupertinoText
 
-val CupertinoAnyOfRenderer = ComposeJsonFormsRenderer { MaterialAnyOfRenderer.Render(it) }
-val cupertinoAnyOfControlTester = materialAnyOfControlTester
+val CupertinoAnyOfRenderer: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
+    CupertinoAnyOfRenderer(props)
+}
+
+@Composable
+fun CupertinoAnyOfRenderer(
+    props: ComposeJsonFormsRendererProps,
+) {
+    val control = props.uischema as? ControlElement
+        ?: error("CupertinoAnyOfRenderer can only render Control elements")
+    val controlProps = mapStateToControlProps(
+        state = props.state,
+        ownProps = OwnPropsOfControl(
+            controlUiSchema = control,
+            own = OwnPropsOfRenderer(
+                uischema = props.uischema,
+                schema = props.schema,
+                enabled = props.enabled,
+                path = props.path,
+                renderers = props.renderers,
+                cells = props.cells,
+                uischemas = props.state.jsonforms.uischemas,
+            ),
+        ),
+    )
+
+    if (!controlProps.visible) {
+        return
+    }
+
+    val renderInfos = createCombinatorRenderInfos(
+        combinatorSubSchemas = controlProps.schema.anyOf.orEmpty(),
+        rootSchema = controlProps.rootSchema,
+        keyword = CombinatorKeyword.anyOf,
+        control = control,
+        path = controlProps.path,
+        uischemas = props.state.jsonforms.uischemas,
+    )
+    if (renderInfos.isEmpty()) {
+        return
+    }
+
+    val fittingSchemaIndex = findFittingSchemaIndex(
+        combinatorSubSchemas = renderInfos.map { it.schema },
+        data = controlProps.data,
+        validator = getValidator(props.state),
+        rootSchema = controlProps.rootSchema,
+    )
+    var selectedAnyOf by remember(controlProps.schema, controlProps.path) {
+        mutableIntStateOf(fittingSchemaIndex ?: 0)
+    }
+    var touched by remember(controlProps.path) { mutableStateOf(false) }
+    LaunchedEffect(controlProps.schema, controlProps.path, fittingSchemaIndex) {
+        if (fittingSchemaIndex != null) {
+            selectedAnyOf = fittingSchemaIndex
+        } else if (selectedAnyOf !in renderInfos.indices) {
+            selectedAnyOf = 0
+        }
+    }
+    val safeIndex = selectedAnyOf.coerceIn(0, renderInfos.lastIndex)
+    val branchFeedback = activeBranchFeedback(props, control, controlProps, renderInfos[safeIndex].schema)
+
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    CombinatorProperties(
+        props = props.copy(
+            schema = controlProps.schema,
+            rootSchema = controlProps.rootSchema,
+            path = controlProps.path,
+            enabled = controlProps.enabled,
+        ),
+        schema = controlProps.schema,
+        combinatorKeyword = "anyOf",
+    )
+
+    if (renderInfos.size == 1) {
+        CupertinoText(controlProps.label)
+        if (renderInfos[0].label != controlProps.label) CupertinoText(renderInfos[0].label)
+        controlProps.description?.takeIf(String::isNotBlank)?.let { CupertinoText(it) }
+    }
+
+    if (renderInfos.size > 1) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        renderInfos.forEachIndexed { index, renderInfo ->
+            CupertinoButton(
+                onClick = { selectedAnyOf = index; touched = true },
+                colors = if (index == safeIndex) CupertinoButtonDefaults.filledButtonColors()
+                else CupertinoButtonDefaults.plainButtonColors(),
+                modifier = Modifier.semantics { selected = index == safeIndex },
+            ) { CupertinoText(renderInfo.label) }
+        }
+    }
+
+    CupertinoCombinatorOwnErrors(if (touched) branchFeedback.errors else branchFeedback.errorsBeforeTouch)
+    JsonFormsDispatchRenderer(
+        props = branchFeedback.props.copy(
+            schema = renderInfos[safeIndex].schema,
+            rootSchema = controlProps.rootSchema,
+            uischema = renderInfos[safeIndex].uischema,
+            path = controlProps.path,
+            enabled = controlProps.enabled,
+            id = "${controlProps.id}-anyOf-$safeIndex",
+        ),
+    )
+    }
+}
+
+val cupertinoAnyOfControlTester = withIncreasedRank(100, materialAnyOfControlTester)

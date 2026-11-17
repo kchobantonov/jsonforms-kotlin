@@ -1,0 +1,302 @@
+{
+  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "sourceCatalogCount": 49,
+  "importedCount": 46,
+  "rule": "Every source ID must have an explicit state; imports alone are unverified, and partial renderer evidence does not establish cross-platform conformance.",
+  "examples": [
+    {
+      "id": "additional-errors",
+      "title": "Additional errors: server and editor",
+      "fixture": "imported-partial",
+      "reason": "Portable server-owned profile is UI-tested on JVM with Material/Cupertino: submit, per-value clearing, clear action, and English/Bulgarian messages. Monaco editor publication is excluded; Android/iOS/JS/Wasm interactions remain unverified"
+    },
+    {
+      "id": "additional-items-pagination",
+      "title": "Additional items pagination: shipping",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "additional-properties",
+      "title": "Additional properties",
+      "fixture": "imported-partial",
+      "reason": "Twenty Material/Cupertino mounted cases use the imported inventory fixture on JVM: existing empty and dotted keys edit their exact values and clearing an isolated string keeps the key with its empty-string default; bracket, numeric and whitespace keys stay visible; dotted and whitespace names are stored without splitting or trimming; permitted blank Add creates an exact empty key and then disables on collision without inline draft feedback; explicit local false disables blank Add over global true and restrict keeps minProperties deletes disabled. A focused test-only telemetry UI over the imported schema/data rejects a too-short propertyNames key and accepts a valid one. The imported Inventory section places declared Reference and Quantity before dynamic Warehouse and Handling; editing and renaming Warehouse preserves the other values and exposes rename/delete actions only for dynamic fields. A live English/Bulgarian switch uses the source catalog for the property-name prompt and dynamic actions without writing data; a shared text resolver preserves scoped host overrides before generic source keys. Core tests verify literal, blank and whitespace names plus stale rename/add protection. JVM and iOS simulator mounted cases pass after the isolated-clear fix; Android main compiles. Unfiltered JS/Wasm browser suites pass with zero mounted failures or skips; the focused core cases pass on both targets. Four supplemental Material/Cupertino mounted cases in two pairs verify composed propertyNames with a root $defs reference and a nested local $ref inside an isolated dotted-key value, including parent validity recovery; pure tests verify reference chaining without rewriting default/enum/const JSON values. Sixteen supplemental Material/Cupertino mounted cases verify overlapping numeric pattern bounds in either declaration order, one editor, minimum/maximum error routing on a declared property, renaming into or out of an overlapping pattern while preserving the exact value and updating validity, editing both object fields supplied by two matching structural patterns until the object becomes valid, and correcting an inner dynamic value at ordinary and dotted literal keys inside an outer dynamic object. A dynamic-field error appears once at its field instead of being repeated at the parent. Core tests cover strongest bounds across three matches, structural conjunction, and rendered dynamic-key error scopes. The unfiltered JS/Wasm browser suites pass with zero mounted failures or skips. Remote references, recursive array/object nesting and device interaction remain to verify."
+    },
+    {
+      "id": "ag-grid",
+      "title": "AG Grid: portable options and native overrides",
+      "fixture": "platform-exclusion",
+      "reason": "Web AG Grid integration; portable table behavior tracked separately"
+    },
+    {
+      "id": "array-choices",
+      "title": "Array choices and tokens",
+      "fixture": "imported-partial",
+      "reason": "Paired Material/Cupertino JVM and JS browser tests exercise all three categories: checkbox selection, finite multi-select/chips, free token commit, duplicate scan removal, restricted bounds and invalid imported choice repair; Wasm/native interaction remains"
+    },
+    {
+      "id": "array-controls",
+      "title": "Array controls",
+      "fixture": "imported-partial",
+      "reason": "Portable categories imported with the AG Grid category and duplicate AG Grid staff presentation excluded. Fourteen paired Material/Cupertino mounted cases pass on JVM, iOS, JS and Wasm for native table, expandable and ListWithDetail deletion, bounds, composite cell editing, dialog, side panel and bottom panel. Other fixture details and device interaction remain unverified."
+    },
+    {
+      "id": "array-detail-modes",
+      "title": "Array detail modes: generated and registered",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "boolean-controls",
+      "title": "Boolean controls",
+      "fixture": "imported-partial",
+      "reason": "Six mounted Material/Cupertino cases pass on JVM, iOS simulator and JS browser for authored checkbox and switch selection, initial false/true values, a missing checkbox, numeric invalid import correction, checkbox-group membership and orientation, and table switch-cell selection with invalid-cell correction. Remaining authored fields and device pointer/keyboard/screen-reader interaction remain to verify."
+    },
+    {
+      "id": "button-actions",
+      "title": "Button actions",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "categorization",
+      "title": "Categorization: tabs, stepper, accordion",
+      "fixture": "imported-partial",
+      "reason": "Imported inner tabs, stepper and accordion render in Material/Cupertino JVM tests with localized data markers and Business rule visibility; full demo flow and non-JVM interaction remain."
+    },
+    {
+      "id": "choice-controls",
+      "title": "Choice controls",
+      "fixture": "imported-partial",
+      "reason": "Six mounted Material/Cupertino cases on JVM, iOS simulator and JS browser verify searchable enum and oneOf choices, the authored nonsearchable default, unchanged data while searching, label-to-constant storage, radio orientation and Arrow/Space selection, numeric and structural value equality, and correction of unknown imports. Choice cards belong to Appendix A proposals outside v1 conformance; the full normative fixture workflow remains to verify."
+    },
+    {
+      "id": "code-editor",
+      "title": "Code editor",
+      "fixture": "platform-exclusion",
+      "reason": "Monaco integration is web-only; native JSON-aware editing remains in scope"
+    },
+    {
+      "id": "collection-pagination",
+      "title": "Collection pagination: recruitment",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "color-control",
+      "title": "Color control",
+      "fixture": "imported-partial",
+      "reason": "Four mounted Material/Cupertino cases pass on JVM, iOS simulator and JS browser, exercising every authored color field individually: UI-only and schema selection, RGB/HSB/default hex/hex3 preset storage, HSL and transparent-hex import preservation, picker-only selection, and invalid import retention. A separate 24-case mounted color suite passes on JVM/iOS/JS/Wasm, including live Bulgarian error/action/accessibility text and scoped host overrides for Choose and Hex without data writes. The picker has explicit English/Bulgarian catalogs with equal static and generated key sets. Full category navigation and physical-device pointer/keyboard/screen-reader interaction remain to verify."
+    },
+    {
+      "id": "combinators",
+      "title": "Combinators and schema conditions",
+      "fixture": "imported-partial",
+      "reason": "Imported oneOf contact, anyOf location, allOf equipment, scalar alternatives, schema condition/UI rule, and appointment visibility pass paired Material/Cupertino mounted JVM and iOS simulator tests. OneOf confirms before changing to phone while retaining the enclosing name; anyOf navigation makes no data write; allOf displays the enclosing name before its branch fields. Scalar alternatives each render one input and retain full oneOf/anyOf validation. The urgent UI rule changes visibility independently of schema required validation, and changing appointment method reveals Postcode. Browser/Android interaction and remaining fixture details remain to verify"
+    },
+    {
+      "id": "conditional-fields",
+      "title": "Conditional fields: generated and authored layouts",
+      "fixture": "imported-partial",
+      "reason": "Fifteen Material/Cupertino fixture cases pass on JVM, iOS simulator, JS browser and Wasm browser. They cover generated, inline authored and registered object details, missing data, retained inactive fields excluded from the additional-property editor, visible Bulgarian diagnostics, and a three-way overlapping field whose active maxLength prevents excess input. Registered detail keeps authored groups, including empty groups, through branch changes. Opted-in allOf objects use object projection while anyOf keeps its selector. Branch changes preserve inactive data without incidental writes. Nine core cases pass on all four targets for option precedence, nested allOf, overlapping constraints, null-trigger dependencies, boolean conditions, root $defs references, required markers, additional-property reservation, compile diagnostics and Bulgarian/English fallback. Android main compiles; Android device interaction, Template/Slot branch ownership, remote references and deeper compositions remain unverified"
+    },
+    {
+      "id": "container-validation-indicator",
+      "title": "Container validation indicator",
+      "fixture": "imported-partial",
+      "reason": "Twenty-eight Material/Cupertino mounted fixture cases pass on JVM and iOS simulator; the unfiltered JS and Wasm browser suites pass with zero skips. They cover global category aggregation, a collapsed Group indicator and its removal after host repair without a data write, certifications array marker suppression while its own minItems error remains visible, global count opt-in and ValidateAndHide transitions, isolated invalid composite object/array/combinator cells beside valid sibling rows, Contact and Experience detail errors, oneOf and anyOf own-error feedback including the reference aggregate anyOf keyword, allOf phone feedback, English/Bulgarian unbound labels under a live locale switch, a translated data-presence tooltip on keyboard focus and pointer hover, and a minLength pre-touch filter that hides inline text until blur while retaining the Group cue. A test-only Certifications UI variant enables the source-disabled marker and verifies a three-entry structured summary, row context, expansion/collapse, live English/Bulgarian action text and zero writes. The source README requests opening the array marker, but its UI schema explicitly sets showValidationIndicator false. Summary rows now resolve schema titles and ordinary field-label keys; the spec importer creates ordinary field-key aliases from schema-path catalog keys without replacing authored keys. The validator preserves the certificate-name errorMessage key; the source catalog's global error.minLength text takes precedence over it in this fixture. The default error pipeline honors control custom, field keyword, global keyword, then schema message precedence. Six paired edit cases repair Alex’s oneOf branch, anyOf phone tab and allOf phone field; each clears its own cell marker and publishes one committed write. Two paired pre-touch cases keep oneOf/anyOf own errors hidden initially while the cell marker remains, then reveal them after same-branch selection or tab touch without writing data. A separate paired Material/Cupertino mounted test verifies that an AllOf minProperties own error stays hidden before interaction and appears when focus leaves a child field, with no data write. Real-device interaction remains unverified."
+    },
+    {
+      "id": "cron-control",
+      "title": "Cron control",
+      "fixture": "imported-partial",
+      "reason": "Ten Material/Cupertino mounted cases pass on JVM, iOS simulator, JS browser and Wasm browser: the authored schema-selected and UI-selected schedules edit and store six-field cron strings, an unset UI-selected picker cancels without writing, and invalid imported Unix five-field and Quartz seven-field strings display local errors then clear them after correction. The authored weekday and month-end pickers preserve their raw MON-FRI and L selectors on an unchanged Apply without a write, then store edits to MON,WED,FRI and day 28. Full category navigation, Android and direct accessibility remain unverified"
+    },
+    {
+      "id": "destructive-confirmation",
+      "title": "Destructive-change confirmation",
+      "fixture": "imported-partial",
+      "reason": "Native-table adaptation of AG Grid charges, with English/Bulgarian descriptions; 28 mounted fixture tests cover portable delete, branch/type change, oneOf selector Clear, override and empty composite-cell paths on JVM/iOS/JS/Wasm. AG Grid batch selection and device accessibility remain excluded or unverified."
+    },
+    {
+      "id": "draft-07-metaschema",
+      "title": "Draft-07 metaschema",
+      "fixture": "imported-partial",
+      "reason": "The imported minLength property resolves through a definition-backed allOf to one integer editor at the outer Control path in paired Material/Cupertino JVM and iOS simulator UI tests. A four-case JS browser run also passed with XML evidence before later interrupted runs cleared that report. It keeps the Min Length label and makes no mount write. Default restrict prevents a new negative value with local feedback; explicit restrict false stores -1 and reports the metaschema minimum error. The complete recursive metaschema form, stable browser rerun and Android interaction remain unverified"
+    },
+    {
+      "id": "dynamic-playground",
+      "title": "Dynamic playground: preview and configuration forms",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "editor-details",
+      "title": "Editor details: objects, mixed types, and cells",
+      "fixture": "imported-partial",
+      "reason": "Mounted Material/Cupertino JVM tests render the imported generated object and type-specific mixed object detail. Composite table-cell detail, edits, other type modes, target interaction and full demo flow remain unverified"
+    },
+    {
+      "id": "file-control",
+      "title": "File control",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "group-layout",
+      "title": "Group layout",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "job-application",
+      "title": "Job application",
+      "fixture": "imported-partial",
+      "reason": "Portable stepper and three named templates imported with the Ractive TemplateLayout header excluded. Paired Material/Cupertino mounted tests on JVM, iOS, JS and Wasm cover applicant editing, address rendering, English/Bulgarian locale switch and position-step navigation; other steps, host theme actions and device interaction remain unverified."
+    },
+    {
+      "id": "json-editor",
+      "title": "JSON editor: any JSON type",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "json-inference",
+      "title": "JSON inference: paste data without a schema",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "kitchen-sink",
+      "title": "Kitchen sink: job application",
+      "fixture": "imported-partial",
+      "reason": "Portable categories imported with the AG Grid reference and Monaco work-sample categories excluded. A validator test reports all nine portable invalid paths; paired Material/Cupertino JVM, iOS, JS and Wasm mounted tests cover nested navigation, applicant editing, native reference dialog, progressive category marker clearing and correction of a reference email on table page two. Remaining field-level correction flows, fixture details and device interaction are unverified."
+    },
+    {
+      "id": "label-interpolation",
+      "title": "Label interpolation",
+      "fixture": "imported-partial",
+      "reason": "Thirty-two mounted Material/Cupertino Label cases pass on JVM, iOS simulator, JS browser and Wasm browser. They mount every imported Label category: static and dynamic parameters, plural/literal braces, Markdown, translated plan/currency/number/date, inert interpolation-off labels, JavaScript-named JSON keys and five author errors. The imported keys and inert labels update with data and a live English-to-Bulgarian locale switch while the reserved locale variable remains available and diagnosed as an invalid parameter name. Only English and Bulgarian are shipped; unsupported locale tags fall back to English. A paired host-translator case verifies the React/Svelte translate(key, fallback) extension: catalog hits win, unknown keys use the authored fallback, and a live Bulgarian switch updates the result. Paired collection cases verify bounded CEL all/exists predicates and filter/map chaining update with host data; pure cases cover map keys, three-argument map, list and string-key JSON map literals, and transform errors. A mounted string-key map literal changes its equality result after host data replacement in both families. Logical AND/OR absorb ordinary operand errors when another operand is decisive. Postfix indexing selects from list/map literals and map/filter results; a mounted filtered first value updates with host data. Receiver-style size(), contains(), startsWith() and endsWith() compose with literals and filtered data, and mounted labels update those results with host data. List concatenation with + composes with size, indexing and macros and updates a mounted indexed result with host data. Portable bool, int and double conversions now handle valid strings, truncation and range errors; mounted converted values update with host data. CEL r/R raw string literals preserve backslashes in quoted text and map keys, including a mounted Label. string() converts string, Boolean and signed integer JSON scalars; dyn() preserves runtime values, and a mounted conversion updates with host data. Triple-quoted CEL strings, including raw multiline forms, parse through template and expression scanners; a receiver call mounts in both renderer families. Finite string(double) uses locale-independent fixed/scientific formatting, preserves signed zero and shortens the minimum subnormal boundary and passes normal/maximum/integer-precision boundaries across targets; the mounted conversion updates with host data. The focused 45 pure and 32 mounted Label cases pass on JVM, iOS simulator, JS browser and Wasm browser. Other cases cover live host config/context and selected list item, closed gates, out-of-range indexes and escaped Markdown substitutions. Full CEL including non-string map keys, additional time-only/instant zone boundaries, fixture form-control interactions and physical-device accessibility remain open"
+    },
+    {
+      "id": "layout-sizing",
+      "title": "Layout sizing",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "markup-label",
+      "title": "Markup labels",
+      "fixture": "imported-partial",
+      "reason": "All imported Label sections are mounted in Material/Cupertino JVM tests: Markdown content, literal heading/plain text, refused links, unsupported markup, typography-off parsing and live English/Bulgarian translation. Parser tests cover basic grammar, soft/hard breaks, literal excluded constructs, URL policy, and reference/autolinks. Form integration and non-JVM interactions remain unverified"
+    },
+    {
+      "id": "mixed-control",
+      "title": "Mixed control",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "null-control",
+      "title": "Null control",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "numeric-controls",
+      "title": "Numeric controls: numbers and integers",
+      "fixture": "imported-partial",
+      "reason": "Four mounted Material/Cupertino cases on JVM, iOS simulator and JS browser exercise every authored numeric control individually: slider opt-in, initial zero, five-unit positions, number-typed commits and Clear; integer drafts without rounding; invalid imported batch and weight values; decimal and negative storage. Full category navigation and device pointer/keyboard/screen-reader interaction remain to verify."
+    },
+    {
+      "id": "object-control",
+      "title": "Object control",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "password-control",
+      "title": "Password control",
+      "fixture": "imported-partial",
+      "reason": "Two mounted Material/Cupertino cases pass on JVM, iOS simulator and JS browser for authored schema and UI password selection, bounded OTP and unbounded fallback, ordinary hint, and table token editing. Full category navigation, physical masking and screen-reader behavior remain to verify."
+    },
+    {
+      "id": "pre-touch-errors",
+      "title": "Pre-touch error filtering",
+      "fixture": "imported-partial",
+      "reason": "The imported data produces the pinned seven structured errors: four required, one pattern, one minLength and one minItems. Sixteen Material/Cupertino mounted cases pass on JVM and iOS simulator. They verify default visibility, global required-keyword filtering, field opt-out, blur without a write, retained pattern/minLength and array minItems errors, empty-list suppression, ValidateAndHide precedence, host-supplied required filtering alongside a retained pattern error, city item filtering until blur, and live English/Bulgarian labels and messages. They also verify NoValidation precedence and that a touched field reveals its required error again after host data becomes valid then invalid. The unfiltered JS and Wasm browser suites pass with zero failures or skips. Real-device interaction and summary accessibility remain to verify."
+    },
+    {
+      "id": "presentation",
+      "title": "Presentation elements",
+      "fixture": "imported-partial",
+      "reason": "The imported ImageView section renders top-level, scoped, and decorative images in Material and Cupertino JVM UI tests; data and rule changes remove the relevant images without form writes. Link, Separator, remaining presentation interactions, and non-JVM rendering are not fixture-verified"
+    },
+    {
+      "id": "property-pagination",
+      "title": "Property pagination: booking",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "recursive-tree",
+      "title": "Recursive tree: files and folders",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "split-layout",
+      "title": "Split layout",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    },
+    {
+      "id": "string-controls",
+      "title": "String controls",
+      "fixture": "imported-partial",
+      "reason": "Ten mounted Material/Cupertino fixture tests on JVM/iOS simulator cover raw/formatted masks, invalid imports, alternatives, custom tokens, eager separators, incremental and selected mid-string edits, plain placeholder and storage, suggestion selection/free entry, and multiline storage. Browser interaction, arrow navigation across mask literals and Cupertino first-pointer suggestion selection remain to verify"
+    },
+    {
+      "id": "table-row-details",
+      "title": "Table row details: recruitment",
+      "fixture": "imported-partial",
+      "reason": "Portable Dialog, Side panel and Bottom panel categories are imported without browser-only AG Grid variants. Eight short mounted Material/Cupertino tests cover row-bound and Contact summaries, Contact Cancel and Apply, cross-page hidden Notes correction, and source-row selection in both panel placements on JVM, iOS simulator, JS browser and Wasm browser. The split avoids the JS runner's two-second timeout. The complete fixture workflow, device interaction and AG Grid remain unverified"
+    },
+    {
+      "id": "template-layout",
+      "title": "Template layout: string and native profiles",
+      "fixture": "platform-exclusion",
+      "reason": "JSX/Ractive templating is web-only"
+    },
+    {
+      "id": "template-slots",
+      "title": "Templates and slots: named UI schema reuse",
+      "fixture": "imported-partial",
+      "reason": "Imported fixture renders slot overrides, fallback, and nested template composition in Material and Cupertino JVM Compose UI tests; editing a reused control updates caller data in both families; recursive-template diagnostics are UI-tested on JVM; other diagnostics and targets remain unverified"
+    },
+    {
+      "id": "temporal-controls",
+      "title": "Temporal controls",
+      "fixture": "imported-partial",
+      "reason": "Thirty-six imported Material/Cupertino UI cases pass on JVM, iOS simulator, JS browser and Wasm browser: temporal selection and save formats, seconds and coarse-time picker edits, typed range repair, referenced periods, tuple positions and a mixed string/null date. The authored unrestricted date picker commits an out-of-range day while validation persists; the exclusive-minimum picker rejects its boundary day and commits the next valid day. Both source tuple schemas use an items array despite the UI prose mentioning prefixItems; a separate 2020-12 test verifies that dialect. Other picker bounds, Android interaction and device accessibility remain open"
+    },
+    {
+      "id": "tree-max-depth",
+      "title": "Tree: maximum five levels",
+      "fixture": "imported-partial",
+      "reason": "Imported five-level data validates and a valid sixth-level file is rejected. Root-context oneOf matching selects Folder at all five levels; Material/Cupertino mounted JVM and iOS tests show all five folders and arrays, with Add enabled above the limit and disabled at level five. An imported sixth-level file retains the Folder editor and can be removed through confirmation to restore valid data, without a mount write. Browser/Android interaction remains unverified"
+    },
+    {
+      "id": "tuple-control",
+      "title": "Tuple control",
+      "fixture": "imported-partial",
+      "reason": "Imported first category renders positional fields in Material/Cupertino JVM UI tests; custom JVM UI tests cover typed-tail add/delete, forbidden-tail corrective deletion, fixed-position editing, host-data/schema-rebind confirmation invalidation, translated actions and an unconstrained mixed tail. Uniform tuple variant, authored layout/detail registry, complex dialogs, pagination, full fixture interactions and other targets remain unverified"
+    },
+    {
+      "id": "validator-profile",
+      "title": "Validator profile (Ajv)",
+      "fixture": "imported-unverified",
+      "reason": "Imported JSON is not renderer conformance evidence"
+    }
+  ]
+}

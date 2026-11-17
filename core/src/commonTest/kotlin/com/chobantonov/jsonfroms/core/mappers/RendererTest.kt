@@ -7,6 +7,7 @@ import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.models.LeafCondition
 import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.RuleEffect
+import com.chobantonov.jsonfroms.core.models.ValidateFunctionCondition
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.Dispatch
@@ -23,7 +24,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -47,6 +52,53 @@ class RendererTest {
     )
 
     private val coreUiSchema = ControlElement(scope = "#/properties/firstName")
+
+    @Test
+    fun `readonly options and schema require JSON booleans`() {
+        val data = buildJsonObject { put("firstName", "Homer") }
+        fun readonly(ui: ControlElement, schemaValue: JsonPrimitive? = null): Boolean {
+            val schema = buildJsonSchema {
+                put("type", "string")
+                if (schemaValue != null) put("readOnly", schemaValue)
+            }
+            return isInherentlyReadonly(createState(ui), uiSchema = ui,
+                schema = schema, rootData = data)
+        }
+
+        assertFalse(readonly(coreUiSchema.copy(options = mapOf(
+            "readonly" to JsonPrimitive("true")))))
+        assertFalse(readonly(coreUiSchema.copy(options = mapOf(
+            "readOnly" to JsonPrimitive("true")))))
+        assertTrue(readonly(coreUiSchema.copy(options = mapOf(
+            "readonly" to JsonPrimitive(true)))))
+        assertFalse(readonly(coreUiSchema, JsonPrimitive("true")))
+        assertTrue(readonly(coreUiSchema, JsonPrimitive(true)))
+    }
+
+    @Test
+    fun `function rules receive control path and config for visibility enablement and readonly`() {
+        val contextCondition = ValidateFunctionCondition(scope = "#", validate = { context ->
+            context.path == "person" && (context.config as? Map<*, *>)?.get("allow") == true
+        })
+        val config = mapOf("allow" to true, "separateReadonlyFromDisabled" to true)
+        fun mapped(effect: RuleEffect, allow: Boolean) : StatePropsOfControl {
+            val ui = coreUiSchema.copy(rule = Rule(effect, contextCondition))
+            val state = createState(ui).let { original ->
+                original.copy(jsonforms = original.jsonforms.copy(config = config + ("allow" to allow)))
+            }
+            return mapStateToControlProps(state, OwnPropsOfControl(
+                controlUiSchema = ui,
+                own = OwnPropsOfRenderer(path = "person"),
+            ))
+        }
+
+        assertTrue(mapped(RuleEffect.SHOW, true).visible)
+        assertFalse(mapped(RuleEffect.SHOW, false).visible)
+        assertTrue(mapped(RuleEffect.ENABLE, true).enabled)
+        assertFalse(mapped(RuleEffect.ENABLE, false).enabled)
+        assertTrue(mapped(RuleEffect.READONLY, true).readonly)
+        assertFalse(mapped(RuleEffect.READONLY, false).readonly)
+    }
 
     @Test
     fun `mapStateToControlProps - hide rule overrides inherited visibility`() {
@@ -316,6 +368,42 @@ class RendererTest {
             },
             createDefaultValue(schema),
         )
+    }
+
+    @Test
+    fun `createDefaultValue copies explicit container defaults for each add`() {
+        val declared = buildJsonObject {
+            put("nested", buildJsonArray {
+                add(buildJsonObject { put("enabled", false) })
+            })
+        }
+        val schema = buildJsonSchema {
+            put("type", "object")
+            put("default", declared)
+        }
+
+        val first = assertIs<JsonObject>(createDefaultValue(schema))
+        val second = assertIs<JsonObject>(createDefaultValue(schema))
+        assertEquals(declared, first)
+        assertEquals(declared, second)
+        assertNotSame(declared, first)
+        assertNotSame(first, second)
+        val declaredArray = assertIs<JsonArray>(declared["nested"])
+        val firstArray = assertIs<JsonArray>(first["nested"])
+        val secondArray = assertIs<JsonArray>(second["nested"])
+        assertNotSame(declaredArray, firstArray)
+        assertNotSame(firstArray, secondArray)
+        assertNotSame(declaredArray[0], firstArray[0])
+        assertNotSame(firstArray[0], secondArray[0])
+        assertEquals(declared, schema["default"])
+    }
+
+    @Test
+    fun `createDefaultValue preserves falsy explicit defaults`() {
+        listOf(JsonPrimitive(false), JsonPrimitive(0), JsonNull).forEach { declared ->
+            val schema = buildJsonSchema { put("default", declared) }
+            assertEquals(declared, createDefaultValue(schema))
+        }
     }
 
     @Test

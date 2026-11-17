@@ -1,0 +1,545 @@
+{
+  "rule": "Registry declarations and direct delegation only; no entry is certified as native or spec-conformant by this file.",
+  "material": {
+    "source": "material-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/material/renderers/MaterialRenderers.kt",
+    "renderers": [
+      {
+        "order": 0,
+        "tester": "materialMixedControlTester",
+        "renderer": "MaterialMixedRenderer"
+      },
+      {
+        "order": 1,
+        "tester": "materialAnyOfStringOrEnumControlTester",
+        "renderer": "MaterialAnyOfStringOrEnumControl"
+      },
+      {
+        "order": 2,
+        "tester": "materialAnyOfControlTester",
+        "renderer": "MaterialAnyOfRenderer"
+      },
+      {
+        "order": 3,
+        "tester": "materialAllOfControlTester",
+        "renderer": "MaterialAllOfRenderer"
+      },
+      {
+        "order": 4,
+        "tester": "materialBooleanControlTester",
+        "renderer": "MaterialBooleanControl"
+      },
+      {
+        "order": 5,
+        "tester": "materialBooleanToggleControlTester",
+        "renderer": "MaterialBooleanToggleControl"
+      },
+      {
+        "order": 6,
+        "tester": "materialDateControlTester",
+        "renderer": "MaterialDateControl"
+      },
+      {
+        "order": 7,
+        "tester": "materialDateTimeControlTester",
+        "renderer": "MaterialDateTimeControl"
+      },
+      {
+        "order": 8,
+        "tester": "materialEnumArrayRendererTester",
+        "renderer": "MaterialEnumArrayRenderer"
+      },
+      {
+        "order": 9,
+        "tester": "materialEnumControlTester",
+        "renderer": "MaterialEnumControl"
+      },
+      {
+        "order": 10,
+        "tester": "materialIntegerControlTester",
+        "renderer": "MaterialIntegerControl"
+      },
+      {
+        "order": 11,
+        "tester": "materialNativeControlTester",
+        "renderer": "MaterialNativeControl"
+      },
+      {
+        "order": 12,
+        "tester": "materialNumberControlTester",
+        "renderer": "MaterialNumberControl"
+      },
+      {
+        "order": 13,
+        "tester": "materialTupleTester",
+        "renderer": "MaterialTupleRenderer"
+      },
+      {
+        "order": 14,
+        "tester": "materialArrayControlTester",
+        "renderer": "MaterialArrayControlRenderer"
+      },
+      {
+        "order": 15,
+        "tester": "materialObjectControlTester",
+        "renderer": "MaterialObjectRenderer"
+      },
+      {
+        "order": 16,
+        "tester": "materialOneOfControlTester",
+        "renderer": "MaterialOneOfRenderer"
+      },
+      {
+        "order": 17,
+        "tester": "materialOneOfEnumControlTester",
+        "renderer": "MaterialOneOfEnumControl"
+      },
+      {
+        "order": 18,
+        "tester": "materialOneOfRadioGroupControlTester",
+        "renderer": "MaterialOneOfRadioGroupControl"
+      },
+      {
+        "order": 19,
+        "tester": "materialRadioGroupControlTester",
+        "renderer": "MaterialRadioGroupControl"
+      },
+      {
+        "order": 20,
+        "tester": "materialPasswordControlTester",
+        "renderer": "MaterialPasswordControl"
+      },
+      {
+        "order": 21,
+        "tester": "materialSliderControlTester",
+        "renderer": "MaterialSliderControl"
+      },
+      {
+        "order": 22,
+        "tester": "materialMultiTextControlTester",
+        "renderer": "MaterialMultiTextControl"
+      },
+      {
+        "order": 23,
+        "tester": "materialTextControlTester",
+        "renderer": "MaterialTextControl"
+      },
+      {
+        "order": 24,
+        "tester": "materialTimeControlTester",
+        "renderer": "MaterialTimeControl"
+      },
+      {
+        "order": 25,
+        "tester": "materialCategorizationAccordionTester",
+        "renderer": "MaterialCategorizationAccordionLayout"
+      },
+      {
+        "order": 26,
+        "tester": "materialCategorizationStepperTester",
+        "renderer": "MaterialCategorizationStepperLayout"
+      },
+      {
+        "order": 27,
+        "tester": "materialArrayLayoutTester",
+        "renderer": "MaterialArrayLayoutRenderer"
+      },
+      {
+        "order": 28,
+        "tester": "materialLabelRendererTester",
+        "renderer": "MaterialLabelRenderer"
+      },
+      {
+        "order": 29,
+        "tester": "composeSpacerTester",
+        "renderer": "ComposeSpacerRenderer"
+      },
+      {
+        "order": 30,
+        "tester": "materialListWithDetailTester",
+        "renderer": "MaterialListWithDetailRenderer"
+      },
+      {
+        "order": 31,
+        "tester": "materialCategorizationTester",
+        "renderer": "MaterialCategorizationLayout"
+      },
+      {
+        "order": 32,
+        "tester": "materialGroupTester",
+        "renderer": "MaterialGroupLayout"
+      },
+      {
+        "order": 33,
+        "tester": "materialHorizontalLayoutTester",
+        "renderer": "MaterialHorizontalLayout"
+      },
+      {
+        "order": 34,
+        "tester": "materialVerticalLayoutTester",
+        "renderer": "MaterialVerticalLayout"
+      },
+      {
+        "order": 35,
+        "tester": "materialMultiSelectTester",
+        "renderer": "MaterialMultiSelectRenderer"
+      },
+      {
+        "order": 36,
+        "tester": "materialChipsTester",
+        "renderer": "MaterialChipsRenderer"
+      }
+    ],
+    "cells": [
+      { "order": 0, "tester": "materialBooleanToggleControlTester", "cell": "MaterialBooleanToggleControl" },
+      { "order": 1, "tester": "materialBooleanControlTester", "cell": "MaterialBooleanControl" },
+      { "order": 2, "tester": "plainStringCellTester", "cell": "MaterialPlainTextCell" },
+      { "order": 3, "tester": "plainNumericCellTester", "cell": "MaterialPlainNumericCell" },
+      { "order": 4, "tester": "plainEnumCellTester", "cell": "MaterialPlainEnumCell" },
+      { "order": 5, "tester": "plainOneOfEnumCellTester", "cell": "MaterialPlainOneOfEnumCell" },
+      { "order": 6, "tester": "plainConstCellTester", "cell": "MaterialPlainEnumCell" },
+      { "order": 7, "tester": "radioChoiceCellTester", "cell": "MaterialPlainRadioCell" },
+      { "order": 8, "tester": "sliderCellTester", "cell": "MaterialSliderCell" },
+      { "order": 9, "tester": "plainTemporalCellTester", "cell": "MaterialTemporalCell" },
+      { "order": 10, "tester": "plainPasswordCellTester", "cell": "MaterialPasswordCell" }
+    ]
+  },
+  "cupertino": {
+    "source": "cupertino-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/cupertino/renderers/CupertinoRenderers.kt",
+    "renderers": [
+      {
+        "order": 0,
+        "tester": "cupertinoMixedControlTester",
+        "renderer": "CupertinoMixedRenderer"
+      },
+      {
+        "order": 1,
+        "tester": "cupertinoAnyOfStringOrEnumControlTester",
+        "renderer": "CupertinoAnyOfStringOrEnumControl"
+      },
+      {
+        "order": 2,
+        "tester": "cupertinoAnyOfControlTester",
+        "renderer": "CupertinoAnyOfRenderer"
+      },
+      {
+        "order": 3,
+        "tester": "cupertinoAllOfControlTester",
+        "renderer": "CupertinoAllOfRenderer"
+      },
+      {
+        "order": 4,
+        "tester": "cupertinoBooleanControlTester",
+        "renderer": "CupertinoBooleanControl"
+      },
+      {
+        "order": 5,
+        "tester": "cupertinoBooleanToggleControlTester",
+        "renderer": "CupertinoBooleanToggleControl"
+      },
+      {
+        "order": 6,
+        "tester": "cupertinoDateControlTester",
+        "renderer": "CupertinoDateControl"
+      },
+      {
+        "order": 7,
+        "tester": "cupertinoDateTimeControlTester",
+        "renderer": "CupertinoDateTimeControl"
+      },
+      {
+        "order": 8,
+        "tester": "cupertinoEnumArrayRendererTester",
+        "renderer": "CupertinoEnumArrayRenderer"
+      },
+      {
+        "order": 9,
+        "tester": "cupertinoEnumControlTester",
+        "renderer": "CupertinoEnumControl"
+      },
+      {
+        "order": 10,
+        "tester": "cupertinoIntegerControlTester",
+        "renderer": "CupertinoIntegerControl"
+      },
+      {
+        "order": 11,
+        "tester": "cupertinoNativeControlTester",
+        "renderer": "CupertinoNativeControl"
+      },
+      {
+        "order": 12,
+        "tester": "cupertinoNumberControlTester",
+        "renderer": "CupertinoNumberControl"
+      },
+      {
+        "order": 13,
+        "tester": "cupertinoTupleTester",
+        "renderer": "CupertinoTupleRenderer"
+      },
+      {
+        "order": 14,
+        "tester": "cupertinoArrayControlTester",
+        "renderer": "CupertinoArrayControlRenderer"
+      },
+      {
+        "order": 15,
+        "tester": "cupertinoObjectControlTester",
+        "renderer": "CupertinoObjectRenderer"
+      },
+      {
+        "order": 16,
+        "tester": "cupertinoOneOfControlTester",
+        "renderer": "CupertinoOneOfRenderer"
+      },
+      {
+        "order": 17,
+        "tester": "cupertinoOneOfEnumControlTester",
+        "renderer": "CupertinoOneOfEnumControl"
+      },
+      {
+        "order": 18,
+        "tester": "cupertinoOneOfRadioGroupControlTester",
+        "renderer": "CupertinoOneOfRadioGroupControl"
+      },
+      {
+        "order": 19,
+        "tester": "cupertinoRadioGroupControlTester",
+        "renderer": "CupertinoRadioGroupControl"
+      },
+      {
+        "order": 20,
+        "tester": "cupertinoPasswordControlTester",
+        "renderer": "CupertinoPasswordControl"
+      },
+      {
+        "order": 21,
+        "tester": "cupertinoSliderControlTester",
+        "renderer": "CupertinoSliderControl"
+      },
+      {
+        "order": 22,
+        "tester": "cupertinoMultiTextControlTester",
+        "renderer": "CupertinoMultiTextControl"
+      },
+      {
+        "order": 23,
+        "tester": "cupertinoTextControlTester",
+        "renderer": "CupertinoTextControl"
+      },
+      {
+        "order": 24,
+        "tester": "cupertinoTimeControlTester",
+        "renderer": "CupertinoTimeControl"
+      },
+      {
+        "order": 25,
+        "tester": "cupertinoCategorizationAccordionTester",
+        "renderer": "CupertinoCategorizationAccordionLayout"
+      },
+      {
+        "order": 26,
+        "tester": "cupertinoCategorizationStepperTester",
+        "renderer": "CupertinoCategorizationStepperLayout"
+      },
+      {
+        "order": 27,
+        "tester": "cupertinoArrayLayoutTester",
+        "renderer": "CupertinoArrayLayoutRenderer"
+      },
+      {
+        "order": 28,
+        "tester": "cupertinoLabelRendererTester",
+        "renderer": "CupertinoLabelRenderer"
+      },
+      {
+        "order": 29,
+        "tester": "composeSpacerTester",
+        "renderer": "ComposeSpacerRenderer"
+      },
+      {
+        "order": 30,
+        "tester": "cupertinoListWithDetailTester",
+        "renderer": "CupertinoListWithDetailRenderer"
+      },
+      {
+        "order": 31,
+        "tester": "cupertinoCategorizationTester",
+        "renderer": "CupertinoCategorizationLayout"
+      },
+      {
+        "order": 32,
+        "tester": "cupertinoGroupTester",
+        "renderer": "CupertinoGroupLayout"
+      },
+      {
+        "order": 33,
+        "tester": "cupertinoHorizontalLayoutTester",
+        "renderer": "CupertinoHorizontalLayout"
+      },
+      {
+        "order": 34,
+        "tester": "cupertinoVerticalLayoutTester",
+        "renderer": "CupertinoVerticalLayout"
+      },
+      {
+        "order": 35,
+        "tester": "cupertinoMultiSelectTester",
+        "renderer": "CupertinoMultiSelectRenderer"
+      },
+      {
+        "order": 36,
+        "tester": "cupertinoChipsTester",
+        "renderer": "CupertinoChipsRenderer"
+      }
+    ],
+    "cells": [
+      { "order": 0, "tester": "cupertinoBooleanToggleControlTester", "cell": "CupertinoBooleanControl" },
+      { "order": 1, "tester": "cupertinoBooleanControlTester", "cell": "CupertinoBooleanControl" },
+      { "order": 2, "tester": "plainStringCellTester", "cell": "CupertinoPlainTextCell" },
+      { "order": 3, "tester": "plainNumericCellTester", "cell": "CupertinoPlainNumericCell" },
+      { "order": 4, "tester": "plainEnumCellTester", "cell": "CupertinoPlainEnumCell" },
+      { "order": 5, "tester": "plainOneOfEnumCellTester", "cell": "CupertinoPlainOneOfEnumCell" },
+      { "order": 6, "tester": "plainConstCellTester", "cell": "CupertinoPlainEnumCell" },
+      { "order": 7, "tester": "radioChoiceCellTester", "cell": "CupertinoPlainRadioCell" },
+      { "order": 8, "tester": "sliderCellTester", "cell": "CupertinoSliderCell" },
+      { "order": 9, "tester": "plainTemporalCellTester", "cell": "CupertinoTemporalCell" },
+      { "order": 10, "tester": "plainPasswordCellTester", "cell": "CupertinoPasswordCell" }
+    ],
+    "delegatesToMaterial": []
+  },
+  "extended": {
+    "source": "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/ExtendedRenderers.kt",
+    "renderers": [
+      {
+        "tester": "buttonTester",
+        "implementation": "controls.button"
+      },
+      {
+        "tester": "colorControlTester",
+        "implementation": "controls.color"
+      },
+      {
+        "tester": "durationControlTester",
+        "implementation": "controls.duration"
+      },
+      {
+        "tester": "cronControlTester",
+        "implementation": "controls.cron"
+      },
+      {
+        "tester": "fileControlTester",
+        "implementation": "controls.file"
+      },
+      {
+        "tester": "nullControlTester",
+        "implementation": "controls.nullValue"
+      },
+      {
+        "tester": "linkTester",
+        "implementation": "linkRenderer(cupertino)"
+      },
+      {
+        "tester": "separatorTester",
+        "implementation": "separatorRenderer(cupertino)"
+      },
+      {
+        "tester": "splitLayoutTester",
+        "implementation": "layouts.split"
+      },
+      {
+        "tester": "slotTester",
+        "implementation": "layouts.slot"
+      },
+      {
+        "tester": "templateTester",
+        "implementation": "layouts.template"
+      },
+      {
+        "tester": "unsupportedTemplateLayoutTester",
+        "implementation": "unsupportedTemplateLayoutRenderer"
+      },
+      {
+        "tester": "imageViewTester",
+        "implementation": "imageViewRenderer(cupertino)"
+      },
+      {
+        "tester": "markupLabelTester",
+        "implementation": "markupLabelRenderer(cupertino)"
+      }
+    ],
+    "cells": [
+      {
+        "family": "material",
+        "tester": "colorControlTester",
+        "implementation": "ColorControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": false,
+        "compact": true
+      },
+      {
+        "family": "material",
+        "tester": "durationControlTester",
+        "implementation": "DurationControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": false,
+        "compact": true
+      },
+      {
+        "family": "material",
+        "tester": "cronControlTester",
+        "implementation": "CronControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": false,
+        "compact": true
+      },
+      {
+        "family": "material",
+        "tester": "nullControlTester",
+        "implementation": "NullCell",
+        "cupertino": false
+      },
+      {
+        "family": "material",
+        "tester": "fileControlTester",
+        "implementation": "FileCell",
+        "cupertino": false
+      },
+      {
+        "family": "cupertino",
+        "tester": "colorControlTester",
+        "implementation": "ColorControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": true,
+        "compact": true
+      },
+      {
+        "family": "cupertino",
+        "tester": "durationControlTester",
+        "implementation": "DurationControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": true,
+        "compact": true
+      },
+      {
+        "family": "cupertino",
+        "tester": "cronControlTester",
+        "implementation": "CronControl",
+        "propsAdapter": "asRendererProps",
+        "cupertino": true,
+        "compact": true
+      },
+      {
+        "family": "cupertino",
+        "tester": "nullControlTester",
+        "implementation": "NullCell",
+        "cupertino": true
+      },
+      {
+        "family": "cupertino",
+        "tester": "fileControlTester",
+        "implementation": "FileCell",
+        "cupertino": true
+      }
+    ]
+  }
+}

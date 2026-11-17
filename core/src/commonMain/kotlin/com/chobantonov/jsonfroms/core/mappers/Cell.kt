@@ -133,7 +133,8 @@ fun mapStateToCellProps(
     val config = getConfig(state)
     val path = composeWithUi(uischema, ownProps.own.path)
     val visible = ownProps.own.visible
-        ?: com.chobantonov.jsonfroms.core.util.Runtime.isVisible(uischema, rootData, getValidator(state))
+        ?: com.chobantonov.jsonfroms.core.util.Runtime.isVisible(
+            uischema, rootData, getValidator(state), ownProps.own.path, config)
 
     val rootSchema = getSchema(state)
     val schema = com.chobantonov.jsonfroms.core.util.Resolve.schema(
@@ -145,11 +146,12 @@ fun mapStateToCellProps(
     val enabled = when {
         config["separateReadonlyFromDisabled"] != true && state.jsonforms.readonly -> false
         ownProps.own.enabled != null -> ownProps.own.enabled
-        else -> isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, schema, rootData, config)
+        else -> isInherentlyEnabled(state, mapOf("enabled" to ownProps.own.enabled), uischema, schema, rootData,
+            config, ownProps.own.path)
     }
 
-    val readonly = ownProps.own.readonly
-        ?: isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, schema, rootData, config)
+    val readonly = isInherentlyReadonly(state, mapOf("readonly" to ownProps.own.readonly), uischema, schema, rootData,
+        config, ownProps.own.path)
 
     val translator = state.jsonforms.i18n.translate ?: defaultTranslator
     val errorTranslator = state.jsonforms.i18n.translateError ?: defaultErrorTranslator
@@ -211,10 +213,10 @@ fun defaultMapStateToEnumCellProps(
     val props = mapStateToCellProps(state, ownProps)
     val options = enumProps.options
         ?: (props.schema["enum"] as? JsonArray)?.map {
-            enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path))
+            enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path), com.chobantonov.jsonfroms.core.i18n.translateControlEmptyOption(state.jsonforms.i18n))
         }
         ?: props.schema["const"]?.let {
-            listOf(enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path)))
+            listOf(enumToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path), com.chobantonov.jsonfroms.core.i18n.translateControlEmptyOption(state.jsonforms.i18n)))
         }
         ?: emptyList()
     return StatePropsOfEnumCell(
@@ -244,7 +246,7 @@ fun mapStateToOneOfEnumCellProps(
     val props = mapStateToCellProps(state, ownProps)
     val options = enumProps.options
         ?: (props.schema["oneOf"] as? JsonArray)?.mapNotNull(JsonElement::asJsonSchemaOrNull)?.map {
-            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path))
+            oneOfToEnumOptionMapper(it, state.jsonforms.i18n.translate, getI18nKeyPrefix(props.schema, props.uischema, props.path), com.chobantonov.jsonfroms.core.i18n.translateControlEmptyOption(state.jsonforms.i18n))
         }
         ?: emptyList()
     return StatePropsOfEnumCell(

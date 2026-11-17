@@ -2,6 +2,7 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
+import com.chobantonov.jsonfroms.core.i18n.translateControlClear
 import com.chobantonov.jsonfroms.core.mappers.DispatchPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
@@ -62,6 +63,7 @@ internal fun materialControlBindings(
         renderers = stateProps.renderers,
         cells = stateProps.cells,
         errors = stateProps.errors,
+        errorsBeforeTouch = stateProps.errorsBeforeTouch,
         rootSchema = stateProps.rootSchema,
         id = stateProps.id,
         label = stateProps.label,
@@ -76,11 +78,8 @@ internal fun materialControlBindings(
         stateProps = stateProps,
         dispatchProps = dispatchProps,
         controlProps = controlProps,
-        clearLabel = props.state.jsonforms.i18n.translate?.translate(
-            "clear",
-            "Clear value",
-            mapOf("control" to stateProps.label),
-        ) ?: "Clear value",
+        clearLabel = translateControlClear(props.state.jsonforms.i18n,
+            values = mapOf("control" to stateProps.label)),
     )
 }
 
@@ -102,7 +101,8 @@ internal fun String.toMaterialSupportingText(): String =
 internal fun unmatchedEnumQueryError(
     query: String,
     selectedLabel: String?,
-): String? = "Select a valid option."
+    invalidMessage: String = "Select a valid option.",
+): String? = invalidMessage
     .takeIf { query.isNotEmpty() && query != selectedLabel }
 
 internal fun Any?.toBooleanStrictOrNullCompat(): Boolean? = when (this) {

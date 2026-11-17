@@ -129,6 +129,30 @@ class RuleEvaluatorTest {
         )
     }
 
+    @Test
+    fun directPointerRuleScopeKeepsEmptyPropertySegment() {
+        val validator = StubJsonSchemaValidator { _, value ->
+            if (value == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not true"))
+        }
+        val control = ControlElement(
+            scope = "#/properties/name",
+            rule = Rule(RuleEffect.SHOW, SchemaBasedCondition(
+                scope = "#//name", schema = buildJsonSchema { put("const", true) },
+            )),
+        )
+        val nestedTrue = buildJsonObject {
+            put("", buildJsonObject { put("name", true) })
+            put("name", false)
+        }
+        val nestedFalse = buildJsonObject {
+            put("", buildJsonObject { put("name", false) })
+            put("name", true)
+        }
+
+        assertTrue(RuleEvaluator.isVisible(control, nestedTrue, validator))
+        assertFalse(RuleEvaluator.isVisible(control, nestedFalse, validator))
+    }
+
     private fun ruleControl(effect: RuleEffect) = ControlElement(
         scope = "#/properties/value",
         rule = Rule(

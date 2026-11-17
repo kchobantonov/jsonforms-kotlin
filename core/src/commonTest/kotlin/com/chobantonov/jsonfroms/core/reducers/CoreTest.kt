@@ -75,6 +75,30 @@ class CoreTest {
     }
 
     @Test
+    fun `editing a nested field in absent data marks the document as provided`() {
+        val initialized = coreReducer(
+            state = null,
+            action = InitAction(
+                data = kotlinx.serialization.json.JsonNull,
+                schema = buildJsonSchema {
+                    put("type", "object")
+                    put("properties", buildJsonObject {
+                        put("name", buildJsonObject { put("type", "string") })
+                    })
+                },
+                dataProvided = false,
+            ),
+        )
+
+        val updated = coreReducer(initialized,
+            UpdateAction(path = "name", updater = { JsonPrimitive("Grace") }))
+
+        assertFalse(initialized.dataProvided)
+        assertEquals(buildJsonObject { put("name", "Grace") }, updated.data)
+        assertTrue(updated.dataProvided)
+    }
+
+    @Test
     fun `core reducer should support v7`() {
         val schema = buildJsonSchema {
             put("type", "object")
@@ -438,6 +462,26 @@ class CoreTest {
 
         assertEquals(1, filtered.size)
         assertEquals("child", filtered.single().message)
+    }
+
+    @Test
+    fun `subErrorsAt root includes descendant errors`() {
+        val schema = buildJsonSchema { put("type", "array") }
+        val rootError = ErrorObject(instancePath = "", keyword = "minItems", message = "root")
+        val itemError = ErrorObject(instancePath = "/2", keyword = "additionalItems", message = "item")
+        val state = JsonFormsState<Any, Any>(
+            jsonforms = JsonFormsSubStates(
+                core = JsonFormsCoreState(
+                    data = buildJsonObject {},
+                    schema = schema,
+                    errors = listOf(rootError, itemError),
+                    validatorEngine = PassThroughValidator,
+                    validator = null,
+                ),
+            ),
+        )
+
+        assertEquals(listOf(rootError, itemError), getSubErrorsAt("", schema)(state))
     }
 
     @Test

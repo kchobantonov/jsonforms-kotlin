@@ -2,6 +2,10 @@
   "commit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
   "examples": [
     {
+      "id": "additional-errors",
+      "title": "Additional errors: server and editor (portable server profile)"
+    },
+    {
       "id": "additional-items-pagination",
       "title": "Additional items pagination: shipping"
     },
@@ -12,6 +16,10 @@
     {
       "id": "array-choices",
       "title": "Array choices and tokens"
+    },
+    {
+      "id": "array-controls",
+      "title": "Array controls (portable profile)"
     },
     {
       "id": "array-detail-modes",
@@ -58,6 +66,10 @@
       "title": "Cron control"
     },
     {
+      "id": "destructive-confirmation",
+      "title": "Destructive-change confirmation (native table profile)"
+    },
+    {
       "id": "draft-07-metaschema",
       "title": "Draft-07 metaschema"
     },
@@ -78,12 +90,20 @@
       "title": "Group layout"
     },
     {
+      "id": "job-application",
+      "title": "Job application (portable form)"
+    },
+    {
       "id": "json-editor",
       "title": "JSON editor: any JSON type"
     },
     {
       "id": "json-inference",
       "title": "JSON inference: paste data without a schema"
+    },
+    {
+      "id": "kitchen-sink",
+      "title": "Kitchen sink: job application (portable profile)"
     },
     {
       "id": "label-interpolation",
@@ -140,6 +160,14 @@
     {
       "id": "string-controls",
       "title": "String controls"
+    },
+    {
+      "id": "table-row-details",
+      "title": "Table row details: recruitment"
+    },
+    {
+      "id": "template-slots",
+      "title": "Templates and slots: named UI schema reuse"
     },
     {
       "id": "temporal-controls",

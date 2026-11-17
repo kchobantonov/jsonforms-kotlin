@@ -51,6 +51,7 @@ class RegistryReducersTest {
         )
 
         assertEquals(true, config["trim"])
-        assertEquals(false, config["restrict"])
+        assertEquals(null, config["restrict"])
+        assertEquals(true, com.chobantonov.jsonfroms.core.util.resolveRestrict(null, config))
     }
 }

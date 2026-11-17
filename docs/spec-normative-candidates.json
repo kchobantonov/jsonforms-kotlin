@@ -1,0 +1,1872 @@
+{
+  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "rule": "Overinclusive keyword candidates, not an atomic normative ledger. Review table rows, amendments, proposals, wrapped clauses and requirements without capitalized keywords before assigning capability IDs.",
+  "candidates": [
+    {
+      "line": 24,
+      "section": "## About this document",
+      "subsection": "",
+      "keywords": [
+        "MUST",
+        "MUST NOT",
+        "SHOULD",
+        "MAY"
+      ],
+      "text": "MUST and MUST NOT state requirements; SHOULD allows a documented reason to\ndeviate; MAY is optional. A renderer declares its capabilities and validator\nprofile. A schema-valid document does not prove that any particular renderer\nimplements it. Unsupported capabilities require a diagnostic or a documented\nfallback that preserves data.",
+      "classification": "normative"
+    },
+    {
+      "line": 81,
+      "section": "## 1. Purpose and portability",
+      "subsection": "",
+      "keywords": [
+        "SHOULD",
+        "MAY"
+      ],
+      "text": "The model SHOULD require no changes to JSON Forms core. A wrapper or\nresolution layer MAY preprocess extended UI-schema elements before ordinary\ntester dispatch.",
+      "classification": "normative"
+    },
+    {
+      "line": 87,
+      "section": "## 1. Purpose and portability",
+      "subsection": "### 1.1 Portability classes",
+      "keywords": [
+        "MUST",
+        "SHOULD",
+        "SHOULD"
+      ],
+      "text": "| Class | Portable? | Example | Other implementations |\n| --- | --- | --- | --- |\n| Portable model semantic | Yes | `variant: \"chips\"`, span/weight | MUST reproduce semantics |\n| Common JSON Forms behaviour | Desired | `multi`, `dateFormat`, `dateSaveFormat` | SHOULD support when applicable |\n| Renderer enhancement | Desired behaviour | Schema-aware date limits | SHOULD strive to reproduce semantics |\n| Renderer-contract escape hatch | No | Underlying component props | Preserve; interpret only for the matching renderer contract |\n| Platform integration | No | Web `$el: Element` | May define an equivalent, or omit |\n| Runtime escape hatch | No | JavaScript `script` | Preserve; execute only when supported and permitted |",
+      "classification": "normative"
+    },
+    {
+      "line": 96,
+      "section": "## 1. Purpose and portability",
+      "subsection": "### 1.1 Portability classes",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A UI-library brand alone does not uniquely identify an escape-hatch contract.\nTwo renderer families built on the same design system but different frameworks\nmay share visual intent while exposing entirely different component props.\nEach renderer specification therefore declares a sufficiently unique\nnamespace. Unknown renderer namespaces MUST be preserved and ignored by\nnon-matching renderers.",
+      "classification": "normative"
+    },
+    {
+      "line": 207,
+      "section": "## 2. Reference type declarations",
+      "subsection": "### 2.1 `name` belongs to the element model",
+      "keywords": [
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "- **`name` is not `options.name`.** An option is presentation the renderer\n  reads; `name` is identity the model reads. Placing it in `options` puts it\n  behind the option-resolution order, where a global config default could\n  silently rename an element.\n- **`name` is not the element's label.** A label is translated and may change\n  with the locale; a name is a stable identifier and MUST NOT be translated.\n  Deriving one from the other makes references break when the language\n  changes.\n- **Uniqueness is scoped to the referencing construct**, not to the document.\n  Two Categorizations may each contain a Category named `summary`. A reference\n  resolves within its own construct; a duplicate *within* one construct is a\n  configuration error and MUST be diagnosed rather than resolved by position.",
+      "classification": "normative"
+    },
+    {
+      "line": 264,
+      "section": "## 4. Reuse before adding types",
+      "subsection": "### 2.1 `name` belongs to the element model",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "New element types are a last resort. Each of these UI concepts has an existing\nrepresentation, and an implementation MUST use it rather than inventing a\nparallel one:",
+      "classification": "normative"
+    },
+    {
+      "line": 289,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 2.1 `name` belongs to the element model",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Existing JSON Forms conventions MUST be retained where they already express\nthe intended presentation. This model uses **one** encoding per presentation\nand does not introduce equivalent variant aliases.",
+      "classification": "normative"
+    },
+    {
+      "line": 307,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 2.1 `name` belongs to the element model",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A new variant MUST add a documented capability beyond renaming an established\noption.",
+      "classification": "normative"
+    },
+    {
+      "line": 317,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.1 Schema-driven and UI-driven format selection",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "Password, date, time and date-time controls MUST retain schema-driven\nselection, including when the host supplies no UI schema and one is generated.\nThey MUST also support the corresponding UI `options.format` on a string\nschema that has no format.",
+      "classification": "normative"
+    },
+    {
+      "line": 326,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.1 Schema-driven and UI-driven format selection",
+      "keywords": [
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "Display format, stored format and renderer selection are three separate\nconcerns. A plain string schema may use `options.format: \"date\"` with a save\nformat of `YYYY-MM` to edit a month, without claiming the stored value\nsatisfies JSON Schema's full-date format. **UI options MUST NOT rewrite the\nschema or disable its validation.** Where the schema does specify a format, a\ncustom save format MUST remain compatible with it.",
+      "classification": "normative"
+    },
+    {
+      "line": 333,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.1 Schema-driven and UI-driven format selection",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Where schema and UI formats conflict, renderer specifications MUST document\nthe competing tester ranks and the fallback. No universal conflict policy is\nimposed here.",
+      "classification": "normative"
+    },
+    {
+      "line": 348,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.2 Provenance, and why it must be recorded",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Source availability in a neighbouring fork is **not** proof of upstream\nsupport. Unverified provenance MUST be labelled unverified rather than\nattributed to upstream.",
+      "classification": "normative"
+    },
+    {
+      "line": 375,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.3 Global defaults, local options, and tester selection",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The control keeps the local `false`. **Explicit `false`, `0` and `\"\"` are\nmeaningful overrides** wherever the option accepts those values;\ntruthiness-based fallback MUST NOT replace them with a global default.",
+      "classification": "normative"
+    },
+    {
+      "line": 386,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.3 Global defaults, local options, and tester selection",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "Do not assume one merge policy for every structured option. Each structured\noption MUST document its own merge behaviour. Source config and authored\nUI-schema objects MUST be preserved rather than mutated during merging.",
+      "classification": "normative"
+    },
+    {
+      "line": 404,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.3a Renderer selection and default presentations",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "Selection MUST inspect the resolved schema at the control's scope, including\nreferences and composition context. An untyped enclosing object does not make\nits typed property a mixed-value control. Specialized matches MUST take\nprecedence over their generic fallbacks. Registration order must not accidentally\nselect a generic renderer for a supported specialized case. Numeric ranks are\nimplementation details; the observable selection is the portable contract.",
+      "classification": "normative"
+    },
+    {
+      "line": 428,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.4 Additional presentation variants",
+      "keywords": [
+        "MAY",
+        "MUST NOT"
+      ],
+      "text": "Renderer specifications MAY add variants but MUST NOT rename canonical ones.\n`variant: \"auto\"` is not canonical output. A canonical variant is static in the\npublished static authoring profile. The experimental §11 overlay profile supports\ndynamic tester inputs, including `options.variant`, in the reference\nreference integrations, with resolution before selection and the immediate\nreplacement policy. This does not promote `$dynamic` into static v1 conformance.",
+      "classification": "normative"
+    },
+    {
+      "line": 444,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.4 Additional presentation variants",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "**Repeated tokens force an implementation constraint.** Where an array admits\nduplicates, removal MUST take the occurrence that was acted on. A component\nthat keys its tokens by *value* cannot express this — two equal tokens become\none entry and removing either removes both — so a conforming chips\npresentation identifies tokens by **position**. A failed lookup MUST return\nthe array untouched and MUST NOT be reinterpreted as an index identifying\nanother item.",
+      "classification": "normative"
+    },
+    {
+      "line": 452,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.4 Additional presentation variants",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**Distinct values remain distinct choices even when their translated labels\nare identical.** Choices MUST therefore be keyed by value, never by label: two\nvalues whose titles translate to the same string in some locale must still\nrender as two choices.",
+      "classification": "normative"
+    },
+    {
+      "line": 459,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.5 Choice searchability",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A family MUST document its default for `options.autocomplete`; no universal\ndefault is imposed. Only `true` enables searching, so an element `false`\noverrides a config `true`, and absence behaves as `false`.",
+      "classification": "normative"
+    },
+    {
+      "line": 467,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.5 Choice searchability",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A searchable renderer MUST define how displayed choices respond to the query:",
+      "classification": "normative"
+    },
+    {
+      "line": 479,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.6 Orientation of choice groups",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "`options.vertical` is the **only** orientation encoding for a choice group,\nand behaves identically on radio groups and checkbox groups. Read it from\nthe current element first. Radio groups then use\nconfig.jsonformsExtended.radio.vertical, then false. Explicit false overrides a\ntrue default. Checkbox groups retain local-only orientation. Global config.vertical\nand tuple.vertical MUST NOT affect choice groups.",
+      "classification": "normative"
+    },
+    {
+      "line": 495,
+      "section": "## 5. Established presentation options and canonical variants",
+      "subsection": "### 5.6 Orientation of choice groups",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Only an explicit `true` stacks; a missing option is horizontal, not\nindeterminate. A group that renders individual controls rather than a grouping\ncomponent MUST still declare a grouping role, or there is nothing for the\norientation to describe.",
+      "classification": "normative"
+    },
+    {
+      "line": 594,
+      "section": "## 6. Layout types and sizing",
+      "subsection": "### 6.4 Resolution order for a mixed row",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "The final step MAY be delegated to the platform's own layout engine where that\nengine performs the same redistribution; computing it explicitly would mean\nmeasuring the row and re-running on every resize to reach the same answer.",
+      "classification": "normative"
+    },
+    {
+      "line": 600,
+      "section": "## 6. Layout types and sizing",
+      "subsection": "### 6.5 Only effective visible children participate",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Hidden children **leave layout entirely**. They do not hold a column or its\ngap open. Visibility MUST be resolved *before* sizing, and the count that\nfeeds the arrangement is the count of children that remain.",
+      "classification": "normative"
+    },
+    {
+      "line": 604,
+      "section": "## 6. Layout types and sizing",
+      "subsection": "### 6.5 Only effective visible children participate",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Comments, framework markers, fragments and placeholders MUST NOT affect\nsizing, gaps or splitters.",
+      "classification": "normative"
+    },
+    {
+      "line": 616,
+      "section": "## 6. Layout types and sizing",
+      "subsection": "### 6.6 Options excluded from the portable model",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Two encodings are **not** part of this model, and an element carrying either\nMUST draw a diagnostic rather than be silently ignored — a form that renders\nat the wrong size with nothing to explain it is the worst outcome:",
+      "classification": "normative"
+    },
+    {
+      "line": 625,
+      "section": "## 6. Layout types and sizing",
+      "subsection": "### 6.6 Options excluded from the portable model",
+      "keywords": [
+        "MAY",
+        "MUST NOT"
+      ],
+      "text": "The second exclusion has a real cost worth recording: a family that reads a\nfixed column count and a family that implements this model **do not agree on\nlayout authoring**, and a UI schema written for one sizes wrongly in the\nother. Conformance here is a deliberate choice of this model over the older\nconvention, not an oversight. An implementation MAY keep the older renderer\navailable for a host that wants it, but MUST NOT register it at a rank that\noutranks the conforming layout — at a higher rank the sizing model could never\ntake effect.",
+      "classification": "normative"
+    },
+    {
+      "line": 642,
+      "section": "## 7. Wrap, defaults, splitter and Spacer",
+      "subsection": "### 7.1 Defaults and their resolution order",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "These defaults are portable requirements, not renderer-family preferences. Explicit `gap: 0` remains zero. Schema defaults document fallback behavior; renderers MUST apply it even when the config object or property is absent, without relying on a validator to insert defaults.",
+      "classification": "normative"
+    },
+    {
+      "line": 644,
+      "section": "## 7. Wrap, defaults, splitter and Spacer",
+      "subsection": "### 7.1 Defaults and their resolution order",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Layouts own spacing between their children. Renderers MUST avoid adding native field outer margins on top of the layout gap. In Ant Design this requires suppressing Form.Item bottom margins within the layout. Container children such as arrays and objects receive the same gap as ordinary fields. Internal control spacing remains the renderer's responsibility.",
+      "classification": "normative"
+    },
+    {
+      "line": 646,
+      "section": "## 7. Wrap, defaults, splitter and Spacer",
+      "subsection": "### 7.1 Defaults and their resolution order",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A platform limitation that prevents compliance MUST be documented with its reason and observable fallback; visual preference alone is not a reason to change these defaults.",
+      "classification": "normative"
+    },
+    {
+      "line": 666,
+      "section": "## 7. Wrap, defaults, splitter and Spacer",
+      "subsection": "### 7.3 Splitter",
+      "keywords": [
+        "SHOULD NOT",
+        "MUST"
+      ],
+      "text": "- Initial sizes come from **normal sizing**, not equal shares.\n- **`span` SHOULD NOT be used.** A pane asking for one falls back to Auto\n  rather than being sized against a grid a draggable pane does not have.\n- Dragged sizes are **runtime state**, not authored data.\n- Vertical splitters require a definite height.\n- **`wrap` with a splitter is unsupported** and MUST draw a diagnostic: panes\n  divide a single axis with separators between neighbours, so there is no\n  second row to wrap onto.\n- `resizable` defaults to **true**. `false` leaves the separator in place as a\n  visual boundary but makes it neither focusable nor draggable.\n- Hidden panes leave layout, as elsewhere.",
+      "classification": "normative"
+    },
+    {
+      "line": 782,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.2 The data-presence indicator",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The indicator means **only that data is present**. It does not imply validity,\ncompletion, required-field satisfaction, or unsaved changes — and the wording\nmust not claim otherwise. \"Contains data\" is correct; \"contains edits\" is not,\nbecause the marker is computed from current data and therefore appears for\nserver-supplied values nobody has touched. An \"edited since load\" indicator is\na *different* indicator needing a baseline to compare against, and MUST NOT be\nbuilt by relabelling this one.",
+      "classification": "normative"
+    },
+    {
+      "line": 790,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.2 The data-presence indicator",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "The indicator MUST carry a **localized accessible name**; a visual marker\nalone is insufficient. One string serves both the accessible name and any\ntooltip, so the two cannot drift apart.",
+      "classification": "normative"
+    },
+    {
+      "line": 885,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.3 The container validation indicator",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Applicability.** Any container that renders a header, label row or\nnavigation entry capable of carrying an indicator. It does **not** apply to\nordinary Controls, which follow the shared control error presentation, nor to\nlayouts without a header, which have nowhere to put it and MUST NOT grow one.",
+      "classification": "normative"
+    },
+    {
+      "line": 890,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.3 The container validation indicator",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**What belongs to a container.** An error belongs to a container when its\nnormalized instance path identifies a descendant of that container's data\nscope, **by path segment, not by textual prefix**: `employees.10.name` MUST\nNOT count as an error for `employees.1`. For a structural container with no\ndata scope of its own, resolve each descendant Control's scope in the current\ndata context — the same resolution the data-presence indicator uses. Mapped\nadditional errors participate on the same terms as schema errors.",
+      "classification": "normative"
+    },
+    {
+      "line": 898,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.3 The container validation indicator",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Setting it to `false` hides only the aggregated indicator.** It MUST NOT\nremove or hide the container's **own** errors, hide field-level error text on\ndescendants, change validation execution or form validity, or affect array\nrestrictions, mutation guards or any data.",
+      "classification": "normative"
+    },
+    {
+      "line": 930,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.3 The container validation indicator",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Compact object and array cells MUST expose eligible errors on the cell value\nand its descendants beside the summary, even while the detail editor is closed.\nThis is cell-level validation feedback, separate from an enclosing collection's\nheader indicator. Suppressing that header indicator does not suppress cell\nfeedback. The reference renderers use the existing single-error tooltip and\nmulti-error summary interaction, including the localized error count in the\nexpanded summary. A permanent numeric badge beside the cell is not required.",
+      "classification": "normative"
+    },
+    {
+      "line": 997,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.5 Runtime expansion is not UI-schema state",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Runtime expansion MUST NOT mutate the UI schema. A renderer initializes\nexpansion from the effective `collapsed` option and synchronizes when that\nboolean changes, whether it came from static configuration or dynamic\nresolution.",
+      "classification": "normative"
+    },
+    {
+      "line": 1002,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.5 Runtime expansion is not UI-schema state",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Header interaction may change local expansion between those updates.\nUnrelated re-renders, or replacement UI elements carrying the same effective\nboolean, MUST NOT reset the user's local expansion.",
+      "classification": "normative"
+    },
+    {
+      "line": 1032,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.6 Categorization",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Previous and Next operate on **visible** categories and stop at the first and\nlast visible one. Visibility rules MUST NOT leave navigation pointing at a\nhidden or missing category. Hiding the navigation buttons does not itself\nrequire linear navigation or disable header navigation. **Neither stepper\npresentation nor `showNavButtons` implies any requirement to validate the\ncurrent step before moving.** These actions change runtime selection, not form\ndata and not the UI schema.",
+      "classification": "normative"
+    },
+    {
+      "line": 1040,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.6 Categorization",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "`options.initial` references a direct Category `name`. Sibling names SHOULD be\nunique. A missing target falls back to the first visible category **with a\ndiagnostic** — reported to the author, not rendered to the person filling in\nthe form, who can do nothing about it.",
+      "classification": "normative"
+    },
+    {
+      "line": 1056,
+      "section": "## 8. Group and Categorization",
+      "subsection": "### 8.7 Container visibility and hidden children",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Hidden immediate children consume no layout space or gaps. **A visible Group\nor Category retains its heading, container presentation and navigation entry\neven when all its children are hidden.** Such containers MUST NOT be hidden\nautomatically, and no \"hide when empty\" option is introduced — this also\npreserves categorization for presentation-only sections with no data-bound\ncontrols.",
+      "classification": "normative"
+    },
+    {
+      "line": 1123,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.1 One expression language, and two scopes",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Placeholders are **expressions** in the existing text-interpolation profile.\nThe experimental §11 overlay profile does not change that profile. A single `{` opens a placeholder,\n`{{` emits a literal `{`, `}}` emits a literal `}` — which is inverted from\nthe most widely known templating convention, so `{{data.firstName}}` is\nliteral text and an implementation SHOULD warn when it sees that shape.",
+      "classification": "normative"
+    },
+    {
+      "line": 1142,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.1 One expression language, and two scopes",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "A translated string MUST NOT be able to name a data path. `{data.customerName}`\nwritten in the text resolves to nothing and is reported, however open the gate\nis. The reason is translation, not security: a catalog that names data paths is\ncoupled to the schema, so renaming a field invalidates every translation in\nevery language, and a translator is shown a path instead of a name for the\nthing being talked about. `You are subscribed to {product}.` is the unit of\ntranslation; `product` is declared once, in the UI schema, where knowledge of\nthe data model belongs.",
+      "classification": "normative"
+    },
+    {
+      "line": 1180,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.1 One expression language, and two scopes",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "An expression MUST NOT be able to act: no assignment, no statements, no host\nfunction calls beyond those the implementation registers (§9.3), and\nown-property lookup only. The binding path grammar in §11.3 is narrower than\nthe expression grammar: it forbids operators and prototype-related path segments.\nCEL may read an explicitly owned JSON key named `constructor` without accessing\nan object prototype (§9.7). An implementation whose\nevaluator satisfies this needs **no script-evaluation gate**, because there is\nnothing to execute. One that compiles expressions into host code does need it,\nand is gated like a template engine (§13).",
+      "classification": "normative"
+    },
+    {
+      "line": 1218,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.3 Locale-aware formatting is supplied as functions",
+      "keywords": [
+        "MUST",
+        "SHOULD"
+      ],
+      "text": "An implementation MUST make locale-aware number, currency and date formatting\nreachable from an expression, and SHOULD do so as **functions the author\ncalls** rather than by formatting values implicitly on their way into the\ntext. An implicit rule cannot tell a price from an order number, a year or an\nidentifier — it would render `2026` as `2,026` — and there is no way to opt\nout of it. There is nothing to opt out of with a function.",
+      "classification": "normative"
+    },
+    {
+      "line": 1229,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.3 Locale-aware formatting is supplied as functions",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A date-only value is a **calendar date**. Formatting it in the viewer's time\nzone renders the previous day for readers west of the meridian, which is a\none-day error that appears for some readers only; such a value MUST be\nformatted as UTC.",
+      "classification": "normative"
+    },
+    {
+      "line": 1242,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.4 Substitution, escaping and order",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "- **Substituted values MUST be escaped before parsing.** A value containing\n  `[click](javascript:…)` renders as those characters, never as a link.\n- **Only the substituted values are escaped**, never the surrounding text. The\n  author's own markup has to keep working, and escaping the finished string\n  breaks it.",
+      "classification": "normative"
+    },
+    {
+      "line": 1260,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.5 Absent data is not an authoring error",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "- **An authoring error** is wrong however the form is filled in — a name the\n  text does not declare, a namespace that does not exist, a function that does\n  not exist, a type mismatch. It MUST be reported.\n- **Absent data is normal.** An optional field nobody has filled in, an empty\n  list, an object not yet created: the expression is correct and the value is\n  not there *yet*. It MUST render as empty text and MUST NOT be reported.",
+      "classification": "normative"
+    },
+    {
+      "line": 1284,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.5 Absent data is not an authoring error",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "An implementation MUST NOT throw out of either path. An expression resolving\nto an object or a list has no text form; that is an authoring error, not\n`[object Object]`.",
+      "classification": "normative"
+    },
+    {
+      "line": 1290,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.6 Host functions are registered, never passed in",
+      "keywords": [
+        "MUST NOT",
+        "SHOULD NOT"
+      ],
+      "text": "An expression may call only functions the implementation **registers**. A\nfunction placed in `context`, or anywhere else in the data, MUST NOT be\ncallable — and SHOULD NOT even be readable.",
+      "classification": "normative"
+    },
+    {
+      "line": 1307,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.7 A property named `constructor`",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "Any string is a legal JSON property name, including names that mean something\nto the host language. An implementation MUST read such a property like any\nother, and MUST NOT let its presence affect the readability of its siblings.",
+      "classification": "normative"
+    },
+    {
+      "line": 1329,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.8 Renderer-owned strings",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "**Keys, not text, are the lookup.** A key is a dotted identifier in a\nnamespace. Looking a string up by its own English text makes the catalog key\nchange whenever the wording does, and gives translators nothing stable to key\nagainst. A renderer set's complete default set SHOULD live in one place, so it\nis enumerable and a missing translation degrades to a sensible default rather\nthan an empty element.",
+      "classification": "normative"
+    },
+    {
+      "line": 1336,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.8 Renderer-owned strings",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "A portable locale catalog MAY spell a dotted key as one literal property or\nas nested JSON objects. Resolve an exact own property first, then traverse the\ndot-separated segments through own properties. The final value must be a string.\nFor example, `\"static-text\": { \"English\": \"English\" }` supplies\n`static-text.English`; a literal `\"static-text.English\"` wins if both exist.\nThis lookup concerns catalog keys, never data paths.",
+      "classification": "normative"
+    },
+    {
+      "line": 1348,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.8 Renderer-owned strings",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**Always supply the default message.** A translator that returns `undefined`\nfor an absent key renders an empty control. A renderer MUST therefore pass its\ndocumented default with every lookup, never a bare key.",
+      "classification": "normative"
+    },
+    {
+      "line": 1368,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The ordering MUST NOT be re-implemented by inspection. The bundle's string is\nhanded to the translator **as its default message**, so the precedence falls\nout of the translator's own contract. A locale falls back to its language —\na regional tag uses the base language's bundle — because reverting to the\ndefault language over a region nobody translated separately is worse.",
+      "classification": "normative"
+    },
+    {
+      "line": 1385,
+      "section": "## 9. Internationalizable text",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Whether these bundles load synchronously or asynchronously is a family\ndecision, but strings that are on screen the moment a control mounts SHOULD\nresolve synchronously: an asynchronous load shows one language and replaces it\nin front of the user.",
+      "classification": "normative"
+    },
+    {
+      "line": 1395,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "Basic **excludes** raw HTML, images, media, iframes, tables, blockquotes,\nheadings and fenced code. An implementation MAY offer an extended profile\nadding headings, blockquotes, tables and fenced code while retaining every\nsecurity rule below.",
+      "classification": "normative"
+    },
+    {
+      "line": 1400,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "- All Markdown output MUST be sanitized **after** parsing.\n- Markdown link targets MUST pass the URL policy (§12).\n- Images and raw HTML are **independently gated**, and HTML remains sanitized\n  even when enabled.",
+      "classification": "normative"
+    },
+    {
+      "line": 1405,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "**No unsanitized markup may reach the page**, which is what the first rule is\nfor. An implementation whose parser exposes a token stream MAY build its\noutput from that stream directly rather than rendering to markup and\nsanitizing; doing so satisfies the requirement, because nothing unsanitized is\nproduced. The set of elements that can be drawn is then an explicit allowlist,\nand attributes other than link targets are dropped.",
+      "classification": "normative"
+    },
+    {
+      "line": 1421,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**The URL policy is authoritative for link targets.** Markdown parsers\ncommonly carry a scheme allowlist of their own. Where one does, it MUST NOT be\nleft in front of the URL policy: two checks in series make the effective\npolicy their intersection, so a host that widens `allowedSchemes` silently\ngets nothing for the schemes the parser dislikes, and a target refused before\nparsing produces no node and therefore no diagnostic. A refused target keeps\nits text and loses its link.",
+      "classification": "normative"
+    },
+    {
+      "line": 1437,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 10.1 Requesting markup, and being refused",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A request that cannot be honoured — an unknown `markup` value, or Markdown\nswitched off by the host — MUST report a diagnostic **and** still render the\ntext. This is deliberately unlike a refused template (§22), which renders its\ndiagnostic alone: a template is a program whose output is the content, while\ntext is the content, and is readable unparsed.",
+      "classification": "normative"
+    },
+    {
+      "line": 1443,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 10.1 Requesting markup, and being refused",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "Markdown MAY default to enabled, unlike the gates of §12. Those admit\nsomething that acts — a compiler, a data-path resolver, an inline payload that\nbypasses the host's CSP. A profile-restricted parser admits only a grammar.",
+      "classification": "normative"
+    },
+    {
+      "line": 1449,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 10.2 Typography",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "`options.typography`, defaulting to the host-wide\n`jsonformsExtended.markup.typography` and then to `true`, controls whether\nrendered text is wrapped in the host UI library's own text components so it\ninherits the theme. It MUST be switchable, because those components carry\ntheir own margins, which collide with a form's own spacing (§7). It governs\nthe wrapper only: turning it off still parses.",
+      "classification": "normative"
+    },
+    {
+      "line": 1456,
+      "section": "## 10. Markdown policy",
+      "subsection": "### 10.2 Typography",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A library's text component MUST be told whether it is being handed block\ncontent or a single run. One that renders a true `<p>` cannot wrap block\ncontent, since `<p>` accepts phrasing content only.",
+      "classification": "normative"
+    },
+    {
+      "line": 2145,
+      "section": "## 12. URL and extension security configuration",
+      "subsection": "### 11.10 Proposed acceptance cases and remaining decisions",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "For URL templates, data, item and locale substitutions MUST use\n**percent-encoding equivalent to `encodeURIComponent`**. Permitted config and\ncontext substitutions are host-provided URL components. The final URL MUST\npass policy.",
+      "classification": "normative"
+    },
+    {
+      "line": 2186,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.1 ImageView",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "At least one of `src` or `scope` MUST be supplied; both may coexist. If the\neffective `src` is defined it is used — **including an empty string, which\nintentionally displays no image**. Otherwise `scope` resolves against the\ncurrent schema and data context using Control scope semantics, including the\ncurrent array-item path.",
+      "classification": "normative"
+    },
+    {
+      "line": 2216,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.3 Link",
+      "keywords": [
+        "MUST",
+        "SHOULD"
+      ],
+      "text": "`href` is the static fallback. An **empty `href` is allowed** and renders\nnon-navigating plain semantics rather than inventing a destination.\n`target=\"_blank\"` MUST enforce `noopener` and SHOULD add `noreferrer`\naccording to host policy.",
+      "classification": "normative"
+    },
+    {
+      "line": 2231,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.4 Template and Slot",
+      "keywords": [
+        "SHOULD",
+        "SHOULD"
+      ],
+      "text": "- **Template** resolves a reusable named UI schema from the registry. The\n  top-level `name` is required; the lookup finds the first registry entry\n  whose `entry.uischema.name` exactly matches (case-sensitive), rather than a\n  name on the registry entry itself. **This is name lookup, not ranked tester selection** —\n  testers are not evaluated for it. Duplicate names SHOULD be avoided and\n  diagnosed. A missing template renders no substituted content and SHOULD\n  produce a diagnostic.\n- **Slot** dispatches supplied named content, or a fallback, in the current\n  template context.",
+      "classification": "normative"
+    },
+    {
+      "line": 2241,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.4 Template and Slot",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "`Template.elements` supplies named slot contents, merged over inherited\ncontents with local names taking precedence. Unnamed supplied children do not\nfill slots; later children with the same name replace earlier ones. Slot fallback\nis its first `elements` child; further fallback children are not dispatched.\nAn unfilled slot without fallback renders nothing. `Slot` does not search the\nUI-schema registry itself. Wrap several fallback controls in one layout.\nSee [Templates and slots](../examples/template-slots/README.md) for complete\nregistry and caller models. Named reuse **preserves the\ncaller's schema and data path** and does not create a new data object.\nRecursive named references MUST be guarded against unbounded expansion.",
+      "classification": "normative"
+    },
+    {
+      "line": 2252,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.4 Template and Slot",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The same registry also serves ordinary ranked detail selection, combinator\nbranches and mixed-type forms; these lookup modes MUST NOT be conflated.",
+      "classification": "normative"
+    },
+    {
+      "line": 2260,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Resolve the language from explicit `lang`, then a configured default, then the\ndefault web profile. **An unknown or unsupported language MUST be diagnosed**\nrather than interpreted as another engine.",
+      "classification": "normative"
+    },
+    {
+      "line": 2270,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "A profile exposes to the template: whole-form `data`, core schema `errors`,\n`context`, `elements` and `translate`. These are **engine bindings**, not new\ncore condition fields. `context` may expose additional errors and application\ncapabilities; **`errors` alone MUST NOT be described as combined validity.**\nLive data, error and context changes MUST refresh the bindings without leaving\nstale slot editors.",
+      "classification": "normative"
+    },
+    {
+      "line": 2283,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "- **A name collision must not silently steal a slot.** An index fallback MUST\n  NOT take a name another child declared, and a child that cannot be addressed\n  MUST be reported rather than silently left off the form.\n- **A placeholder resolves to the child element itself.** Wrapping it in a\n  descriptor object and handing that to the engine breaks any binding that\n  iterates the children.",
+      "classification": "normative"
+    },
+    {
+      "line": 2299,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Template-local UI state MUST NOT inadvertently become form data.",
+      "classification": "normative"
+    },
+    {
+      "line": 2301,
+      "section": "## 13. ImageView, Separator, Link and templates",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST NOT",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "**Markup and executable template profiles are runtime escape hatches**, not\nthe sanitized Markdown profile and not a security sandbox. Where JavaScript\nstring compilation or execution is involved they follow the host's trust\npolicy and the script-evaluation permission. **Enabling `$dynamic` MUST NOT be\ntreated as permission to execute templates.** Profiles MUST document their\nexpression, event, raw-HTML and data-write capabilities, and engine two-way\nbinding MUST NOT bypass read-only, `restrict`, or normal change dispatch.",
+      "classification": "normative"
+    },
+    {
+      "line": 2343,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "`action` and `script` are mutually exclusive. **Where an element carries both,\n`action` wins** — it is the portable half, and the one a host can intercept.\nCarrying both is an authoring error, and a diagnostic SHOULD say so.",
+      "classification": "normative"
+    },
+    {
+      "line": 2352,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 13.5 TemplateLayout",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Button invokes commands; Link performs navigation. A renderer may offer a\nlink-like Button appearance through its documented styling options while\npreserving button semantics, keyboard activation, disabled behaviour and\npending handling. No portable Button variant is defined for that appearance,\nand an action MUST NOT be turned into navigation merely to obtain a visual\ntreatment.",
+      "classification": "normative"
+    },
+    {
+      "line": 2364,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### Button width",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "`options.fullWidth` is a portable boolean component option, default `false`.\nWhen `true`, the button MUST fill the available inline width of its containing\nlayout cell. It MUST NOT change that cell's size, grid span or flex allocation.\nOmitted or false retains the native button's normal intrinsic sizing.\nThis option does not introduce a universal layout property or a `block` alias.",
+      "classification": "normative"
+    },
+    {
+      "line": 2393,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.1 The action path",
+      "keywords": [
+        "SHOULD",
+        "MUST NOT"
+      ],
+      "text": "- **Pending covers the complete promise**, not the dispatch.\n- **Duplicate activation SHOULD be prevented while pending.** The guard must\n  not be the pending *state*: a second activation can arrive before the\n  re-render that records it, leaving a window in which both get through. A\n  synchronous flag, reset in a `finally`, is what closes it.\n- **Rejection clears pending and propagates** through ordinary platform error\n  handling. It MUST NOT be swallowed.",
+      "classification": "normative"
+    },
+    {
+      "line": 2408,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.2 The script path",
+      "keywords": [
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "String evaluation requires `security.allowScriptEvaluation: true`. Enabling it\nmeans the host treats the UI schema as **trusted executable code**. A platform\ncontent-security policy may prohibit runtime evaluation; a renderer MUST NOT\nweaken that policy and MUST instead report evaluation-disabled behaviour.",
+      "classification": "normative"
+    },
+    {
+      "line": 2416,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.2 The script path",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "**A function-valued script is a build-time convenience outside the wire\nformat.** A platform MAY accept one. Where it does, two rules are forced by\nexperience:",
+      "classification": "normative"
+    },
+    {
+      "line": 2429,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.2 The script path",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "A function-valued script MUST NOT be stringified into a function body. Doing\nso turns a closure expression into something created and immediately\ndiscarded: the button is clicked, nothing happens, and nothing is reported.",
+      "classification": "normative"
+    },
+    {
+      "line": 2481,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.3 Shared destructive-change confirmation",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST"
+      ],
+      "text": "Additional-property deletion MUST use catalog ID `additionalProperties`;\ndeleting a tuple trailing item MUST use `additionalItems`. Both use operation\n`delete` and fallback `complex`: scalar values (including null, false, zero and\nempty strings), empty objects and empty arrays delete without a prompt. Nonempty\nobjects and arrays require confirmation. Explicit policy overrides still apply. Resolve element `options.confirmation.delete`, then the corresponding\n`config.jsonformsExtended.confirmation.renderers` entry, then the global default.\nThis applies equally to paginated and unpaginated collections. Adding an item or\nproperty does not prompt. Fixed tuple positions cannot be deleted by the trailing\nitems action. Confirming MUST recheck current permissions, bounds and the target;\nreplacing, reordering or rebinding the collection invalidates a pending delete.\nA renderer may conservatively invalidate the pending delete on any collection\nreplacement. Use the renderer family's native dialog with translated delete text.",
+      "classification": "normative"
+    },
+    {
+      "line": 2494,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.3 Shared destructive-change confirmation",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Cancellation leaves committed data, selection and expansion unchanged.\nConfirmation performs the operation **once**, after rechecking mutation guards\nand its target. A stale confirmation MUST NOT be applied to an unrelated\nreplacement item. Dialog text is localized and action-specific, with\naccessible focus handling.\nPortable dialog catalog keys are `confirm.delete.title`/`message`,\n`confirm.typeChange.title`/`message`, `confirm.branchChange.title`/`message`,\nand `confirm.accept`/`confirm.decline`. Example catalogs may supply\naction-specific wording through these same keys.",
+      "classification": "normative"
+    },
+    {
+      "line": 2504,
+      "section": "## 14. Button, actions and script",
+      "subsection": "### 14.3 Shared destructive-change confirmation",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The runtime resolves configuration into one shared policy; individual UI\nlibraries MUST NOT give these values different meanings.",
+      "classification": "normative"
+    },
+    {
+      "line": 2530,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.1 Read-only sources and precedence",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "`separateReadonlyFromDisabled` distinguishes effective read-only state from\nenabled state. With the default `false`, read-only sources\nparticipate in disabling controls. With `true`, the integration and renderer\nMUST honour read-only separately from enabled, **including guarding\nmutations**. Setting it alone does not prove every renderer supports\ninspection without disabling. A family that does not support the separation\nMUST declare the capability unsupported rather than let it be assumed.",
+      "classification": "normative"
+    },
+    {
+      "line": 2572,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.2 Rules and effective state",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**Schema-based conditions evaluate data**, not collected additional errors and\nnot pending editor validation state. A valid-form command guard MUST use the\ncombined-validity integration rather than assuming a rule observes those\nerrors.",
+      "classification": "normative"
+    },
+    {
+      "line": 2581,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.2 Rules and effective state",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Conditional validation and conditional presentation are separate\nmechanisms.** A schema condition does not itself define a show or hide rule,\nand an implementation MUST NOT infer conditional layouts from validator\nsupport for `if`/`then`/`else` or dependency keywords.",
+      "classification": "normative"
+    },
+    {
+      "line": 2604,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.3 Validation execution and error visibility",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**An empty error array under `NoValidation` does not prove the form passed.**\nConsumers of cached validity MUST distinguish unvalidated, pending, stale,\nvalid and invalid. Error *visibility* does not determine validity either:\n`ValidateAndHide` may retain failures while showing none.",
+      "classification": "normative"
+    },
+    {
+      "line": 2609,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.3 Validation execution and error visibility",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "`restrict` remains independent. `NoValidation` does not disable preventive\nconstraints, mutation guards or action permissions; `restrict: false` does not\ndisable schema validation. Changing the mode MUST update presentation and\nnotify integrations **without requiring the user to edit data**.",
+      "classification": "normative"
+    },
+    {
+      "line": 2625,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.4 Change events, context errors and combined validity",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "A host checking only the change event's error count can therefore observe no\nschema errors while a renderer-published error still blocks validity. **A host\nrequiring complete validity MUST consider** current schema results, host and\nrenderer additional errors, and participating pending validation. Presentation\nfiltering, hidden messages and translated control strings MUST NOT become the\nvalidity source.",
+      "classification": "normative"
+    },
+    {
+      "line": 2644,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.5 Additional-error ownership and changing data paths",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Where an owner's target moves — deleting an earlier array item shifts the rest\n— update the published path. **Leaving the old path associates the error with\nanother item.** Deleting the owning target removes its owned errors. Identity\nMUST NOT be inferred from an index or a display label alone.",
+      "classification": "normative"
+    },
+    {
+      "line": 2655,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.5 Additional-error ownership and changing data paths",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Host-supplied errors remain under their producer's ownership. Renderers MUST\nNOT rewrite arbitrary host error paths, nor clear host errors merely because\ntheir own target moved.",
+      "classification": "normative"
+    },
+    {
+      "line": 2662,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.5 Additional-error ownership and changing data paths",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Participating asynchronous validation MUST expose pending state to validity\nconsumers during reassociation. **Do not report confirmed validity solely\nbecause stale errors were removed while their replacements are pending.**",
+      "classification": "normative"
+    },
+    {
+      "line": 2673,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.6 Renderer-published additional errors",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "Constraints handled by the JSON Schema validator, including registered custom\nformats or keywords, MUST use the normal schema-validation channel. Duration\nformat failures and cron failures from a registered validator MUST NOT be\nrepublished as additional errors by their controls. Selecting a renderer through\n`options.format` alone does not install a schema constraint.",
+      "classification": "normative"
+    },
+    {
+      "line": 2684,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.6 Renderer-published additional errors",
+      "keywords": [
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "1. **Publication is opt-in per renderer**, through a documented option\n   resolved per element then per config. A renderer that finds a problem does\n   not thereby acquire the right to invalidate the form. For Monaco,\n   `propagateErrors` optionally controls whether editor diagnostics reach the\n   form: disabling it keeps diagnostics in the editor and retracts only that\n   editor's published errors. It MUST NOT suppress schema-validation errors or\n   application-supplied errors, such as server responses.\n2. **Each published error is uniquely owned.** Several renderers, and several\n   instances of the same renderer, may target one path; an owner clearing its\n   own error MUST NOT remove another's. Ownership is per instance, not per\n   renderer type.\n3. **An owner's errors are cleared when its subject changes**, and the\n   mechanism must survive the host replacing the whole error collection.",
+      "classification": "normative"
+    },
+    {
+      "line": 2712,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.6 Renderer-published additional errors",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Where no such integration is present, a publishing renderer MUST report the\nabsence as a diagnostic rather than fail silently.",
+      "classification": "normative"
+    },
+    {
+      "line": 2726,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.7 Pre-touch error filtering",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**The form remains invalid while a required error is hidden.** Filtering MUST\nNOT remove structured errors, suspend validation, modify data, or alter the\ncollections used by validity consumers. It does not make a rule observe errors\nit would not otherwise inspect. Disabling the filter restores ordinary\npresentation subject to the validation mode; it does not force errors to\nappear under a hiding or non-validating mode.",
+      "classification": "normative"
+    },
+    {
+      "line": 2733,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.7 Pre-touch error filtering",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Apply filtering to the **complete** set of errors eligible for the control,\nincluding mapped additional errors. A non-matching additional error MUST NOT\nbe lost merely because a matching schema error was suppressed. Matching\nadditional errors may have their text suppressed; their structured entries and\nvalidity contribution are unchanged.",
+      "classification": "normative"
+    },
+    {
+      "line": 2745,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.8 Read-only interaction and restrictive editing",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Read-only prevents mutation of form data but does not disable every\napplication command. Renderer-owned mutation actions — add, remove, move,\nclear — MUST obey read-only and enabled state.",
+      "classification": "normative"
+    },
+    {
+      "line": 2766,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.8 Read-only interaction and restrictive editing",
+      "keywords": [
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "- Disable or reject additions that would exceed `maxItems`, including add\n  buttons, new selections and token creation.\n- Disable or reject removals that would fall below `minItems`, including\n  deselection, token removal, and clearing a non-empty array.\n- **Evaluate batch edits against their resulting size.** A replacement\n  preserving the count MUST NOT be blocked merely because the array sits at a\n  boundary.\n- Apply the same checks to mutation handlers as to visible action state;\n  keyboard interaction MUST NOT bypass them.",
+      "classification": "normative"
+    },
+    {
+      "line": 2792,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.8 Read-only interaction and restrictive editing",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Renderer specifications MUST declare which constraints and interaction paths\nsupport prevention. Validation remains necessary for external data,\nunsupported constraints and cross-field conditions.",
+      "classification": "normative"
+    },
+    {
+      "line": 2893,
+      "section": "## 15. Read-only, restrict and mutation constraints",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Dependencies do not automatically create, show, hide, or delete controls. Use\nthe ordinary property editors and explicit UI rules where conditional visibility\nis wanted. Missing-dependent-property errors SHOULD appear beside the affected\ncontrol when it exists; provide discoverable object-level feedback when no such\ncontrol is rendered. Apply the shared validation-display rules and retain error\nfeedback for hidden or otherwise unavailable fields.",
+      "classification": "normative"
+    },
+    {
+      "line": 3448,
+      "section": "## 16. Adaptive behaviour",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "A renderer on a small screen SHOULD use platform-appropriate controls while\npreserving semantic intent — a date Control may present a platform date picker\non one device and a desktop picker on another; both are the same Control.",
+      "classification": "normative"
+    },
+    {
+      "line": 3454,
+      "section": "## 16. Adaptive behaviour",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Explicit named breakpoint overrides are deferred. Renderer specifications may\nprovide platform-specific enhancements, but portable documents SHOULD rely on\ncontent- and container-driven layout first.",
+      "classification": "normative"
+    },
+    {
+      "line": 3458,
+      "section": "## 16. Adaptive behaviour",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "A host MAY select a different UI schema where a product genuinely requires a\nsubstantially different workflow. That is **composition outside the portable\nelement language**, not a hidden automatic branch inside a Control.",
+      "classification": "definition"
+    },
+    {
+      "line": 3473,
+      "section": "## 17. External context, visibility and security",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "An administrative UI may include controls a restricted UI omits, but the\nservice MUST independently reject unauthorized operations. Hiding a Button or\nControl is presentation, not enforcement.",
+      "classification": "normative"
+    },
+    {
+      "line": 3491,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 15.9 Data schemas, rules and validator profile",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "The portable model defines semantics. Each renderer set SHOULD carry its own\nbehaviour specification documenting: canonical variants supported; established\noptions and their encodings; schema keywords honoured; default and fallback\nbehaviour; visual and usability behaviour; accessibility; invalid and\nout-of-domain data behaviour; read-only, enabled and constraint behaviour;\ninternationalization support; useful underlying-library enhancements; and its\nescape-hatch namespace.",
+      "classification": "normative"
+    },
+    {
+      "line": 3504,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.1 Catalogue structure and provenance",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "Every entry MUST state its provenance (§5.2), including option-level\nexceptions to the entry's own origin, and MUST identify:",
+      "classification": "normative"
+    },
+    {
+      "line": 3517,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.1 Catalogue structure and provenance",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Entries MUST include a concrete schema and UI-schema selection example, and at\nleast one **incompatible-schema** example where selection could otherwise\nmislead. Examples supplement applicability rules; they do not replace them.",
+      "classification": "normative"
+    },
+    {
+      "line": 3521,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.1 Catalogue structure and provenance",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**A feature present in one family MUST NOT be described as supported by all.**\nPackage membership and upstream provenance are separate facts.",
+      "classification": "normative"
+    },
+    {
+      "line": 3554,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.2a Temporal pickers and `views`",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "- **`views` never changes the save format.** A year/month picker storing a\n  full date is a legitimate request, and asking for hours and minutes does not\n  stop seconds being stored. An implementation MUST NOT infer one from the\n  other — inferring picker granularity from the stored format makes storage\n  decide the interaction, which is backwards.\n- **An array naming no view of a kind the control uses leaves that half to the\n  display format**, rather than blanking it. This matters because a date-time\n  control's natural default array contains date views that a time panel must\n  not read as \"no columns\".",
+      "classification": "normative"
+    },
+    {
+      "line": 3579,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3 Shared control behaviours",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Input composition and string length.** Text entry MUST NOT break\ncomposition-based input methods. String length constraints operate on the\n**stored representation**; a displayed representation may differ, and a\ngrapheme is not necessarily one code unit.",
+      "classification": "normative"
+    },
+    {
+      "line": 3584,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3 Shared control behaviours",
+      "keywords": [
+        "SHOULD",
+        "SHOULD"
+      ],
+      "text": "**Initial focus.** `options.focus` requests initial focus. Authors SHOULD\nidentify one intended target per active view. When several controls request\nfocus, the result is not portable; a diagnostic SHOULD report the conflict.\nThe detailed lifecycle and focusability rules are in §18.28.",
+      "classification": "normative"
+    },
+    {
+      "line": 3589,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3 Shared control behaviours",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Descriptions and required markers.** `showUnfocusedDescription` controls\nwhether a description is visible when the control is unfocused.\n`hideRequiredAsterisk` hides the visual required marker **without changing\nrequired validation or accessible required-state information** — a renderer\nMUST NOT implement it by removing the accessible required state.",
+      "classification": "normative"
+    },
+    {
+      "line": 3610,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.4 Pending edits, commit timing and cancellation",
+      "keywords": [
+        "SHOULD",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "- **Blur SHOULD flush** a pending committable edit before presenting its\n  validation errors.\n- **An action that consumes form data MUST resolve pending edits** and use the\n  resulting data and validation state before proceeding. Do not rely on blur\n  alone: keyboard-triggered actions may run without moving focus.\n- **Flushing does not** force incomplete drafts into the data model, bypass\n  input restrictions, or accept edits explicitly staged until confirmation.\n  An unresolved draft MUST NOT silently be treated as committed.\n- **Clear supersedes queued edits**, so an old callback cannot restore the\n  cleared value.",
+      "classification": "normative"
+    },
+    {
+      "line": 3634,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.4 Pending edits, commit timing and cancellation",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**The path alone is insufficient evidence that the original target still\nexists.** The evidence for the third case is the value arriving from outside,\nwhich MUST be distinguished from **normal host feedback of the\njust-committed data** — otherwise the guard cancels ordinary typing, because\na commit lands mid-word and returns as a property while later keystrokes are\nstill queued. Recording the value last written is sufficient to tell them\napart.",
+      "classification": "normative"
+    },
+    {
+      "line": 3642,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.4 Pending edits, commit timing and cancellation",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Recheck mutation permissions and target identity before a delayed commit: a\nqueued edit MUST NOT bypass a later read-only state or restriction.",
+      "classification": "normative"
+    },
+    {
+      "line": 3810,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.5 Choice and suggested-string controls",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "The selected value MUST retain its JSON type. A numeric option `1` must not\nbe stored as string `\"1\"`; the two must remain distinguishable if both are\npermitted. Widget identifiers and labels are presentation details, not the\nidentity of form values. Renderers must declare their supported enum value\ntypes, including any limits for null, booleans, objects, or arrays.",
+      "classification": "normative"
+    },
+    {
+      "line": 3834,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.6 Shared detail UI-schema selection",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "1. If `options.detail` is an **inline UI-schema element with a `type`**, use it.\n2. If `options.detail` is `\"GENERATE\"` (case-insensitive), generate the fallback form\n   and **bypass registered UI schemas**. Emit the uppercase spelling; matching\n   SHOULD be case-insensitive.\n3. Otherwise use the **highest-ranked applicable registered** UI schema.\n4. If none matches, generate the fallback form.",
+      "classification": "normative"
+    },
+    {
+      "line": 3844,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.6 Shared detail UI-schema selection",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Scopes inside a detail form are relative to its object or item schema**, and\nthe original item data path and root schema reference context are preserved.\nUI-schema registry testers select a *form description*; renderer testers\nselect *components* for the resulting elements. These are separate registries\nand separate steps, and MUST NOT be conflated.",
+      "classification": "normative"
+    },
+    {
+      "line": 3850,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.6 Shared detail UI-schema selection",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Inline, registered and generated detail forms all pass through dynamic\nresolution and normal nested dispatch. **Rendering a generated form MUST NOT\ninitialize or overwrite data.**",
+      "classification": "normative"
+    },
+    {
+      "line": 3854,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.6 Shared detail UI-schema selection",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "**Registry testers** have a different signature from renderer testers. They\nMUST be synchronous and side-effect-free, may run more than once during\nselection, and MUST NOT mutate data or schema or depend on invocation count.\nReturn the not-applicable constant to reject; otherwise a finite non-negative\nrank, highest wins, first registered wins ties.",
+      "classification": "normative"
+    },
+    {
+      "line": 3860,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.6 Shared detail UI-schema selection",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**A registry entry that matches an object's own schema can be dispatched back\nto itself**, producing an infinite tree that exhausts memory on first render\nwith nothing thrown — an infinitely deep tree is legal. An implementation\nusing this registry MUST guard against re-entering the same entry for the same\nschema and path, and the guard belongs in the object-rendering path rather\nthan in any one renderer.",
+      "classification": "normative"
+    },
+    {
+      "line": 3897,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.7 Array add-item initialization",
+      "keywords": [
+        "MUST NOT",
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "**Rendering an existing item MUST NOT repeat initialization or replace its\ndata.** Object and array defaults MUST NOT share mutable instances between new\nitems, and MUST NOT mutate the schema. Initialization is not a satisfiability\nsolver: for combinators, do not assume the first usable branch produces a\nvalue valid against the whole schema.",
+      "classification": "normative"
+    },
+    {
+      "line": 3926,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.9 Array-level errors and item summaries",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "Errors at the array's own path are distinct from descendant errors. A summary\nrequiring structured array-level errors MUST obtain them from the appropriate\nerror selector, **not reconstruct them from display text**, and MUST NOT\nassume the integration supplies a separate structured array-level property.",
+      "classification": "normative"
+    },
+    {
+      "line": 3939,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.9 Array-level errors and item summaries",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**Item badges and summaries associate errors by path segment.** An error\nbelongs to an item when its normalized path identifies that item or a\ndescendant, not merely a textual prefix: `employees.10.name` MUST NOT count\nfor `employees.1`. Mapped additional errors follow the same rules. Targeting\nmust remain accurate after reorder and deletion.",
+      "classification": "normative"
+    },
+    {
+      "line": 3962,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.10 Matching constraints: `contains`",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Under `restrict`, a family SHOULD prevent a discrete deletion that would take\na satisfied minimum below its required value, **where matching can be\nevaluated reliably**. Evaluate against current data and the validator's own\ndialect semantics **without mutating data** through default assignment or\ntransforms. Where reliable evaluation is unavailable, retain validation\nfeedback and document the limitation rather than guessing which entries match.",
+      "classification": "normative"
+    },
+    {
+      "line": 4013,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.11 Tuple control: positional array fields",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "There are no Add, Delete, or Reorder actions for the declared positions. Equal\nbounds alone do not change the presentation of existing uniform-array controls.\nAn explicit tuple variant may also be accepted for an already-positional schema,\nbut editors SHOULD omit that redundant encoding.",
+      "classification": "normative"
+    },
+    {
+      "line": 4271,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.11 Tuple control: positional array fields",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Object and array positions SHOULD use compact summaries with an edit/open action,\nsimilar to composite table cells. Open a dialog containing a delegated detail form\nfor that position. Reuse the existing detail UI schema / ranked registry resolution\nand fallback generation mechanisms, retaining the position's schema, data path,\nand original root schema. This contract does not introduce a new tuple-specific\nper-index detail-option encoding. Apply the shared composite-dialog editing,\nreadonly, pending-edit, and error-display behavior. Errors must remain discoverable\nwhen the dialog is closed, and opening a missing value must not create it until an\nexplicit edit requires initialization.",
+      "classification": "normative"
+    },
+    {
+      "line": 4706,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.14 Cells render through one frame",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A hover-only tooltip is unreachable by a screen reader once the inline message\nis suppressed, so the message MUST also be on the accessible name.",
+      "classification": "normative"
+    },
+    {
+      "line": 5292,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.17 Selection that writes versus selection that displays",
+      "keywords": [
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "Conflating the two is how a navigation action becomes destructive. A selection\nthat only displays MUST NOT be routed through the confirmation policy, and a\nselection that writes MUST NOT bypass it.",
+      "classification": "normative"
+    },
+    {
+      "line": 5317,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "**Control identity during updates.** Routine data changes, including each\nkeystroke and validation updates, MUST preserve the mounted editor for the\nsame logical row and column. They MUST NOT lose keyboard focus, reset the\ncaret or selection, interrupt IME composition, or close an open picker merely\nbecause form data changed. Keep row identity and cell-renderer component\nidentity stable across these updates. The same requirement applies to ordinary\nform controls in every renderer set. Intentional structural changes (such as\nremoving the field or selecting a different schema branch) may replace an\neditor.",
+      "classification": "normative"
+    },
+    {
+      "line": 5363,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "**Components are quantities, not clock fields.** The grammar bounds none of\nthem: values far above 59 minutes, 23 hours or 11 months are valid durations\nand MUST be accepted. A picker that caps them like a time-of-day widget is\nwrong twice over — it rejects valid data, and where the cap is enforced by\nclamping it **destroys what the user typed with no message**. The only real\nbound is the range in which an integer remains exact.",
+      "classification": "normative"
+    },
+    {
+      "line": 5370,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "**Equivalent spellings are not the same data.** Ninety minutes and one hour\nthirty are the same length but different stored values, and a zero written in\nthe weeks form is a legal value distinct in text from a zero written any other\nway. **Existing data MUST NOT be normalized merely because the renderer\nmounted, or because a picker was opened and confirmed without an edit.** The\ncanonical form says what to write when the user *means* a value, not what to\ndo with an equivalent one that arrived from elsewhere. Leading zeros are\nlikewise valid and MUST survive an unedited round trip.",
+      "classification": "normative"
+    },
+    {
+      "line": 5384,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Allow partial prefixes as local drafts. **An incomplete or invalid non-empty\ndraft MUST NOT overwrite the last committed value or be replaced with zero.**\nExisting invalid data remains visible with a validation error and correctable\nthrough either text or picker.",
+      "classification": "normative"
+    },
+    {
+      "line": 5389,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Validate committed duration values through the JSON Schema validator's\n`duration` format support. The duration control MUST NOT publish additional\nerrors for duration validation. Uncommitted invalid drafts retain local feedback\nand participate in the shared pending-edit validity contract, separately from\nadditional errors and validation of the committed value. UI format selection\nalone does not add a schema constraint.",
+      "classification": "normative"
+    },
+    {
+      "line": 5404,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "The **stored serialization** is an explicit option, separate from the picker's\ninternal model and from what is displayed. A renderer MUST NOT change the\nstored format because the picker's internal representation differs.",
+      "classification": "normative"
+    },
+    {
+      "line": 5450,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "SHOULD",
+        "MUST NOT"
+      ],
+      "text": "**Local operation feedback versus validation.** A rejected selection that leaves\nstored data unchanged SHOULD produce a local warning in the theme's warning\ncolor. It MUST NOT add a validation error or make otherwise valid data invalid.\nA file-read failure is a local operation error, shown in the error color while\npreserving existing attachments. Neither message belongs in additionalErrors;\nnormal schema errors for stored values continue through the validation system.",
+      "classification": "normative"
+    },
+    {
+      "line": 5668,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.18 Extended renderer catalogue",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Present the value as set or not set. Do not present the absence of a value as\nthe value `null`, nor the reverse; §18.20 states that distinction and the null\ncontrol MUST NOT blur it. Clearing writes absence, not `null`.",
+      "classification": "normative"
+    },
+    {
+      "line": 5757,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.19 Scalar controls and temporal editing",
+      "keywords": [
+        "MUST",
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "This feedback also applies to checkbox and switch cells in normal tables and\ngrids. A field error such as a type failure at `/team/1/active` MUST be indicated\non the second row's Active cell, with its localized validation message available\nthrough the local error indicator. An indeterminate state alone is insufficient.\nThe array's child-error summary (for example, \"Some items contain errors.\") is\nrenderer-generated aggregation, not an additional validator error, and MUST NOT\nreplace the cell's feedback. Correcting the value MUST clear the local error\nwhen validation succeeds.",
+      "classification": "normative"
+    },
+    {
+      "line": 6031,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.19 Scalar controls and temporal editing",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Date, Time, and Date-time controls SHOULD provide a picker as the preferred\nselection interaction: a calendar for dates, a time picker for times, and\ncombined or coordinated pickers for date-times. The picker should make valid\nchoices discoverable and apply supported schema bounds to its selections.",
+      "classification": "normative"
+    },
+    {
+      "line": 6036,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.19 Scalar controls and temporal editing",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Controls SHOULD also allow direct keyboard entry as a complementary path.\nA format-aware input mask should guide users through the expected date/time\nparts and separators, using the effective display format and locale. Keep\nthe expected format visible through a placeholder or accessible hint. Hosts\nmay disable masking with `options.mask: false` where supported.",
+      "classification": "normative"
+    },
+    {
+      "line": 6395,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21 Expandable arrays and list with detail",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "**List overflow.** The list navigation pane SHOULD have a bounded height and\nscroll vertically only when its items exceed that height. Scrolling the list\nmust not scroll or replace the selected item's detail editor. This also applies\nwhen ListWithDetail is nested inside a cell or row detail dialog. A 20rem cap is\none implementation choice; shorter lists should retain their natural height. This bound applies with pagination disabled as well as to an\noverflowing page when pagination is enabled. It does not change selection,\nitem indices, or add/delete restrictions.",
+      "classification": "normative"
+    },
+    {
+      "line": 6514,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21 Expandable arrays and list with detail",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "Suggested renderer name: `ListWithDetailRenderer`. This existing JSON Forms\nconvention selects `type: \"ListWithDetail\"` bound to an object-array schema.\nNo Control variant is needed. Show an array toolbar with label, optional child-\nvalidation summary, and Add action above a selectable item list on the left and\na delegated detail form on the right. Render the list and detail as panes separated\nby a draggable vertical divider so users can adjust their relative widths. Use the\nrenderer family's native splitter/resizable component where available. The default\nsplit MUST be resizable; no extra layout element is required in the UI schema.\nThe list may scroll independently; avoid requiring fixed pixel widths and adapt\nthe arrangement to available space. Resizing MUST preserve selection, data, pending\nedits and validation. Ordinary edits and selection changes MUST NOT reset the\nuser's pane sizes. Apply the keyboard, focus and accessibility requirements in §7\nto the divider, including when form data is read-only.\nList rows show item labels, selection/error state, and applicable reorder/delete\nactions. Keep actions separate from row selection and make them keyboard accessible.",
+      "classification": "normative"
+    },
+    {
+      "line": 6582,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.1 Collection pagination and whole-row details",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "This is a target contract. Schema acceptance does not establish renderer support.\nRenderer families MUST publish gaps until implemented. Expandable table rows are\noptional family capabilities, not required by this contract.",
+      "classification": "normative"
+    },
+    {
+      "line": 6631,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.1 Collection pagination and whole-row details",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Pagination is a view over the complete collection, never slicing stored data.\nValidation, duplicate-name checks, bounds, counts and summaries cover every page.\nProvide a way to locate items with errors on other pages. Sorting/filtering precede\npaging; edits target original items, not displayed row indices. Paging and page-size\nchanges never reorder data. Reconcile the current page after deletions; reveal newly\nadded items. Rename retains logical property identity and focus. Page-size changes\nretain the first visible item where possible. Selection survives page navigation;\nexternal replacement must not redirect a pending edit to another item.\nPending editor drafts must be committed, retained or explicitly cancelled under\nthe shared editing contract; navigation must never silently discard them.\nUse localized labels and keyboard-accessible page and size controls.\nPlace the primary pager in a distinct footer below the current entries, inside\nthe collection boundary, for tables, additional items and additional properties.\nKeep Add in the collection header. Use consistent end alignment and spacing\nwithin each renderer family. For unusually tall scrolling collections, an optional\nsecond pager at the top MUST share the same page and page-size state as the footer.",
+      "classification": "normative"
+    },
+    {
+      "line": 6648,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.1 Collection pagination and whole-row details",
+      "keywords": [
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "AG Grid controls MUST support portable `options.pagination`, `options.columnDefs`\nand `options.rowDetail`; authors MUST NOT need `agGridOptions` to use these features.\nFor AG Grid, resolve portable pagination using the same local options, scoped\nconfiguration and defaults as regular tables. Explicit `agGridOptions.pagination`,\n`paginationPageSize` and `paginationPageSizeSelector` override only their\ncorresponding resolved settings. Native false values are explicit overrides.\nDo not show two independent pagers.",
+      "classification": "normative"
+    },
+    {
+      "line": 6663,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.1 Collection pagination and whole-row details",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST NOT"
+      ],
+      "text": "For example, portable page size 6 with native `paginationPageSize: 2` MUST show\n2 rows per page. Portable columns Name then Email with native columns Email then\nName MUST use the native order and definitions. An explicit native empty column\nlist overrides a nonempty portable list. Missing native settings retain the\nportable behavior; pagination and column overrides MUST NOT change row-detail\nconfiguration. See the [AG Grid comparison example](../examples/ag-grid/README.md).",
+      "classification": "normative"
+    },
+    {
+      "line": 6702,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.1 Collection pagination and whole-row details",
+      "keywords": [
+        "MUST",
+        "MUST",
+        "MUST NOT",
+        "MUST",
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "Dialog presentation adds a localized Edit details action to each row. Do not make\nsummary text itself the trigger. Edit a deep isolated draft of the whole item;\nApply commits atomically, Cancel/close discards it under the existing draft and\nconfirmation contracts. Recheck identity and mutation guards on Apply; stale\nexternal replacements must not be overwritten. Read-only users may inspect details.\nPanel presentation shows a selectable table beside a persistent item editor;\nplacement is right (default) or bottom, and resizable defaults true.\nFor panel presentation, use the renderer family's native splitter/resizable\ncomponent where available: right placement has a draggable vertical divider\nbetween the table and detail; bottom placement has a draggable horizontal divider.\n`options.rowDetail.resizable: false` disables interactive resizing while retaining\nthe two-pane layout. The default MUST allow users to resize both placements.\nResizing MUST preserve row selection, data, pending edits and validation; ordinary\nedits and selection changes MUST NOT reset the user's pane sizes. Apply §7's\nkeyboard, focus and accessibility requirements to the divider. Dialog presentation\ndoes not introduce a table/detail splitter.\n`options.rowDetail.collapsed` sets initial visibility: `true` starts with the detail\npane hidden; omitted or `false` starts visible. It applies to both placements.\nThe localized show/hide action beside Add toggles visibility without clearing the\nselected row or changing data.\nWhile the detail pane is visible, the table MUST visually highlight the row whose\ndetails it displays, using the renderer family's selected-row styling and an\naccessible current-row indication (for example, `aria-current=\"true\"`). The\nhighlight follows detail selection and disappears when the pane is hidden; reopening\nthe pane restores the highlight for its selected row. Detail selection is independent\nof bulk-delete checkbox selection: highlighting a row MUST NOT check its deletion\ncheckbox, and checking a deletion checkbox MUST NOT change the detail selection.\nClicking a row or its ordinary cells updates detail selection without revealing a\nhidden pane. The explicit row Edit details action selects that row and reveals the\npane if hidden. Hiding details leaves the table visible and usable.\nThis is an initial state, not a controlled visibility value: ordinary data updates\nmust preserve the user's choice. Placement, resizable and collapsed are invalid\non dialog presentation.",
+      "classification": "normative"
+    },
+    {
+      "line": 6774,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.2 Detail dialog geometry and interaction",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "**Recommended presentation behavior.** The following are UX recommendations\n(SHOULD), rather than requirements for identical pixels or framework-specific\nmarkup. They apply to both cell and whole-row dialogs, including dialogs opened\nfrom AG Grid.",
+      "classification": "definition"
+    },
+    {
+      "line": 6825,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.21.3 Scroll regions and renderer styling",
+      "keywords": [
+        "SHOULD",
+        "SHOULD"
+      ],
+      "text": "Scrolling SHOULD preserve the renderer's theme and standard pointer, wheel,\ntouch, and keyboard behavior. Scrollbars SHOULD appear only when content\noverflows; both axes must remain reachable where content can exceed the pane.\nDo not hide overflow merely to conceal a scrollbar.",
+      "classification": "normative"
+    },
+    {
+      "line": 6988,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.25 Cron control",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Support `*`, comma lists, inclusive ranges and positive steps. Field ranges are\n0–59 seconds/minutes, 0–23 hours, 1–31 days of month, 1–12 months, and 0–7 days\nof week (0 and 7 denote Sunday). The reference profile also supports named months\nand weekdays, `?` in the day fields, and the documented `L`, `W` and `#` day\nselectors. A host must register a validator for this format; a string format\nannotation alone does not establish cron validation or schedule execution.\nRegister cron validation as a JSON Schema format or keyword extension and report\nits failures through normal schema validation. The cron control MUST NOT\nrepublish those failures as additional errors.",
+      "classification": "normative"
+    },
+    {
+      "line": 7426,
+      "section": "## 19. Honest rendering of invalid and out-of-domain data",
+      "subsection": "### 18.29 Array choices and tokens",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "A renderer MUST NOT silently replace existing form data with a different\nallowed value merely because the current value is not among the available\nchoices.",
+      "classification": "normative"
+    },
+    {
+      "line": 7437,
+      "section": "## 19. Honest rendering of invalid and out-of-domain data",
+      "subsection": "### 18.29 Array choices and tokens",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "**The renderer MUST NOT select the first valid option as a substitute.**",
+      "classification": "normative"
+    },
+    {
+      "line": 7453,
+      "section": "## 20. Optional editor and tooling capability catalogues",
+      "subsection": "### 18.29 Array choices and tokens",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Tooling may display friendly names while emitting the established encodings —\n\"Multiline text\" emitting `options.multi: true`. Such an identifier is\nmetadata, **not** a `variant` value, and choosing a display name MUST NOT\nsilently rewrite the data schema.",
+      "classification": "normative"
+    },
+    {
+      "line": 7501,
+      "section": "## 21. Diagnostics",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Runtime diagnostics SHOULD carry stable machine-readable codes:",
+      "classification": "normative"
+    },
+    {
+      "line": 7530,
+      "section": "## 22. Runtime state",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Runtime interaction state MUST NOT mutate the UI schema: selected category,\ncurrent step, accordion and Group expansion, splitter position, pending action\nstate, focus and hover, and renderer-internal widget state.",
+      "classification": "normative"
+    },
+    {
+      "line": 7534,
+      "section": "## 22. Runtime state",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Applications may persist runtime state separately. Template-local and\neditor-local state MUST NOT become form data.",
+      "classification": "normative"
+    },
+    {
+      "line": 7548,
+      "section": "## 23. Reserved portable names",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Renderer-specific namespaces MUST NOT redefine these with incompatible\nmeanings.",
+      "classification": "normative"
+    },
+    {
+      "line": 7553,
+      "section": "## 24. Examples requirement",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "An example catalogue MUST accompany this model.",
+      "classification": "normative"
+    },
+    {
+      "line": 7555,
+      "section": "## 24. Examples requirement",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Examples MUST use understandable business domains with realistic names,\nlabels, descriptions, data and constraints. Placeholder identifiers such as\n`aProp`, `x` or `z` are not acceptable.",
+      "classification": "normative"
+    },
+    {
+      "line": 7579,
+      "section": "## 25. Conformance suites",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Portable implementations MUST share machine-readable conformance vectors.",
+      "classification": "normative"
+    },
+    {
+      "line": 7592,
+      "section": "## 25. Conformance suites",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "REQUIRED"
+      ],
+      "text": "**Security conformance is REQUIRED**: prototype protection, URL policy,\nscript-evaluation gating and Markdown sanitization.",
+      "classification": "normative"
+    },
+    {
+      "line": 7597,
+      "section": "## 26. Normative requirements summary",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Implementations **MUST**:",
+      "classification": "definition"
+    },
+    {
+      "line": 7615,
+      "section": "## 26. Normative requirements summary",
+      "subsection": "### 20.1 Authoring the model in a typed language",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Implementations **SHOULD**:",
+      "classification": "definition"
+    },
+    {
+      "line": 7820,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Normal tables and AG Grid MUST use the same array feedback semantics. Show\ntranslated errors belonging to the array itself (such as minItems, maxItems,\nand uniqueItems) first. Below those messages, show a localized notice that\nitems contain errors. Show the child-error count only when\n`showValidationIndicatorCount` is explicitly enabled through the applicable UI\noptions or configuration; the default notice has no count. This notice helps\nusers discover errors hidden by pagination. Do not expand child field messages\ninto the array header tooltip. Keep navigation to the first invalid item.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7829,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Object feedback MUST include only errors belonging to the object itself, without\na child-error notice or count. A required-property error belongs to the missing\nproperty, rather than the containing object, for this purpose. When the object's\nresolved detail is a Group, place its direct-error indicator beside the group\ntitle. For a detail without a group header (such as VerticalLayout), place direct\nerror messages above the fields in the error color. This object feedback is\nseparate from independently configured validation indicators on other layout\nsections. Local field tooltips continue to show their translated validation\nmessages without a path prefix.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7839,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Implementations SHOULD reuse the validation path index and memoize direct-error\nformatting. Child summaries need only presence unless counts are requested; they\nshould not translate or format all descendant errors. Equivalent implementations\nwith better performance or correctness may be used.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7864,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "**Additional Items:** distinguish constraints on the whole tuple from errors in\nan individual trailing item. Errors such as `minItems`, `maxItems`, `uniqueItems`,\nand a forbidden tail (`additionalItems: false` in the supported positional\nschema dialect) belong to the tuple as a whole. Show their actual translated\nmessages at the tuple boundary; do not arbitrarily assign them to one trailing\nitem or repeat them on every item. A forbidden-tail message SHOULD also be\navailable beside the Additional Items heading, where corrective removal is\navailable. A constraint involving both fixed and trailing positions must retain\nits tuple-wide meaning.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7874,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "SHOULD"
+      ],
+      "text": "Errors on a specific item belong on that item's editor. When Additional Items\nis paginated, its heading SHOULD include a localized notice that trailing items\ncontain errors, including those on other pages. Include a count only when\n`showValidationIndicatorCount` is enabled; omit fixed-prefix errors from this\ntail notice. Navigation should reveal the first invalid trailing item. Keep\nerrors for omitted tuple positions discoverable at the tuple boundary.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7891,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "A `propertyNames` violation MUST be associated with the offending property name,\nnot its value editor or an unqualified message at the object boundary. For example,\n`propertyNames: { \"pattern\": \"^sensor-\", \"minLength\": 9 }` rejects `sensor-x`.\nShow an error indicator beside that name, with the translated length constraint\nin its tooltip. A name error must not imply that the numeric sensor value is\ninvalid. When the validator supplies both a specific constraint error and the\nwrapper “property name is invalid”, prefer the specific explanation and avoid\nrepeating the wrapper. Preserve key identity for empty and special-character names.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7900,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Add and Rename MUST check the full applicable property-name schema, including\nlength, pattern, enum, composition, and references supported by the validator.\nChecking only a pattern is insufficient. An unchanged existing invalid name\nmust still display its validation error when the rename dialog opens. A proposed\ninvalid name must show localized feedback beside the rename input and must not\nbe silently accepted. Duplicate-name checks must allow retaining the current\nname without bypassing its schema constraints. Preserve the original property\nand value until a valid rename is committed; cancellation must not mutate data.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7928,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Direct errors on arrays and objects",
+      "keywords": [
+        "SHOULD",
+        "SHOULD"
+      ],
+      "text": "A bound nested object SHOULD have one visual boundary containing both static\nfields and Additional Properties. When its resolved detail is a Group, that\nGroup supplies the boundary; place the dynamic-property section within it rather\nthan adding an enclosing object frame. With other detail layouts, the object\nrenderer may supply the single boundary. Additional Properties inside an object\nboundary SHOULD use spacing and a section heading without another enclosing\nborder. Independently authored nested Groups keep their own boundaries.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7948,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Choice cards",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "A Control with `options.format: \"cards\"` selects the choice-card renderer (rank\n21) when its resolved schema has `enum` or `oneOf`. Without this explicit format,\nnormal renderer selection applies. Selection MUST NOT depend on current data\nvalidity or availability of images. An enum takes precedence if both occur.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7953,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Choice cards",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "An enum or a oneOf made entirely of const branches selects a value, retaining its\nJSON type and using structural equality. Other oneOf schemas select a branch.\n`options.choices` optionally customizes entries; omitted entries use generated\nvalue labels or branch titles. An entry identifies exactly one `value` (value\nmode) or zero-based `branch` (branch mode), with optional `label`, `i18n`,\n`disabled`, `content`, `selectedContent`, and `detail`. Entries MUST identify\nexisting choices without duplicate identifiers. The i18n prefix resolves\n`<prefix>.label`, falling back to label and then the generated label. Without\nan explicit entry prefix, use `<control-prefix>.choices.<index>.label`.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7963,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Choice cards",
+      "keywords": [
+        "MUST NOT"
+      ],
+      "text": "Card content permits Label (including supported markup), ImageView, and nested\nVerticalLayout/HorizontalLayout elements. Inputs, links, buttons and executable\ntemplates MUST NOT be placed inside cards. Unsupported content falls back to the\nchoice label. Existing translation, markup sanitization and image URL policies\napply, including host opt-in for image data URLs. A textual label remains visible\nand supplies the accessible name even if an image is blocked or cannot load.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7970,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Choice cards",
+      "keywords": [
+        "MUST",
+        "MUST"
+      ],
+      "text": "The whole card selects its radio. Native or equivalent radio-group keyboard,\nfocus, disabled, and accessible-name behavior is required. Selection MUST remain\nvisible independently of image changes, using a distinct selected border. The radio circle is visually hidden by default; `options.showRadio: true`\nshows it. Hiding the circle MUST preserve radio semantics, keyboard interaction,\nand a visible focus outline on the whole card. `selectedContent` replaces content when selected; if only one is given,\nuse it for both states. A disabled choice cannot be selected by interaction.",
+      "classification": "proposal"
+    },
+    {
+      "line": 7991,
+      "section": "## Appendix A. Proposals outside v1 conformance",
+      "subsection": "### Choice cards",
+      "keywords": [
+        "MUST"
+      ],
+      "text": "Choice-card borders, backgrounds, focus outlines and error colors MUST follow the\nactive renderer theme. Branch cards accept `options.confirmation.branchChange:\n\"never\"` to suppress the destructive-switch prompt, using the shared confirmation\npolicy. This changes prompting only; branch data replacement still occurs.",
+      "classification": "proposal"
+    }
+  ]
+}

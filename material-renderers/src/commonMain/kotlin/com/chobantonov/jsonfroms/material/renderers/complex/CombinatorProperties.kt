@@ -1,12 +1,26 @@
 package com.chobantonov.jsonfroms.material.renderers.complex
 
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
 import com.chobantonov.jsonfroms.core.generators.Generate
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.util.isLayout
 import kotlinx.serialization.json.JsonObject
+
+@Composable
+internal fun CombinatorOwnErrors(message: String) {
+    if (message.isNotBlank()) Text(
+        message,
+        modifier = Modifier.semantics { error(message) },
+        color = MaterialTheme.colorScheme.error,
+    )
+}
 
 @Composable
 fun CombinatorProperties(

@@ -27,7 +27,9 @@ val CupertinoVerticalLayout = ComposeJsonFormsRenderer { props ->
         ),
     )
     if (!layoutProps.visible) return@ComposeJsonFormsRenderer
-    CupertinoLayoutRenderer(props.copy(enabled = layoutProps.enabled), layout.elements, LayoutDirection.Column)
+    CupertinoDependencyLayoutFeedback(props, layout.elements) {
+        CupertinoLayoutRenderer(props.copy(enabled = layoutProps.enabled), layout.elements, LayoutDirection.Column)
+    }
 }
 
 val cupertinoVerticalLayoutTester: RankedTester = withIncreasedRank(100, rankWith(1, uiTypeIs("VerticalLayout")))

@@ -1,8 +1,14 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.core.i18n.translateRadioUnknownValue
+import com.chobantonov.jsonfroms.core.i18n.translateControlClear
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfEnum
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
@@ -22,6 +28,7 @@ val MaterialOneOfRadioGroupControl: ComposeJsonFormsRenderer = ComposeJsonFormsR
 @Composable
 fun MaterialOneOfRadioGroupControl(
     props: ComposeJsonFormsRendererProps,
+    compact: Boolean = false,
 ) {
     val control = props.uischema as? com.chobantonov.jsonfroms.core.models.ControlElement
         ?: error("MaterialOneOfRadioGroupControl can only render Control elements")
@@ -48,11 +55,14 @@ fun MaterialOneOfRadioGroupControl(
         },
     )
 
+    var touched by remember(stateProps.path) { mutableStateOf(false) }
+    var hasReceivedFocus by remember(stateProps.path) { mutableStateOf(false) }
     MaterialRadioGroup(
+        focusKey = stateProps.path,
         label = stateProps.label,
         required = stateProps.required,
         description = stateProps.description,
-        errors = stateProps.errors,
+        errors = if (touched) stateProps.errors else stateProps.errorsBeforeTouch,
         visible = stateProps.visible,
         enabled = stateProps.enabled,
         readonly = stateProps.readonly,
@@ -60,9 +70,22 @@ fun MaterialOneOfRadioGroupControl(
         optionsMap = stateProps.uischema.options,
         options = stateProps.options,
         selectedValue = stateProps.data,
+        dataProvided = stateProps.dataProvided,
+        unknownValueLabel = translateRadioUnknownValue(props.state.jsonforms.i18n),
+        clearLabel = translateControlClear(props.state.jsonforms.i18n),
+        i18n = props.state.jsonforms.i18n,
+        onGroupFocusChanged = { hasFocus ->
+            if (hasFocus) hasReceivedFocus = true
+            else if (hasReceivedFocus) touched = true
+        },
         onSelect = { option ->
             dispatchProps.handleChange(stateProps.path, option.value)
         },
+        onClear = {
+            touched = true
+            dispatchProps.handleChange(stateProps.path, null)
+        },
+        compact = compact,
     )
 }
 

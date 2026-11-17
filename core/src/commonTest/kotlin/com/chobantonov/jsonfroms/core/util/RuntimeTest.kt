@@ -279,6 +279,36 @@ class RuntimeTest {
         assertFalse(isInherentlyReadonly(state(), uiSchema = writableRule, schema = null, rootData = data))
     }
 
+    @Test
+    fun `unrelated rules retain readonly precedence and readonly rules decide both ways`() {
+        val condition = LeafCondition(scope = "#/ruleValue", expectedValue = JsonPrimitive("bar"))
+        val matching = jsonData("bar")
+        val nonmatching = jsonData("other")
+        val readonlyOption = mapOf("readonly" to JsonPrimitive(true))
+        val visible = controlWithRule(RuleEffect.SHOW, condition).copy(options = readonlyOption)
+        val enabled = controlWithRule(RuleEffect.ENABLE, condition).copy(options = readonlyOption)
+        val writable = controlWithRule(RuleEffect.WRITABLE, condition).copy(options = readonlyOption)
+        val readonly = controlWithRule(RuleEffect.READONLY, condition)
+
+        assertTrue(isInherentlyReadonly(state(), uiSchema = visible, schema = null, rootData = matching))
+        assertFalse(isInherentlyEnabled(state(), uiSchema = visible, schema = null, rootData = matching))
+        assertFalse(isInherentlyEnabled(state(), uiSchema = enabled, schema = null, rootData = matching))
+        assertTrue(isInherentlyEnabled(state(), uiSchema = enabled, schema = null, rootData = matching,
+            config = mapOf("separateReadonlyFromDisabled" to true)))
+        assertTrue(isInherentlyReadonly(state(), uiSchema = enabled, schema = null, rootData = matching))
+
+        assertFalse(isInherentlyReadonly(state(), uiSchema = writable, schema = null, rootData = matching))
+        assertTrue(isInherentlyEnabled(state(), uiSchema = writable, schema = null, rootData = matching))
+        assertTrue(isInherentlyReadonly(state(), uiSchema = writable, schema = null, rootData = nonmatching))
+        assertFalse(isInherentlyEnabled(state(), uiSchema = writable, schema = null, rootData = nonmatching))
+        assertTrue(isInherentlyReadonly(state(), uiSchema = readonly,
+            schema = buildJsonSchema { put("readOnly", true) }, rootData = matching))
+        assertFalse(isInherentlyReadonly(state(), uiSchema = readonly,
+            schema = buildJsonSchema { put("readOnly", true) }, rootData = nonmatching))
+        assertTrue(isInherentlyReadonly(state(readonly = true), uiSchema = writable, schema = null,
+            rootData = matching))
+    }
+
     private fun control(
         options: Map<String, JsonElement> = emptyMap(),
     ): ControlElement = ControlElement(

@@ -26,6 +26,8 @@ data class CupertinoColors(
     val secondaryLabel: Color,
     val separator: Color,
     val destructive: Color,
+    /** A theme token for non-validation operation warnings. */
+    val warning: Color = Color(0xFFFF9500),
     /** A higher-contrast outline for interactive controls. */
     val controlBorder: Color = separator,
 )
@@ -61,6 +63,7 @@ fun cupertinoColors(
             secondaryLabel = Color(0xFFAEAEB2),
             separator = Color(0xFF38383A),
             destructive = Color(0xFFFF453A),
+            warning = Color(0xFFFF9F0A),
             // Native separators are translucent and disappear when used as full field outlines.
             controlBorder = Color(0xFF787880),
         )
@@ -74,6 +77,7 @@ fun cupertinoColors(
             secondaryLabel = Color(0xFF6C6C70),
             separator = Color(0xFFC6C6C8),
             destructive = Color(0xFFFF3B30),
+            warning = Color(0xFFFF9500),
             controlBorder = Color(0xFFAEAEB2),
         )
     }

@@ -86,6 +86,7 @@ interface BaseUiSchemaElement {
     val type: String
     val rule: Rule?
     val options: JsonOptions
+    val name: String? get() = null
 }
 
 sealed interface ScopedUiSchemaElement : UiSchemaElement, Scoped
@@ -125,6 +126,7 @@ data class VerticalLayout(
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
+    override val name: String? = null,
 ) : Layout {
     override val type: String = "VerticalLayout"
 }
@@ -133,6 +135,7 @@ data class HorizontalLayout(
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
+    override val name: String? = null,
 ) : Layout {
     override val type: String = "HorizontalLayout"
 }
@@ -143,6 +146,7 @@ data class GroupElement(
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
+    override val name: String? = null,
 ) : GroupLayout {
     override val type: String = "Group"
 }
@@ -152,8 +156,51 @@ data class LabelElement(
     override val i18n: String? = null,
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
 ) : UiSchemaElement, Internationalizable {
     override val type: String = "Label"
+}
+
+data class SpacerElement(
+    val size: JsonElement? = null,
+    override val rule: Rule? = null,
+    override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
+) : UiSchemaElement {
+    override val type: String = "Spacer"
+}
+
+data class SeparatorElement(
+    override val rule: Rule? = null,
+    override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
+) : UiSchemaElement {
+    override val type: String = "Separator"
+}
+
+data class LinkElement(
+    val href: String,
+    override val label: String? = null,
+    val target: String? = null,
+    val rel: String? = null,
+    override val i18n: String? = null,
+    override val rule: Rule? = null,
+    override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
+) : UiSchemaElement, Labelable<String>, Internationalizable {
+    override val type: String = "Link"
+}
+
+data class ImageViewElement(
+    val src: String? = null,
+    val scope: String? = null,
+    val alt: String? = null,
+    override val i18n: String? = null,
+    override val rule: Rule? = null,
+    override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
+) : UiSchemaElement, Internationalizable {
+    override val type: String = "ImageView"
 }
 
 data class ControlElement(
@@ -162,6 +209,7 @@ data class ControlElement(
     override val i18n: String? = null,
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
 ) : ScopedUiSchemaElement, Labelable<ControlLabel>, Internationalizable {
     override val type: String = "Control"
 }
@@ -171,6 +219,7 @@ data class ListWithDetailElement(
     override val i18n: String? = null,
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
+    override val name: String? = null,
 ) : ScopedUiSchemaElement, Internationalizable {
     override val type: String = "ListWithDetail"
 }
@@ -181,6 +230,7 @@ data class CategoryElement(
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
+    override val name: String? = null,
 ) : Category {
     override val type: String = "Category"
 }
@@ -191,6 +241,7 @@ data class CategorizationElement(
     override val rule: Rule? = null,
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
+    override val name: String? = null,
 ) : Categorization {
     override val type: String = "Categorization"
 }
@@ -201,4 +252,9 @@ data class UnknownUiSchemaElement(
     override val options: JsonOptions = emptyMap(),
     val properties: JsonObject = JsonObject(emptyMap()),
     val elements: List<UiSchemaElement> = emptyList(),
-) : UiSchemaElement
+    val elementsPresent: Boolean = false,
+    val optionsPresent: Boolean = false,
+) : UiSchemaElement {
+    override val name: String? get() = (properties["name"] as? kotlinx.serialization.json.JsonPrimitive)
+        ?.takeIf { it.isString }?.content?.takeIf { it.isNotEmpty() }
+}

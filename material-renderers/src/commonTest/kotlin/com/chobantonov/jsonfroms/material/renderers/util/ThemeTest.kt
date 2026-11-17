@@ -1,5 +1,8 @@
 package com.chobantonov.jsonfroms.material.renderers.util
 
+import com.chobantonov.jsonfroms.core.models.ControlElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -33,5 +36,27 @@ class ThemeTest {
             assertEquals(explicit.primaryContainer, default.primaryContainer)
             assertEquals(explicit.onPrimaryContainer, default.onPrimaryContainer)
         }
+    }
+
+    @Test
+    fun materialInputStyleUsesItsOwnNamespaceAndPreservesPortableVariant() {
+        val global = mapOf<String, Any?>("jsonformsExtended" to mapOf(
+            "material" to mapOf("inputVariant" to "filled"),
+        ))
+        val local = ControlElement("#/properties/name", options = mapOf(
+            "variant" to JsonPrimitive("otp"),
+            "material" to JsonObject(mapOf("inputVariant" to JsonPrimitive("standard"))),
+        ))
+        assertEquals(MaterialInputVariant.Standard, useInputVariant(global, local))
+        assertEquals(MaterialInputVariant.Filled, useInputVariant(global,
+            local.copy(options = mapOf("variant" to JsonPrimitive("otp")))))
+        assertEquals(MaterialInputVariant.Outlined, useInputVariant(
+            mapOf("variant" to "filled"),
+            local.copy(options = mapOf("variant" to JsonPrimitive("filled"))),
+        ))
+        assertEquals(MaterialInputVariant.Outlined, useInputVariant(emptyMap(),
+            local.copy(options = mapOf("material" to JsonObject(mapOf(
+                "inputVariant" to JsonPrimitive(false),
+            ))))))
     }
 }

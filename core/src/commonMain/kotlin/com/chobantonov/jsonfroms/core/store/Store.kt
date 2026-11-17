@@ -86,6 +86,8 @@ data class JsonFormsUISchemaRegistryEntry(
 data class JsonFormsCellRendererRegistryEntry<T>(
     val tester: RankedTester,
     val cell: T,
+    /** True when the cell itself exposes its localized validation feedback. */
+    val ownsValidationFeedback: Boolean = false,
 )
 
 data class JsonFormsExtendedState<T>(

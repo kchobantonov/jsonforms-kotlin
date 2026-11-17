@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 @Composable
 fun UnknownRenderer(
     type: String,
+    message: String? = null,
 ) {
-    Text("No applicable $type found.")
+    Text(message ?: "No applicable $type found.")
 }

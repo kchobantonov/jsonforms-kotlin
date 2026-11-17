@@ -11,14 +11,14 @@ object JsonPointer {
         }
 
         val normalized = pointer.removePrefix("#")
-        if (normalized.isBlank() || normalized == "/") {
+        if (normalized.isEmpty()) {
             return root
         }
 
         var current: JsonElement? = root
         normalized
+            .removePrefix("/")
             .split('/')
-            .filter { it.isNotEmpty() }
             .map(::decode)
             .forEach { segment ->
                 current = when (val value = current) {

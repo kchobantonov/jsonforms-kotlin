@@ -5,6 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.TimeZone
+import kotlinx.serialization.json.JsonPrimitive
 
 class TemporalFormatsTest {
     @Test
@@ -16,9 +18,16 @@ class TemporalFormatsTest {
 
     @Test
     fun formatsJsonSchemaTimeForDisplay() {
-        val value = assertNotNull(parseTimeValue("13:37:00", listOf(DEFAULT_TIME_SAVE_FORMAT)))
+        val value = assertNotNull(parseTimeValue("13:37:00Z", listOf(DEFAULT_TIME_SAVE_FORMAT)))
 
         assertEquals("1:37 PM", formatTemporal(value, DEFAULT_TIME_DISPLAY_FORMAT))
+        assertEquals("13:37:00Z", formatTemporal(value, DEFAULT_TIME_SAVE_FORMAT))
+    }
+
+    @Test fun normalizesImportedOffsetTimeForUtcWallClockPicker() {
+        val value = assertNotNull(parseTimeValue("10:30:00+01:00", listOf(DEFAULT_TIME_SAVE_FORMAT)))
+        assertEquals("9:30 AM", formatTemporal(value, DEFAULT_TIME_DISPLAY_FORMAT))
+        assertEquals("09:30:00Z", formatTemporal(value, DEFAULT_TIME_SAVE_FORMAT))
     }
 
     @Test
@@ -53,7 +62,25 @@ class TemporalFormatsTest {
     }
 
     @Test
+    fun temporalBooleanOptionsRequireBooleanJsonValues() {
+        assertEquals(false, mapOf("mask" to JsonPrimitive(false)).booleanOption("mask"))
+        assertEquals(true, mapOf("mask" to JsonPrimitive(true)).booleanOption("mask"))
+        assertEquals(null, mapOf("mask" to JsonPrimitive("false")).booleanOption("mask"))
+        assertEquals(null, mapOf("mask" to JsonPrimitive("true")).booleanOption("mask"))
+    }
+
+    @Test
     fun invalidExistingValuesCanStillBeDeleted() {
         assertEquals(true, isAllowedTemporalEdit("bad value", "bad valu", DEFAULT_DATE_DISPLAY_FORMAT))
+    }
+
+    @Test fun bracketLiteralsDoNotBecomeStoredBracketsOrFormatTokens() {
+        val value = TemporalValue(2025, 10, 14, 9, 30, 37)
+        val format = "YYYY/MM/DD [at] HH:mm:ss[Z]"
+        val encoded = "2025/10/14 at 09:30:37Z"
+        assertEquals(encoded, formatTemporal(value, format, TimeZone.UTC))
+        assertEquals(value, parseDateTimeValue(encoded, listOf(format), TimeZone.UTC))
+        assertEquals(true, isAllowedTemporalInput(encoded, format))
+        assertEquals(false, isAllowedTemporalInput("2025/10/14 [at] 09:30:37[Z]", format))
     }
 }

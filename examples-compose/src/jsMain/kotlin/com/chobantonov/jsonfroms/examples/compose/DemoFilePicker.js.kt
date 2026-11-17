@@ -1,6 +1,9 @@
 package com.chobantonov.jsonfroms.examples.compose
 
-import com.chobantonov.jsonfroms.extended.renderers.ExtendedFilePicker
-import com.chobantonov.jsonfroms.extended.renderers.browserFilePicker
+import androidx.compose.runtime.Composable
 
-internal actual fun createDemoFilePicker(): ExtendedFilePicker? = browserFilePicker()
+import com.chobantonov.jsonfroms.extended.renderers.ExtendedFilePickerEvents
+import com.chobantonov.jsonfroms.extended.renderers.browserFilePickerEvents
+
+@Composable
+internal actual fun createDemoFilePicker(): ExtendedFilePickerEvents? = browserFilePickerEvents()

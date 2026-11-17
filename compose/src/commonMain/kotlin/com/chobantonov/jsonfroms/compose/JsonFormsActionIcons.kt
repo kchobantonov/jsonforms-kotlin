@@ -7,12 +7,14 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 
 object JsonFormsActionIcons {
     val Add = Icons.Filled.Add
+    val Remove = Icons.Filled.Remove
     val Rename = Icons.Filled.Edit
     val Delete = Icons.Filled.Delete
     val Confirm = Icons.Filled.Check

@@ -1,5 +1,6 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,9 +18,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
+import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
+import com.chobantonov.jsonfroms.core.mappers.computeLabel
+import com.chobantonov.jsonfroms.core.mappers.invalidStringStoredValue
+import com.chobantonov.jsonfroms.core.mappers.isDescriptionHidden
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.JsonSchemaType
 import com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue
@@ -28,6 +41,8 @@ import com.chobantonov.jsonfroms.core.testers.and
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.testers.schemaMatches
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
+import com.chobantonov.jsonfroms.core.util.acceptsRestrictedStringEdit
+import com.chobantonov.jsonfroms.core.util.resolveRestrict
 import com.chobantonov.jsonfroms.material.renderers.util.MaterialInputVariant
 import com.chobantonov.jsonfroms.material.renderers.util.useInputVariant
 import kotlinx.serialization.json.JsonPrimitive
@@ -58,14 +73,43 @@ fun MaterialAnyOfStringOrEnumControl(
         .orEmpty()
         .mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
     val appliedOptions = controlProps.config + controlProps.uischema.options
+    val hideRequiredAsterisk = strictControlBooleanOption(appliedOptions, "hideRequiredAsterisk") == true
+    val showUnfocusedDescription = strictControlBooleanOption(appliedOptions, "showUnfocusedDescription") == true
+    val enabled = controlProps.enabled && !controlProps.readonly
+    val focusRequester = rememberInitialControlFocusRequester(controlProps.path, appliedOptions, enabled)
     val maxLength = stringSchema?.maxLength
-    val restrict = appliedOptions["restrict"].toBooleanStrictOrNullCompat() ?: false
+    val restrict = resolveRestrict(
+        controlProps.uischema.options["restrict"], controlProps.config)
     val trim = appliedOptions["trim"].toBooleanStrictOrNullCompat() ?: false
     val variant = useInputVariant(controlProps.config, controlProps.uischema)
     val committedValue = bindings.stateProps.data.toMaterialInputString()
+    val invalidStatus = invalidStringStoredValue(bindings.stateProps.data,
+        bindings.stateProps.dataProvided)?.let {
+        "${translateControlInvalidValue(props.state.jsonforms.i18n)}: $it"
+    }
     var draftValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     var lastCommittedValue by remember(bindings.stateProps.path) { mutableStateOf(committedValue) }
     var expanded by remember(bindings.stateProps.path) { mutableStateOf(false) }
+    var hasReceivedFocus by remember(bindings.stateProps.path) { mutableStateOf(false) }
+    var touched by remember(bindings.stateProps.path) { mutableStateOf(false) }
+    var focused by remember(bindings.stateProps.path) { mutableStateOf(false) }
+    val visibleError = if (touched) controlProps.errors else controlProps.errorsBeforeTouch
+    val visibleDescription = controlProps.description?.takeIf {
+        !isDescriptionHidden(controlProps.visible, it, focused, showUnfocusedDescription)
+    }
+    val requiredState = translateControlRequired(props.state.jsonforms.i18n).takeIf { controlProps.required }
+    val accessibleState = listOfNotNull(requiredState, invalidStatus, visibleDescription).joinToString(". ")
+    val accessibleError = listOfNotNull(invalidStatus, visibleError.takeIf(String::isNotBlank))
+        .distinct().joinToString(". ")
+    val label = computeLabel(controlProps.label, controlProps.required, hideRequiredAsterisk)
+    val supportingText: (@Composable () -> Unit)? =
+        if (accessibleError.isNotBlank() || visibleDescription != null) {{
+            Column {
+                if (invalidStatus != null) Text(invalidStatus)
+                if (visibleError.isNotBlank()) Text(visibleError)
+                if (visibleDescription != null) Text(visibleDescription)
+            }
+        }} else null
 
     LaunchedEffect(committedValue) {
         if (committedValue != lastCommittedValue) {
@@ -77,7 +121,28 @@ fun MaterialAnyOfStringOrEnumControl(
     val filteredOptions = enumOptions.filter { option ->
         option.contains(draftValue, ignoreCase = true) && option != draftValue
     }
-    val modifier = if (!trim || maxLength == null) Modifier.fillMaxWidth() else Modifier
+    fun updateDraft(value: String) {
+        if (!acceptsRestrictedStringEdit(
+                draftValue, value, maxLength, restrict)) return
+        draftValue = value
+        lastCommittedValue = value
+        expanded = enumOptions.any { it.contains(value, ignoreCase = true) && it != value }
+        bindings.dispatchProps.handleChange(
+            bindings.stateProps.path,
+            value.takeIf(String::isNotEmpty)?.let(::JsonPrimitive),
+        )
+    }
+    val modifier = (if (!trim || maxLength == null) Modifier.fillMaxWidth() else Modifier)
+        .focusRequester(focusRequester)
+        .onFocusChanged { focusState ->
+            focused = focusState.isFocused
+            if (focusState.isFocused) hasReceivedFocus = true
+            else if (hasReceivedFocus) touched = true
+        }
+        .semantics {
+            if (accessibleState.isNotBlank()) stateDescription = accessibleState
+            if (accessibleError.isNotBlank()) error(accessibleError)
+        }
 
     ExposedDropdownMenuBox(
         expanded = expanded && filteredOptions.isNotEmpty() && controlProps.enabled && !controlProps.readonly,
@@ -93,32 +158,17 @@ fun MaterialAnyOfStringOrEnumControl(
                         enabled = controlProps.enabled && !controlProps.readonly,
                     ),
                     value = draftValue,
-                    onValueChange = { value ->
-                        val nextValue = if (restrict && maxLength != null) value.take(maxLength) else value
-                        draftValue = nextValue
-                        lastCommittedValue = nextValue
-                        expanded = filteredOptions.isNotEmpty()
-                        bindings.dispatchProps.handleChange(
-                            bindings.stateProps.path,
-                            nextValue.takeIf(String::isNotEmpty)?.let(::JsonPrimitive),
-                        )
-                    },
+                    onValueChange = ::updateDraft,
                     enabled = controlProps.enabled && !controlProps.readonly,
                     readOnly = controlProps.readonly,
-                    isError = controlProps.errors.isNotBlank(),
+                    isError = accessibleError.isNotBlank(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    label = if (controlProps.label.isNotBlank()) {
-                        { Text(controlProps.label) }
+                    label = if (label.isNotBlank()) {
+                        { Text(label) }
                     } else {
                         null
                     },
-                    supportingText = if (controlProps.errors.isNotBlank()) {
-                        { Text(controlProps.errors) }
-                    } else if (!controlProps.description.isNullOrBlank()) {
-                        { Text(controlProps.description!!) }
-                    } else {
-                        null
-                    },
+                    supportingText = supportingText,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
                     },
@@ -134,32 +184,17 @@ fun MaterialAnyOfStringOrEnumControl(
                         enabled = controlProps.enabled && !controlProps.readonly,
                     ),
                     value = draftValue,
-                    onValueChange = { value ->
-                        val nextValue = if (restrict && maxLength != null) value.take(maxLength) else value
-                        draftValue = nextValue
-                        lastCommittedValue = nextValue
-                        expanded = filteredOptions.isNotEmpty()
-                        bindings.dispatchProps.handleChange(
-                            bindings.stateProps.path,
-                            nextValue.takeIf(String::isNotEmpty)?.let(::JsonPrimitive),
-                        )
-                    },
+                    onValueChange = ::updateDraft,
                     enabled = controlProps.enabled && !controlProps.readonly,
                     readOnly = controlProps.readonly,
-                    isError = controlProps.errors.isNotBlank(),
+                    isError = accessibleError.isNotBlank(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    label = if (controlProps.label.isNotBlank()) {
-                        { Text(controlProps.label) }
+                    label = if (label.isNotBlank()) {
+                        { Text(label) }
                     } else {
                         null
                     },
-                    supportingText = if (controlProps.errors.isNotBlank()) {
-                        { Text(controlProps.errors) }
-                    } else if (!controlProps.description.isNullOrBlank()) {
-                        { Text(controlProps.description!!) }
-                    } else {
-                        null
-                    },
+                    supportingText = supportingText,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
                     },

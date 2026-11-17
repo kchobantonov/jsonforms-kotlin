@@ -2,8 +2,20 @@ package com.chobantonov.jsonfroms.material.renderers
 
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
+import com.chobantonov.jsonfroms.compose.asRendererProps
+import com.chobantonov.jsonfroms.compose.ComposeSpacerRenderer
+import com.chobantonov.jsonfroms.compose.composeSpacerTester
 import com.chobantonov.jsonfroms.core.store.JsonFormsCellRendererRegistryEntry
 import com.chobantonov.jsonfroms.core.store.JsonFormsRendererRegistryEntry
+import com.chobantonov.jsonfroms.core.testers.plainStringCellTester
+import com.chobantonov.jsonfroms.core.testers.plainNumericCellTester
+import com.chobantonov.jsonfroms.core.testers.plainEnumCellTester
+import com.chobantonov.jsonfroms.core.testers.plainOneOfEnumCellTester
+import com.chobantonov.jsonfroms.core.testers.plainConstCellTester
+import com.chobantonov.jsonfroms.core.testers.radioChoiceCellTester
+import com.chobantonov.jsonfroms.core.testers.sliderCellTester
+import com.chobantonov.jsonfroms.core.testers.plainTemporalCellTester
+import com.chobantonov.jsonfroms.core.testers.plainPasswordCellTester
 import com.chobantonov.jsonfroms.material.renderers.additional.MaterialLabelRenderer
 import com.chobantonov.jsonfroms.material.renderers.additional.MaterialListWithDetailRenderer
 import com.chobantonov.jsonfroms.material.renderers.additional.materialLabelRendererTester
@@ -12,11 +24,17 @@ import com.chobantonov.jsonfroms.material.renderers.complex.MaterialAllOfRendere
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialAnyOfRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialArrayControlRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialEnumArrayRenderer
+import com.chobantonov.jsonfroms.material.renderers.complex.MaterialMultiSelectRenderer
+import com.chobantonov.jsonfroms.material.renderers.complex.MaterialChipsRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialMixedRenderer
+import com.chobantonov.jsonfroms.material.renderers.complex.MaterialTupleRenderer
+import com.chobantonov.jsonfroms.material.renderers.complex.materialTupleTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialArrayControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialAllOfControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialAnyOfControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialEnumArrayRendererTester
+import com.chobantonov.jsonfroms.material.renderers.complex.materialMultiSelectTester
+import com.chobantonov.jsonfroms.material.renderers.complex.materialChipsTester
 import com.chobantonov.jsonfroms.material.renderers.complex.materialMixedControlTester
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialObjectRenderer
 import com.chobantonov.jsonfroms.material.renderers.complex.MaterialOneOfRenderer
@@ -38,6 +56,14 @@ import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPasswordCon
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialRadioGroupControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialSliderControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialTextControl
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPlainTextCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPlainNumericCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPlainEnumCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPlainOneOfEnumCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPlainRadioCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialSliderCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialTemporalCell
+import com.chobantonov.jsonfroms.material.renderers.controls.MaterialPasswordCell
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialTimeControl
 import com.chobantonov.jsonfroms.material.renderers.controls.materialAnyOfStringOrEnumControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialBooleanControlTester
@@ -56,6 +82,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.materialRadioGroupC
 import com.chobantonov.jsonfroms.material.renderers.controls.materialSliderControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialTextControlTester
 import com.chobantonov.jsonfroms.material.renderers.controls.materialTimeControlTester
+import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialCategorizationAccordionLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialCategorizationLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialCategorizationStepperLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialArrayLayoutRenderer
@@ -63,6 +90,7 @@ import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialGroupLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialHorizontalLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.MaterialVerticalLayout
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialArrayLayoutTester
+import com.chobantonov.jsonfroms.material.renderers.layouts.materialCategorizationAccordionTester
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialCategorizationTester
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialCategorizationStepperTester
 import com.chobantonov.jsonfroms.material.renderers.layouts.materialGroupTester
@@ -123,6 +151,10 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
         renderer = MaterialNumberControl,
     ),
     JsonFormsRendererRegistryEntry(
+        tester = materialTupleTester,
+        renderer = MaterialTupleRenderer,
+    ),
+    JsonFormsRendererRegistryEntry(
         tester = materialArrayControlTester,
         renderer = MaterialArrayControlRenderer,
     ),
@@ -167,6 +199,10 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
         renderer = MaterialTimeControl,
     ),
     JsonFormsRendererRegistryEntry(
+        tester = materialCategorizationAccordionTester,
+        renderer = MaterialCategorizationAccordionLayout,
+    ),
+    JsonFormsRendererRegistryEntry(
         tester = materialCategorizationStepperTester,
         renderer = MaterialCategorizationStepperLayout,
     ),
@@ -177,6 +213,10 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
     JsonFormsRendererRegistryEntry(
         tester = materialLabelRendererTester,
         renderer = MaterialLabelRenderer,
+    ),
+    JsonFormsRendererRegistryEntry(
+        tester = composeSpacerTester,
+        renderer = ComposeSpacerRenderer,
     ),
     JsonFormsRendererRegistryEntry(
         tester = materialListWithDetailTester,
@@ -198,6 +238,37 @@ val materialRenderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRende
         tester = materialVerticalLayoutTester,
         renderer = MaterialVerticalLayout,
     ),
+    JsonFormsRendererRegistryEntry(
+        tester = materialMultiSelectTester,
+        renderer = MaterialMultiSelectRenderer,
+    ),
+    JsonFormsRendererRegistryEntry(
+        tester = materialChipsTester,
+        renderer = MaterialChipsRenderer,
+    ),
 )
 
-val materialCells: List<JsonFormsCellRendererRegistryEntry<ComposeJsonFormsCellRenderer>> = emptyList()
+val materialCells: List<JsonFormsCellRendererRegistryEntry<ComposeJsonFormsCellRenderer>> = listOf(
+    JsonFormsCellRendererRegistryEntry(materialBooleanToggleControlTester,
+        ComposeJsonFormsCellRenderer { MaterialBooleanToggleControl(it.asRendererProps(), compact = true) }),
+    JsonFormsCellRendererRegistryEntry(materialBooleanControlTester,
+        ComposeJsonFormsCellRenderer { MaterialBooleanControl(it.asRendererProps(), compact = true) }),
+    JsonFormsCellRendererRegistryEntry(plainStringCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainTextCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainNumericCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainNumericCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainEnumCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainEnumCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainOneOfEnumCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainOneOfEnumCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainConstCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainEnumCell(it) }),
+    JsonFormsCellRendererRegistryEntry(radioChoiceCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPlainRadioCell(it) }),
+    JsonFormsCellRendererRegistryEntry(sliderCellTester,
+        ComposeJsonFormsCellRenderer { MaterialSliderCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainTemporalCellTester,
+        ComposeJsonFormsCellRenderer { MaterialTemporalCell(it) }),
+    JsonFormsCellRendererRegistryEntry(plainPasswordCellTester,
+        ComposeJsonFormsCellRenderer { MaterialPasswordCell(it) }),
+)

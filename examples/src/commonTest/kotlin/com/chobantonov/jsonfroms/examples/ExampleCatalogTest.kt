@@ -2,14 +2,69 @@ package com.chobantonov.jsonfroms.examples
 
 import com.chobantonov.jsonfroms.core.models.Categorization
 import com.chobantonov.jsonfroms.core.models.Layout
+import com.chobantonov.jsonfroms.core.models.HorizontalLayout
+import com.chobantonov.jsonfroms.core.models.JsonSchema
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement
+import com.chobantonov.jsonfroms.core.models.VerticalLayout
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
+import com.chobantonov.jsonfroms.core.validation.OptimumCodeJsonSchemaValidator
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ExampleCatalogTest {
+    @Test
+    fun builtInExamplesHaveFeatureGroupsWithoutChangingTheirStableIds() {
+        val examples = getBuiltInExamples()
+        assertEquals(upstreamExampleNames + specSnapshotExampleNames,
+            examples.map(ExampleDescription::name).toSet())
+        assertTrue(examples.none { it.featureGroup == ExampleFeatureGroup.Other },
+            examples.filter { it.featureGroup == ExampleFeatureGroup.Other }.joinToString { it.name })
+        assertEquals(ExampleFeatureGroup.Collections,
+            examples.first { it.name == "spec-collection-pagination" }.featureGroup)
+        assertEquals(ExampleFeatureGroup.Collections,
+            examples.first { it.name == "array-with-detail" }.featureGroup)
+        assertEquals(ExampleFeatureGroup.Internationalization,
+            examples.first { it.name == "spec-label-interpolation" }.featureGroup)
+    }
+
+    @Test
+    fun builtInExamplesLinkToTheirPinnedSourceFiles() {
+        val examples = getBuiltInExamples()
+        assertTrue(examples.all { it.sourceUrl != null })
+        assertEquals(
+            "https://github.com/kchobantonov/jsonforms/blob/$upstreamExamplesCommit/" +
+                "packages/examples/src/examples/arrays.ts",
+            examples.first { it.name == "array" }.sourceUrl,
+        )
+        assertEquals(
+            "https://github.com/kchobantonov/jsonforms-extended-spec/tree/$specExamplesCommit/" +
+                "examples/additional-properties",
+            examples.first { it.name == "spec-additional-properties" }.sourceUrl,
+        )
+    }
+
+    @Test
+    fun adaptedSpecExamplesDeclareEnglishAndBulgarianCapabilityNotices() {
+        val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
+        val adapted = setOf("additional-errors", "destructive-confirmation", "array-controls",
+            "kitchen-sink", "job-application", "file-control", "table-row-details")
+        adapted.forEach { id ->
+            val notice = examples.getValue("spec-$id").capabilityNotice
+            assertEquals(setOf("en", "bg"), notice.keys)
+            assertTrue(notice.values.all(String::isNotBlank))
+        }
+        assertTrue(examples.getValue("spec-additional-properties").capabilityNotice.isEmpty())
+        assertTrue(examples.getValue("array").capabilityNotice.isEmpty())
+    }
+
     @Test
     fun builtInCatalogContainsUpstreamAndPortableSpecExamples() {
         val examples = getBuiltInExamples()
@@ -27,11 +82,106 @@ class ExampleCatalogTest {
         assertNotNull(nestedValidation.uischema)
         assertEquals("http://json-schema.org/draft-07/schema#",
             examples.first { it.name == "mixed-object" }.schema?.schemaUri)
-        assertEquals(39, specSnapshotExampleNames.size)
+        assertEquals(46, specSnapshotExampleNames.size)
+        assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-array-controls" }.localizedTranslations.keys)
+        assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-kitchen-sink" }.localizedTranslations.keys)
+        assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-job-application" }.localizedTranslations.keys)
+        assertEquals("Personal Information", examples.first { it.name == "spec-job-application" }
+            .localizedTranslations.getValue("en").getValue("static-text.category.personal-information"))
+        assertEquals("Лична информация", examples.first { it.name == "spec-job-application" }
+            .localizedTranslations.getValue("bg").getValue("static-text.category.personal-information"))
+        val kitchen = examples.first { it.name == "spec-kitchen-sink" }
+        assertNotNull(kitchen.invalidData)
+        assertEquals(kitchen.data.jsonObject.getValue("gridTeam"),
+            kitchen.invalidData.jsonObject.getValue("gridTeam"))
         assertTrue(specSnapshotExampleNames.none { it in setOf(
-            "spec-ag-grid", "spec-code-editor", "spec-template-layout", "spec-template-slots",
-            "spec-job-application", "spec-kitchen-sink", "spec-array-controls",
+            "spec-ag-grid", "spec-code-editor", "spec-template-layout",
         ) })
+    }
+
+    @Test
+    fun portableAdditionalErrorsFixtureRetainsHostActionsAndTwoLocales() {
+        val example = getBuiltInExamples().first { it.name == "spec-additional-errors" }
+        assertEquals(setOf("en", "bg"), example.localizedTranslations.keys)
+        val layout = example.uischema as VerticalLayout
+        val buttons = (layout.elements[1] as HorizontalLayout).elements.map { it as UnknownUiSchemaElement }
+        assertEquals(listOf("reportServer", "clearServer"), buttons.map {
+            (it.properties["action"] as JsonPrimitive).content
+        })
+        assertFalse(example.data.toString().contains("policy"))
+    }
+
+    @Test
+    fun nestedSpecTranslationsHonorLiteralDottedKeys() {
+        val example = parseSpecExamples("""[{"name":"spec-nested","label":"Nested","data":{},"translations":{"en":{"group":{"title":"Nested","deep":{"label":"Deep"}},"group.title":"Literal","group.deep.label":"Direct"}}}]""").single()
+        assertEquals("Literal", example.localizedTranslations.getValue("en").getValue("group.title"))
+        assertEquals("Direct", example.localizedTranslations.getValue("en").getValue("group.deep.label"))
+        assertFailsWith<IllegalArgumentException> {
+            parseSpecExamples("""[{"name":"bad","label":"Bad","translations":{"en":{"label":true}}}]""")
+        }
+    }
+
+    @Test
+    fun schemaPathTranslationsExposeFieldAliasesWithoutOverridingAuthoredKeys() {
+        val example = getBuiltInExamples().first { it.name == "spec-container-validation-indicator" }
+        val bulgarian = example.localizedTranslations.getValue("bg")
+        assertEquals("Сертификат", bulgarian["certifications.name.label"])
+        assertEquals("Валиден до", bulgarian["certifications.expiresOn.label"])
+        assertEquals("Сертификати", bulgarian["certifications.label"])
+
+        val authored = parseSpecExamples("""[{"name":"alias","label":"Alias","translations":{"en":{
+          "form.schema.properties.rows.items.properties.name.label":"Schema name",
+          "rows.name.label":"Authored name"
+        }}}]""").single()
+        assertEquals("Authored name", authored.localizedTranslations.getValue("en")["rows.name.label"])
+    }
+
+    @Test
+    fun portableKitchenSinkInvalidSampleReportsItsNinePaths() {
+        val example = getBuiltInExamples().first { it.name == "spec-kitchen-sink" }
+        val errors = OptimumCodeJsonSchemaValidator().compile(example.schema!!)
+            .validate(example.invalidData!!)
+        assertEquals(setOf(
+            "/email", "/phone", "/otp", "/address/city", "/age", "/budget",
+            "/startDate", "/team/4/email", "/experience/0/company",
+        ), errors.map { it.instancePath }.toSet())
+    }
+
+    @Test
+    fun importedDetailRegistriesEvaluateDeclaredSchemaMatches() {
+        val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
+        val address = examples.getValue("spec-object-control").uischemas.first().tester
+        val addressSchema = JsonSchema(Json.parseToJsonElement("""{"title":"Address"}""") as JsonObject)
+        val otherSchema = JsonSchema(Json.parseToJsonElement("""{"title":"Other"}""") as JsonObject)
+        assertEquals(10, address(addressSchema, "", ""))
+        assertEquals(-1, address(otherSchema, "", ""))
+
+        val choice = examples.getValue("spec-choice-controls").uischemas.first().tester
+        val emailSchema = JsonSchema(Json.parseToJsonElement("""{"properties":{"address":{"format":"email"}}}""") as JsonObject)
+        assertEquals(10, choice(emailSchema, "#/properties/cardContact", ""))
+        assertEquals(-1, choice(emailSchema, "#/properties/other", ""))
+    }
+
+    @Test
+    fun unknownDetailRegistryMatchFieldIsRejected() {
+        assertFailsWith<IllegalArgumentException> {
+            parseSpecExamples("""[{"name":"spec-unknown-match","label":"Unknown","data":{},"uischemas":[{"match":{"rank":10,"surprise":true},"uischema":{"type":"VerticalLayout"}}]}]""")
+        }
+    }
+
+    @Test
+    fun importedTemplateFixtureRetainsItsNamedRegistry() {
+        val example = getBuiltInExamples().first { it.name == "spec-template-slots" }
+        assertEquals(listOf("contact-card", "nested-card"), example.uischemas.map { it.uischema.name })
+        assertEquals(-1, example.uischemas.first().tester(null, "", ""))
+        assertNotNull(example.uischema)
+    }
+
+    @Test
+    fun specSnapshotRetainsNamedTemplateRegistryWithoutRankingIt() {
+        val example = parseSpecExamples("""[{"name":"spec-template","label":"Template","data":{},"uischema":{"type":"Template","name":"card"},"uischemas":[{"uischema":{"type":"Group","name":"card","elements":[{"type":"Slot","name":"body"}]}}]}]""").single()
+        assertEquals("card", example.uischemas.single().uischema.name)
+        assertEquals(-1, example.uischemas.single().tester(null, "", ""))
     }
 
     @Test
@@ -81,7 +231,7 @@ class ExampleCatalogTest {
         val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
 
         listOf("i18n", "enum-i18n", "array-i18n", "additional-properties").forEach { name ->
-            assertEquals(setOf("en", "de", "bg"), examples.getValue(name).localizedTranslations.keys)
+            assertEquals(setOf("en", "bg"), examples.getValue(name).localizedTranslations.keys)
         }
     }
 

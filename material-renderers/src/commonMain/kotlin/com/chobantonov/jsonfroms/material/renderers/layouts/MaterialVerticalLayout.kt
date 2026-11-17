@@ -35,11 +35,13 @@ fun MaterialVerticalLayout(
         ),
     )
     if (!layoutProps.visible) return
-    MaterialLayoutRenderer(
-        props = props.copy(enabled = layoutProps.enabled),
-        elements = layout.elements,
-        direction = LayoutDirection.Column,
-    )
+    MaterialDependencyLayoutFeedback(props, layout.elements) {
+        MaterialLayoutRenderer(
+            props = props.copy(enabled = layoutProps.enabled),
+            elements = layout.elements,
+            direction = LayoutDirection.Column,
+        )
+    }
 }
 
 val materialVerticalLayoutTester: RankedTester = rankWith(

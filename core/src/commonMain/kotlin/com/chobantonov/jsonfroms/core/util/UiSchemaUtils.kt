@@ -16,7 +16,7 @@ import com.chobantonov.jsonfroms.core.models.ScopedUiSchemaElement
 import com.chobantonov.jsonfroms.core.models.StringControlLabel
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
 import com.chobantonov.jsonfroms.core.models.VerticalLayout
-import kotlinx.serialization.json.JsonArray
+import com.chobantonov.jsonfroms.core.models.toUiSchemaElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -164,7 +164,27 @@ fun getFirstPrimitiveProp(schema: JsonSchema?): String? {
 }
 
 fun getDetailUiSchema(uiSchema: UiSchemaElement): UiSchemaElement? =
-    (uiSchema.options["detail"] as? JsonObject)?.let(::jsonObjectToUiSchema)
+    (uiSchema.options["detail"] as? JsonObject)
+        ?.takeIf { (it["type"] as? JsonPrimitive)?.isString == true }
+        ?.let(::jsonObjectToUiSchema)
+
+/** Resolves the authored detail mode before consulting the registry. */
+fun resolveDetailUiSchema(
+    uiSchema: UiSchemaElement,
+    registered: () -> UiSchemaElement?,
+    generated: () -> UiSchemaElement,
+): UiSchemaElement {
+    getDetailUiSchema(uiSchema)?.let { return it }
+    val mode = (uiSchema.options["detail"] as? JsonPrimitive)
+        ?.takeIf { it.isString }?.content
+    if (mode?.equals("GENERATE", ignoreCase = true) == true) {
+        val fallback = generated()
+        return if (fallback is ControlElement) fallback.copy(
+            options = fallback.options + ("detail" to JsonPrimitive("GENERATE")),
+        ) else fallback
+    }
+    return registered() ?: generated()
+}
 
 private fun uiSchemaElements(uiSchema: UiSchemaElement): List<UiSchemaElement> =
     when (uiSchema) {
@@ -208,39 +228,8 @@ private fun mapUiSchema(
         else -> transformLeaf(uiSchema)
     }
 
-private fun jsonObjectToUiSchema(element: JsonObject): UiSchemaElement? {
-    val type = (element["type"] as? JsonPrimitive)?.content ?: return null
-    return when (type) {
-        "Control" -> {
-            val scope = (element["scope"] as? JsonPrimitive)?.content ?: return null
-            ControlElement(
-                scope = scope,
-                options = (element["options"] as? JsonObject).orEmpty(),
-            )
-        }
-        "Label" -> {
-            val text = (element["text"] as? JsonPrimitive)?.content ?: return null
-            LabelElement(text = text)
-        }
-        "VerticalLayout" -> VerticalLayout(elements = element.uiSchemaElements())
-        "HorizontalLayout" -> HorizontalLayout(elements = element.uiSchemaElements())
-        "Group" -> GroupElement(
-            label = (element["label"] as? JsonPrimitive)?.content,
-            elements = element.uiSchemaElements(),
-        )
-        else -> com.chobantonov.jsonfroms.core.models.UnknownUiSchemaElement(
-            type = type,
-            options = (element["options"] as? JsonObject).orEmpty(),
-            properties = JsonObject(element.filterKeys { it !in setOf("type", "options", "elements") }),
-            elements = element.uiSchemaElements(),
-        )
-    }
-}
-
-private fun JsonObject.uiSchemaElements(): List<UiSchemaElement> =
-    (this["elements"] as? JsonArray)
-        ?.mapNotNull { child -> (child as? JsonObject)?.let(::jsonObjectToUiSchema) }
-        .orEmpty()
+private fun jsonObjectToUiSchema(element: JsonObject): UiSchemaElement? =
+    runCatching { element.toUiSchemaElement() }.getOrNull()
 
 private fun deriveLabel(
     controlElement: ControlElement,

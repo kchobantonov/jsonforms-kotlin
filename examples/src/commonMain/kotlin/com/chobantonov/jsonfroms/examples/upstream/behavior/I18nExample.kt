@@ -56,21 +56,6 @@ val i18nEnglishTranslations = mapOf(
     "nationality.Other" to "Other",
 )
 
-val i18nGermanTranslations = mapOf(
-    "basicInfoGroup.label" to "Grundinformationen",
-    "additionalInformationLabel" to "Zusätzliche Informationen",
-    "name.label" to "Name",
-    "birthDate.label" to "Geburtsdatum",
-    "nationality.label" to "Nationalität",
-    "vegetarian.label" to "Vegetarisch",
-    "nationality.DE" to "Deutschland",
-    "nationality.IT" to "Italien",
-    "nationality.JP" to "Japan",
-    "nationality.US" to "Vereinigte Staaten",
-    "nationality.RU" to "Russland",
-    "nationality.Other" to "Andere",
-)
-
 val i18nBulgarianTranslations = mapOf(
     "basicInfoGroup.label" to "Основна информация",
     "additionalInformationLabel" to "Допълнителна информация",
@@ -105,7 +90,6 @@ val i18nExample = ExampleDescription(
     translations = i18nTranslations,
     localizedTranslations = mapOf(
         "en" to i18nEnglishTranslations,
-        "de" to i18nGermanTranslations,
         "bg" to i18nBulgarianTranslations,
     ),
 )

@@ -1,41 +1,42 @@
 package com.chobantonov.jsonfroms.material.renderers.controls
 
+import com.chobantonov.jsonfroms.core.util.parseIntegerDraft
+import com.chobantonov.jsonfroms.core.util.parseNumberDraft
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
 
 internal data class NumericInputResult(
     val data: JsonElement?,
     val error: String? = null,
 )
 
-internal fun parseIntegerInput(value: String): NumericInputResult {
+internal fun parseIntegerInput(value: String, invalidMessage: String = "Invalid integer."): NumericInputResult {
     if (value.isEmpty()) {
         return NumericInputResult(data = null)
     }
 
-    val integer = value.toLongOrNull()
+    val integer = parseIntegerDraft(value)
     return if (integer != null) {
-        NumericInputResult(data = JsonPrimitive(integer))
+        NumericInputResult(data = integer)
     } else {
         NumericInputResult(
-            data = JsonPrimitive(value),
-            error = "Invalid integer.",
+            data = null,
+            error = invalidMessage,
         )
     }
 }
 
-internal fun parseNumberInput(value: String): NumericInputResult {
+internal fun parseNumberInput(value: String, invalidMessage: String = "Invalid number."): NumericInputResult {
     if (value.isEmpty()) {
         return NumericInputResult(data = null)
     }
 
-    val number = value.toDoubleOrNull()?.takeIf { it.isFinite() }
+    val number = parseNumberDraft(value)
     return if (number != null) {
-        NumericInputResult(data = JsonPrimitive(number))
+        NumericInputResult(data = number)
     } else {
         NumericInputResult(
-            data = JsonPrimitive(value),
-            error = "Invalid number.",
+            data = null,
+            error = invalidMessage,
         )
     }
 }

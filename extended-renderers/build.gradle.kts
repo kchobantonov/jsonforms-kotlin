@@ -38,10 +38,21 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.cupertino)
             implementation(compose.ui)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+            implementation(libs.coil.svg)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.markdown)
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(project(":examples"))
+            implementation(libs.compose.ui.test)
+        }
+
+        jvmTest.dependencies {
+            implementation(compose.desktop.currentOs)
         }
     }
 }

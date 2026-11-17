@@ -1,6 +1,7 @@
 package com.chobantonov.jsonfroms.core.mappers
 
 import com.chobantonov.jsonfroms.core.models.JsonSchemaType
+import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue
 import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import kotlin.test.Test
@@ -17,6 +18,19 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 class MixedTest {
+    @Test
+    fun `type specific detail overrides generic mode only for selected type`() {
+        val control = ControlElement("#", options = mapOf(
+            "detail" to JsonPrimitive("REGISTERED"),
+            "object-detail" to JsonPrimitive("GENERATE"),
+            "string-detail" to buildJsonObject { put("type", "Label"); put("text", "String editor") },
+        ))
+        assertEquals(JsonPrimitive("GENERATE"), mixedControlForType(control, JsonSchemaType.Object).options["detail"])
+        assertEquals(control.options["string-detail"], mixedControlForType(control, JsonSchemaType.String).options["detail"])
+        assertEquals(control, mixedControlForType(control, JsonSchemaType.Array))
+        assertEquals(JsonPrimitive("REGISTERED"), control.options["detail"])
+    }
+
     private val schema = buildJsonSchema {
         put("type", buildJsonArray {
             add(JsonPrimitive("string"))
@@ -54,6 +68,22 @@ class MixedTest {
         assertTrue(mixedTypeSupportsData(JsonSchemaType.Integer, JsonSchemaType.Integer))
         assertFalse(mixedTypeSupportsData(JsonSchemaType.Integer, JsonSchemaType.Number))
         assertFalse(mixedTypeSupportsData(JsonSchemaType.Integer, JsonSchemaType.String))
+    }
+
+    @Test
+    fun `numeric editor switching preserves only actual numeric values`() {
+        assertTrue(isNumericMixedEditorSwitch(JsonSchemaType.Number, JsonSchemaType.Integer,
+            JsonPrimitive(1.5)))
+        assertTrue(isNumericMixedEditorSwitch(JsonSchemaType.Integer, JsonSchemaType.Number,
+            JsonPrimitive(2)))
+        assertFalse(isNumericMixedEditorSwitch(JsonSchemaType.String, JsonSchemaType.Integer,
+            JsonPrimitive("2")))
+        assertFalse(isNumericMixedEditorSwitch(JsonSchemaType.Number, JsonSchemaType.String,
+            JsonPrimitive(2)))
+        assertFalse(isNumericMixedEditorSwitch(JsonSchemaType.Number, JsonSchemaType.Integer,
+            JsonPrimitive("1.5")))
+        assertFalse(isNumericMixedEditorSwitch(JsonSchemaType.Number, JsonSchemaType.Integer,
+            JsonNull))
     }
 
     @Test
