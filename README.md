@@ -216,10 +216,16 @@ GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew kotlinUpgradeYarnLock
 
 ## Run Demo
 
-The Kotlin/JS demo is built with `:examples-compose:jsBrowserProductionWebpack`. Pushes to
-`master` deploy the demo to GitHub Pages; the web component sample is available under
-`/webcomponent/` on the same site.
-The root web page opens on a welcome screen; **Open Demo** selects the first example. Direct links
+The Kotlin/JS and Kotlin/Wasm demos are built with `:examples-compose:jsBrowserDistribution`
+and `:examples-compose:wasmJsBrowserDistribution`. Pushes to `master` deploy the JS demo at
+the Pages root, the Wasm demo under `/wasm/`, and the JS web component sample under
+`/webcomponent/`.
+The welcome screen offers both browser runtimes, and Settings can switch between them later.
+Switching preserves the selected example and view options in the URL and passes the current form
+data through a one-time, tab-scoped browser storage entry. The entry is removed on arrival; if the
+browser cannot store the data, the demo stays on the current runtime and shows an error.
+The root web page opens on a welcome screen; selecting either runtime opens the first example.
+Desktop and native apps retain **Open Demo**. Direct links
 use percent-encoded example names, for example `#i18n` (`#example%20name` illustrates a name
 with a space); older
 `#/examples/i18n` links remain readable. View state lives in the URL, for example
@@ -249,6 +255,8 @@ To run the mounted JS and Wasm URL/back-forward tests after building the develop
 node --test scripts/test-demo-browser-url.mjs
 ./gradlew :examples-compose:wasmJsBrowserDevelopmentWebpack -Pjsonforms.skipWebcomponentResources=true
 DEMO_BROWSER_TARGET=wasmJs node --test scripts/test-demo-browser-url.mjs
+./gradlew :examples-compose:jsBrowserDistribution :examples-compose:wasmJsBrowserDistribution
+node --test scripts/test-demo-runtime-switch-browser.mjs
 ```
 
 The browser demo's top toolbar can switch the active form between Compose and the web component.

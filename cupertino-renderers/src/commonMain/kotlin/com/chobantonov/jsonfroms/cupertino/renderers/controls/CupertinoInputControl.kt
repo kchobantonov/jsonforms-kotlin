@@ -35,10 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.error as accessibilityError
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -83,9 +81,9 @@ fun CupertinoInputControl(
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
     var hovered by remember(props.path) { mutableStateOf(false) }
+    var fieldFocused by remember(props.path) { mutableStateOf(false) }
     var hasReceivedFocus by remember(props.path) { mutableStateOf(false) }
     var touched by remember(props.path) { mutableStateOf(false) }
-    val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
     val appliedOptions = props.config + props.uischema.options
     val translator = useJsonForms().state.jsonforms.i18n.translate
     val startAdornments = resolveInputAdornments(props.uischema.options, "startAdornment", translator)
@@ -102,7 +100,7 @@ fun CupertinoInputControl(
     }
     val clearable = (props.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
     val canClear = clearable && value.isNotEmpty() && props.enabled && !props.readonly
-    val showClear = canClear && (focused || hovered || touch)
+    val showClear = canClear && (focused || fieldFocused || hovered)
     val visibleError = if (touched) props.errors else props.errorsBeforeTouch
     val error = localError?.takeIf(String::isNotBlank)
         ?: visibleError.takeIf(String::isNotBlank).orEmpty()
@@ -139,8 +137,9 @@ fun CupertinoInputControl(
                 if (accessibleError.isNotBlank()) accessibilityError(accessibleError)
                 if (accessibleState.isNotBlank()) stateDescription = accessibleState
             }.onFocusChanged { focusState ->
+                fieldFocused = focusState.hasFocus
                 if (focusState.isFocused) hasReceivedFocus = true
-                else if (hasReceivedFocus) touched = true
+                else if (!focusState.hasFocus && hasReceivedFocus) touched = true
             }.clip(RoundedCornerShape(10.dp))
                 .border(1.dp, borderColor, RoundedCornerShape(10.dp))
                 .pointerInput(props.path) {

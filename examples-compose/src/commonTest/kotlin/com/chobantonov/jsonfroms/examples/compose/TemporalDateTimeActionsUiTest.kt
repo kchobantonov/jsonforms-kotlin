@@ -33,7 +33,7 @@ import kotlin.test.assertTrue
 class TemporalDateTimeActionsUiTest {
     @Test fun materialDateTimeColumnsCommitEachStepByDefault() = columns(false)
     @Test fun cupertinoDateTimeColumnsCommitEachStepByDefault() = columns(true)
-    @Test fun materialNativeDateThenTimeColumnsCommitByDefault() = materialNative()
+    @Test fun materialNativeDateThenTimeDialCommitsByDefault() = materialNative()
     @Test fun cupertinoNativeDateTimeCommitsByDefault() = cupertinoNative()
 
     private val schema = JsonSchema(Json.parseToJsonElement(
@@ -88,7 +88,9 @@ class TemporalDateTimeActionsUiTest {
         onNodeWithText("OK").assertDoesNotExist()
         onNodeWithText("Cancel").assertDoesNotExist()
         waitForIdle()
-        onNodeWithContentDescription("Hours").performTextReplacement("10")
+        onNodeWithContentDescription("Hours").assertDoesNotExist()
+        onNodeWithContentDescription("12 hours").assertExists()
+        onNodeWithContentDescription("10 hours").performClick()
         waitForIdle()
         val selectedInstant = formatTemporal(TemporalValue(2025, 1, 11, 10, 30, 37),
             DEFAULT_DATE_TIME_SAVE_FORMAT)

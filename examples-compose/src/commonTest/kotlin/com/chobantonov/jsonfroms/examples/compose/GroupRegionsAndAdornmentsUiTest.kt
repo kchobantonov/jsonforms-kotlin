@@ -22,6 +22,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -391,7 +392,10 @@ class GroupRegionsAndAdornmentsUiTest {
         assertEquals(0, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
         assertEquals(0, writes)
         runOnIdle { groupReadonly = false }
-        assertEquals(4, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
+        assertEquals(4, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        assertEquals(0, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        assertEquals(1, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
     }
 
     private fun groupReadonlyNonText(cupertino: Boolean) = runComposeUiTest {
@@ -457,6 +461,8 @@ class GroupRegionsAndAdornmentsUiTest {
                 onChange = { data = it.data; writes++ })
         }
         assertEquals(1, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        assertEquals(0, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
         assertEquals(1, onAllNodesWithContentDescription("Clear value").fetchSemanticsNodes().size)
         onAllNodes(hasSetTextAction())[0].performTextReplacement("Changed")
         waitForIdle()
@@ -760,6 +766,9 @@ class GroupRegionsAndAdornmentsUiTest {
         val start = onNodeWithText("START", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val end = onNodeWithText("END", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val field = onAllNodes(hasSetTextAction()).onFirst().fetchSemanticsNode().boundsInRoot
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
+        waitForIdle()
         val clear = onNodeWithContentDescription("Clear value", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         if (rtl) assertTrue(start.left >= end.right,
@@ -815,6 +824,8 @@ class GroupRegionsAndAdornmentsUiTest {
         }
         val start = onNodeWithText("S", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val end = onNodeWithText("E", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
+        waitForIdle()
         val action = onNodeWithContentDescription(nativeAction, useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         val field = onAllNodes(hasSetTextAction()).onFirst().fetchSemanticsNode().boundsInRoot
@@ -897,17 +908,25 @@ class GroupRegionsAndAdornmentsUiTest {
         }
         val start = onNodeWithText("S", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val end = onNodeWithText("E", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
+        waitForIdle()
         val clear = onNodeWithContentDescription("Clear value", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         val field = onAllNodes(hasSetTextAction()).onFirst().fetchSemanticsNode().boundsInRoot
-        onNodeWithText(action).assertExists()
+        val picker = onNodeWithContentDescription(action, useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot
         if (rtl) assertTrue(start.left >= end.right, "$kind RTL edges overlap or reverse: $start, $end")
         else assertTrue(start.right <= end.left, "$kind LTR edges overlap or reverse: $start, $end")
-        listOf(start, end, clear).forEach { bounds ->
+        listOf(start, end, clear, picker).forEach { bounds ->
             assertTrue(bounds.left >= field.left - 2f && bounds.right <= field.right + 2f,
                 "$kind part escapes 240 dp field: $bounds, $field")
         }
         assertTrue(end.right <= clear.left || clear.right <= end.left,
             "$kind end adornment overlaps clear: $end, $clear")
+        assertTrue(end.right <= picker.left || picker.right <= end.left,
+            "$kind end adornment overlaps picker: $end, $picker")
+        assertTrue(clear.right <= picker.left || picker.right <= clear.left,
+            "$kind clear overlaps picker: $clear, $picker")
     }
 }

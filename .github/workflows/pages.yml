@@ -34,15 +34,16 @@ jobs:
       - name: Test renderer and example modules
         run: ./gradlew :extended-renderers:jvmTest :examples:jvmTest :examples-compose:jvmTest
       - name: Compile browser modules
-        run: ./gradlew :examples-compose:compileKotlinJs :webcomponent:compileKotlinJs
-      - name: Build Kotlin/JS demo and web component
+        run: ./gradlew :examples-compose:compileKotlinJs :examples-compose:compileKotlinWasmJs :webcomponent:compileKotlinJs
+      - name: Build Kotlin/JS and Wasm demos and web component
         if: github.event_name != 'pull_request'
-        run: ./gradlew :examples-compose:jsBrowserDistribution :webcomponent:jsBrowserDistribution
+        run: ./gradlew :examples-compose:jsBrowserDistribution :examples-compose:wasmJsBrowserDistribution :webcomponent:jsBrowserDistribution
       - name: Assemble Pages site
         if: github.event_name != 'pull_request'
         run: |
-          mkdir -p .pages/webcomponent
+          mkdir -p .pages/webcomponent .pages/wasm
           cp -R examples-compose/build/dist/js/productionExecutable/. .pages/
+          cp -R examples-compose/build/dist/wasmJs/productionExecutable/. .pages/wasm/
           cp -R webcomponent/build/dist/js/productionExecutable/. .pages/webcomponent/
           touch .pages/.nojekyll
       - name: Upload Pages artifact

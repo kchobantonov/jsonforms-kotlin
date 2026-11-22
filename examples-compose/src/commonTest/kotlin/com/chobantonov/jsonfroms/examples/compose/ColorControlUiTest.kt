@@ -29,6 +29,25 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class ColorControlUiTest {
+    @Test fun materialTextEntryPickerOffersClearValue() = textEntryPickerClear(false)
+    @Test fun cupertinoTextEntryPickerOffersClearValue() = textEntryPickerClear(true)
+
+    private fun textEntryPickerClear(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"shade":"#2255aa"}"""))
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/shade"),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onNodeWithContentDescription("Choose color").performClick()
+        onNodeWithText("Clear value").performClick()
+        waitForIdle()
+        assertEquals(null, data.jsonObject["shade"])
+        assertEquals(1, changes)
+        onNodeWithText("Clear value").assertDoesNotExist()
+    }
     private val schema = JsonSchema(Json.parseToJsonElement("""{
       "type":"object","properties":{"shade":{"type":"string","format":"color"}}
     }""").jsonObject)
@@ -78,7 +97,7 @@ class ColorControlUiTest {
                 }),
                 onChange = { changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Hex channel value").performTextReplacement("#abcd")
         onNodeWithText("Invalid color.").assertExists()
         runOnIdle { locale = "bg-BG" }
@@ -87,7 +106,7 @@ class ColorControlUiTest {
         onNodeWithContentDescription("Канали Hex").assertExists()
         onNodeWithText("Затвори").performClick()
         runOnIdle { override = true }
-        onNodeWithText("Select shade").performClick()
+        onNodeWithContentDescription("Select shade").performClick()
         onAllNodesWithText("Hexadecimal").onFirst().assertExists()
         assertEquals(0, changes)
         assertEquals(true, translatedKeys.any { it.endsWith("color.choose") })
@@ -143,7 +162,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Hex channel value").performTextReplacement("#abcd")
         onNodeWithText("Invalid color.").assertExists()
         assertEquals(0, changes)
@@ -163,12 +182,12 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         runOnIdle { data = Json.parseToJsonElement("""{"shade":"#0000ff"}""") }
         waitForIdle()
         onNodeWithText("Close").assertDoesNotExist()
         assertEquals(0, changes)
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         runOnIdle { readonly = true }
         onNodeWithText("Close").assertDoesNotExist()
         assertEquals(JsonPrimitive("#0000ff"), data.jsonObject["shade"])
@@ -183,7 +202,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         assertEquals(true, onNodeWithContentDescription("Hex channels")
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
         onNodeWithContentDescription("RGB channels").performClick()
@@ -191,7 +210,7 @@ class ColorControlUiTest {
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
         assertEquals(0, changes)
         onNodeWithText("Close").performClick()
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         assertEquals(true, onNodeWithContentDescription("Hex channels")
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
         assertEquals(JsonPrimitive("#ff0000"), data.jsonObject["shade"])
@@ -206,7 +225,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         assertEquals(true, onNodeWithContentDescription("HSB channels")
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
         onNodeWithContentDescription("Hue channel value").performTextReplacement("120")
@@ -226,7 +245,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("RGB channels").performClick()
         onNodeWithContentDescription("Red channel value").performTextReplacement("200")
         onNodeWithText("Transparency cannot be saved as #RGB.").assertExists()
@@ -243,7 +262,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Alpha channel")
             .performSemanticsAction(SemanticsActions.SetProgress) { it(0.5f) }
         waitForIdle()
@@ -282,7 +301,7 @@ class ColorControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Color #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("rgb(239, 68, 68)"), data.jsonObject["shade"])
@@ -303,8 +322,8 @@ class ColorControlUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithText("#abc").assertExists()
-        onNodeWithText("Избери цвят").performClick()
-        onNodeWithText("Изчисти").performClick()
+        onNodeWithContentDescription("Избери цвят").performClick()
+        onNodeWithText("Изчисти стойността").performClick()
         waitForIdle()
         assertEquals(null, data.jsonObject["shade"])
         assertEquals(1, changes)

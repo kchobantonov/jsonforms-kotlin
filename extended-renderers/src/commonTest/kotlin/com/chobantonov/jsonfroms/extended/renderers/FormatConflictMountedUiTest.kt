@@ -60,7 +60,7 @@ class FormatConflictMountedUiTest {
         waitForIdle()
         assertEquals(CombinedValidityStatus.Invalid, validity)
         assertEquals(0, writes)
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Color #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["shade"])
@@ -92,12 +92,12 @@ class FormatConflictMountedUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; writes++ })
         }
-        onNodeWithText("Choose color").assertDoesNotExist()
+        onNodeWithContentDescription("Choose color").assertDoesNotExist()
         assertEquals(null, data.jsonObject["shade"])
         assertEquals(0, writes)
 
         runOnIdle { data = Json.parseToJsonElement("""{"show":true,"other":"kept"}""") }
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Color #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["shade"])
@@ -107,7 +107,7 @@ class FormatConflictMountedUiTest {
         runOnIdle {
             data = Json.parseToJsonElement("""{"show":false,"shade":"#ef4444","other":"host"}""")
         }
-        onNodeWithText("Choose color").assertDoesNotExist()
+        onNodeWithContentDescription("Choose color").assertDoesNotExist()
         assertEquals(1, writes)
         runOnIdle {
             data = Json.parseToJsonElement("""{"show":true,"shade":"#00ff00","other":"host"}""")
@@ -139,16 +139,16 @@ class FormatConflictMountedUiTest {
                 i18n = JsonFormsI18nState(locale = locale),
                 onChange = { data = it.data; writes++ })
         }
-        onNodeWithText("Choose color").assertExists()
+        onNodeWithContentDescription("Choose color").assertExists()
         onAllNodesWithText("#ff0000").onFirst().performTextReplacement("rgb(0, 255")
         onNodeWithText("Invalid color.").assertExists()
         assertEquals(JsonPrimitive("#ff0000"), data.jsonObject["shade"])
         assertEquals(0, writes)
         runOnIdle { readonly = true }
-        onNodeWithText("Choose color").assertDoesNotExist()
+        onNodeWithContentDescription("Choose color").assertDoesNotExist()
         assertEquals(JsonPrimitive("kept"), data.jsonObject["other"])
         runOnIdle { readonly = false; locale = "bg-BG" }
-        onNodeWithText("Избери цвят").performClick()
+        onNodeWithContentDescription("Избери цвят").performClick()
         onNodeWithContentDescription("Цвят #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["shade"])

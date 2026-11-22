@@ -39,7 +39,7 @@ fun translatedActionText(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ActionTooltip(
+fun ActionTooltip(
     label: String,
     content: @Composable () -> Unit,
 ) {

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
@@ -172,16 +170,20 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
     fun label(key: String, fallback: String): String = translateRendererText(
         i18n.translate, i18n.locale, key, fallback, mapOf("bg" to cronBg))
     val showActions = (control.options["showActions"] as? JsonPrimitive)?.booleanOrNull != false
-    var pickerOpen by remember(path, if (compact && !showActions) null else current) {
+    var pickerOpen by remember(path, if (!showActions) null else current) {
         mutableStateOf(false)
     }
-    var period by remember(path, current) { mutableStateOf(cronPeriodOf(current)) }
-    var fields by remember(path, current) {
+    var period by remember(path, if (!showActions) null else current) { mutableStateOf(cronPeriodOf(current)) }
+    var fields by remember(path, if (!showActions) null else current) {
         mutableStateOf(splitCron(current) ?: List(cronOrder.size) { "*" })
     }
-    var pickerDirty by remember(path, current) { mutableStateOf(false) }
+    var pickerDirty by remember(path, if (!showActions) null else current) { mutableStateOf(false) }
+    var lastPickerCommit by remember(path) { mutableStateOf<String?>(null) }
 
-    fun publish(expression: String) = inputProps.handleChange(path, JsonPrimitive(expression))
+    fun publish(expression: String) {
+        lastPickerCommit = expression
+        inputProps.handleChange(path, JsonPrimitive(expression))
+    }
     fun resetPicker() {
         period = cronPeriodOf(current)
         fields = splitCron(current) ?: List(cronOrder.size) { "*" }
@@ -193,6 +195,10 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         if (!showActions && cronProblem(next.joinToString(" ")) == null) publish(next.joinToString(" "))
     }
     fun dismiss() { pickerOpen = false; resetPicker() }
+    LaunchedEffect(current) {
+        if (!showActions && pickerOpen && current != lastPickerCommit) dismiss()
+        lastPickerCommit = null
+    }
     LaunchedEffect(stateProps.enabled, stateProps.readonly) {
         if (!stateProps.enabled || stateProps.readonly) dismiss()
     }
@@ -274,29 +280,21 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         if (cupertino) CupertinoInputControl(inputProps, current,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
-            trailingContent = if (compact && stateProps.enabled && !stateProps.readonly)
-                ({ CupertinoButton(onClick = openPicker,
-                    modifier = Modifier.semantics { contentDescription = label("cron.open", "Choose schedule") },
-                    colors = CupertinoButtonDefaults.plainButtonColors()) { CupertinoText("⋯") } })
+            trailingContent = if (stateProps.enabled && !stateProps.readonly)
+                ({ ExtendedPickerTrigger(ExtendedPickerKind.Cron, true,
+                    label("cron.open", "Choose schedule"), openPicker) })
             else null,
             clearLabel = translateControlClear(i18n), onChange = onTextChange)
         else MaterialInputControl(inputProps, current,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
-            trailingIcon = if (compact && stateProps.enabled && !stateProps.readonly)
-                ({ IconButton(onClick = openPicker,
-                    modifier = Modifier.semantics { contentDescription = label("cron.open", "Choose schedule") }) {
-                    Text("⋯")
-                } })
+            trailingIcon = if (stateProps.enabled && !stateProps.readonly)
+                ({ ExtendedPickerTrigger(ExtendedPickerKind.Cron, false,
+                    label("cron.open", "Choose schedule"), openPicker) })
             else null,
             clearLabel = translateControlClear(i18n), onChange = onTextChange)
         if (stateProps.enabled && !stateProps.readonly) {
-            if (showActions && !compact) {
-                if (cupertino) CupertinoButton(onClick = openPicker,
-                    colors = CupertinoButtonDefaults.plainButtonColors()) {
-                    CupertinoText(label("cron.open", "Choose schedule"))
-                } else OutlinedButton(onClick = openPicker) { Text(label("cron.open", "Choose schedule")) }
-            } else if (!showActions && (!compact || pickerOpen)) pickerContent()
+            if (!showActions && pickerOpen) pickerContent()
         }
         if (stateProps.enabled && !stateProps.readonly && pickerOpen && showActions) {
             val applyText = (control.options["okLabel"] as? JsonPrimitive)?.contentOrNull

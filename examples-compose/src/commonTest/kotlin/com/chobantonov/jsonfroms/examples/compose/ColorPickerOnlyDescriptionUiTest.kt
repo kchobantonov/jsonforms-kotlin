@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onFirst
@@ -56,14 +57,14 @@ class ColorPickerOnlyDescriptionUiTest {
                 i18n = JsonFormsI18nState(locale = locale),
                 onChange = { changes++ })
         }
-        val choose = onNodeWithText("Choose color")
+        val choose = onNodeWithContentDescription("Choose color")
         onNodeWithText("Invalid color.").assertExists()
         assertTrue(choose.fetchSemanticsNode().config[SemanticsProperties.Error]
             .contains("Invalid color."))
         runOnIdle { locale = "bg-BG" }
         waitForIdle()
         onNodeWithText("Невалиден цвят.").assertExists()
-        assertTrue(onNodeWithText("Избери цвят")
+        assertTrue(onNodeWithContentDescription("Избери цвят")
             .fetchSemanticsNode().config[SemanticsProperties.Error].contains("Невалиден цвят."))
         assertEquals(0, changes)
     }
@@ -80,7 +81,7 @@ class ColorPickerOnlyDescriptionUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { changes++ })
         }
-        onNodeWithText("Choose color").assertIsFocused()
+        onNodeWithContentDescription("Choose color").assertIsFocused()
         assertEquals(0, changes)
     }
 
@@ -104,7 +105,7 @@ class ColorPickerOnlyDescriptionUiTest {
                 i18n = JsonFormsI18nState(locale = locale),
                 onChange = { changes++ })
         }
-        val choose = onNodeWithText("Choose color")
+        val choose = onNodeWithContentDescription("Choose color")
         onNodeWithText("Choose a shade.").assertExists()
         onNodeWithText("Shade*").assertDoesNotExist()
         assertEquals("Required field. Choose a shade.",
@@ -123,7 +124,7 @@ class ColorPickerOnlyDescriptionUiTest {
         runOnIdle { locale = "bg-BG"; hideMarker = JsonPrimitive(false) }
         waitForIdle()
         onNodeWithText("Shade*").assertExists()
-        val localizedChoose = onNodeWithText("Избери цвят")
+        val localizedChoose = onNodeWithContentDescription("Избери цвят")
         assertEquals("Задължително поле. Choose a shade.",
             localizedChoose.fetchSemanticsNode().config[SemanticsProperties.StateDescription])
         runOnIdle { hideMarker = JsonPrimitive("true") }

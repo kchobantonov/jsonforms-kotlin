@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -21,8 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -168,13 +165,16 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
     var observedCurrent by remember(path, props.schema, control) { mutableStateOf(current) }
     var textDraftDirty by remember(path, props.schema, control) { mutableStateOf(false) }
     val setPending = rememberPendingEditOwner("duration:$path:${props.id}")
-    var weeksMode by remember(path, current) { mutableStateOf(parsed?.weeks != null) }
-    var fields by remember(path, current) {
+    var weeksMode by remember(path, if (!showActions) null else current) { mutableStateOf(parsed?.weeks != null) }
+    var fields by remember(path, if (!showActions) null else current) {
         mutableStateOf((parsed ?: DurationParts()).components().map(Long::toString))
     }
-    var weekText by remember(path, current) { mutableStateOf((parsed?.weeks ?: 0L).toString()) }
-    var dirty by remember(path, current) { mutableStateOf(false) }
-    var showPicker by remember(path, if (compact && !showActions) null else current) {
+    var weekText by remember(path, if (!showActions) null else current) {
+        mutableStateOf((parsed?.weeks ?: 0L).toString())
+    }
+    var dirty by remember(path, if (!showActions) null else current) { mutableStateOf(false) }
+    var lastPickerCommit by remember(path) { mutableStateOf<String?>(null) }
+    var showPicker by remember(path, if (!showActions) null else current) {
         mutableStateOf(false)
     }
 
@@ -193,6 +193,8 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
     }
 
     LaunchedEffect(current) {
+        if (!showActions && showPicker && current != lastPickerCommit) dismissPicker()
+        lastPickerCommit = null
         if (current != observedCurrent) {
             textDraft = current
             observedCurrent = current
@@ -206,7 +208,9 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         return DurationParts(values[0], values[1], values[2], values[3], values[4], values[5])
     }
     fun commit(parts: DurationParts) {
-        props.dispatch(Actions.update(path = path, updater = { JsonPrimitive(formatDuration(parts)) }))
+        val encoded = formatDuration(parts)
+        lastPickerCommit = encoded
+        props.dispatch(Actions.update(path = path, updater = { JsonPrimitive(encoded) }))
     }
     fun pickerEdited(): Boolean = dirty || weeksMode != (parsed?.weeks != null) ||
         fields != (parsed ?: DurationParts()).components().map(Long::toString) ||
@@ -248,32 +252,21 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         if (cupertino) CupertinoInputControl(inputProps, textDraft,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
-            trailingContent = if (compact && stateProps.enabled && !stateProps.readonly)
-                ({ CupertinoButton(onClick = openPicker,
-                    modifier = Modifier.semantics { contentDescription = label("duration.open", "Choose duration") },
-                    colors = CupertinoButtonDefaults.plainButtonColors()) { CupertinoText("⋯") } })
+            trailingContent = if (stateProps.enabled && !stateProps.readonly)
+                ({ ExtendedPickerTrigger(ExtendedPickerKind.Duration, true,
+                    label("duration.open", "Choose duration"), openPicker) })
             else null,
             clearLabel = translateControlClear(i18n),
             onChange = onTextChange)
         else MaterialInputControl(inputProps, textDraft,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
-            trailingIcon = if (compact && stateProps.enabled && !stateProps.readonly)
-                ({ IconButton(onClick = openPicker,
-                    modifier = Modifier.semantics { contentDescription = label("duration.open", "Choose duration") }) {
-                    Text("⋯")
-                } })
+            trailingIcon = if (stateProps.enabled && !stateProps.readonly)
+                ({ ExtendedPickerTrigger(ExtendedPickerKind.Duration, false,
+                    label("duration.open", "Choose duration"), openPicker) })
             else null,
             clearLabel = translateControlClear(i18n),
             onChange = onTextChange)
-        if (stateProps.enabled && !stateProps.readonly && showActions && !compact) {
-            if (cupertino) CupertinoButton(onClick = openPicker,
-                colors = CupertinoButtonDefaults.plainButtonColors()) {
-                CupertinoText(label("duration.open", "Choose duration"))
-            } else OutlinedButton(onClick = openPicker) {
-                Text(label("duration.open", "Choose duration"))
-            }
-        }
         @Composable fun pickerFields() {
             @Composable fun numberField(
                 value: String, fieldLabel: String, key: String, onValueChange: (String) -> Unit,
@@ -338,7 +331,7 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
                 }
             }
         }
-        if (stateProps.enabled && !stateProps.readonly && !showActions && (!compact || showPicker)) pickerFields()
+        if (stateProps.enabled && !stateProps.readonly && !showActions && showPicker) pickerFields()
         if (stateProps.enabled && !stateProps.readonly && showPicker && showActions) {
             val okText = (control.options["okLabel"] as? JsonPrimitive)?.contentOrNull
                 ?: label("duration.ok", "OK")

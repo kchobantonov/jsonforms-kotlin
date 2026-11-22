@@ -10,6 +10,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -81,6 +82,9 @@ class CompactAdornmentGeometryUiTest {
         val end = onNodeWithText("E", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val picker = onNodeWithContentDescription(action, useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
+        waitForIdle()
         val clear = onNodeWithContentDescription("Clear value", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot
         val field = onAllNodes(hasSetTextAction()).onFirst().fetchSemanticsNode().boundsInRoot

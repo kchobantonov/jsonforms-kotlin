@@ -33,7 +33,7 @@ internal fun TooltipScope.CupertinoPlainTooltip(label: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ActionTooltip(label: String, content: @Composable () -> Unit) {
+fun ActionTooltip(label: String, content: @Composable () -> Unit) {
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { CupertinoPlainTooltip(label) },

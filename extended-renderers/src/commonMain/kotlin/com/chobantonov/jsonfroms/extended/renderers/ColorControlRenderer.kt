@@ -1,23 +1,30 @@
 package com.chobantonov.jsonfroms.extended.renderers
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +43,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlin.math.roundToInt
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
@@ -72,6 +81,8 @@ import com.chobantonov.jsonfroms.core.validation.rgbToHsb
 import com.chobantonov.jsonfroms.core.validation.serializeColor
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.CupertinoInputControl
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialInputControl
+import com.chobantonov.jsonfroms.cupertino.renderers.ActionTooltip as CupertinoActionTooltip
+import com.chobantonov.jsonfroms.material.renderers.ActionTooltip as MaterialActionTooltip
 import com.slapps.cupertino.CupertinoButton
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.CupertinoSlider
@@ -289,13 +300,25 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
         }
         pickerOpen = !pickerOpen
     }
-    @Composable fun compactPickerAction() {
+    @Composable fun pickerAction() {
         val accessibleName = if (pickerOpen) colorText("close", "Close")
             else colorText("choose", "Choose color")
-        val actionModifier = Modifier.semantics { contentDescription = accessibleName }
-        if (cupertino) CupertinoButton(onClick = togglePicker, modifier = actionModifier,
-            colors = CupertinoButtonDefaults.plainButtonColors()) { CupertinoText("⋯") }
-        else IconButton(onClick = togglePicker, modifier = actionModifier) { Text("⋯") }
+        val actionModifier = (if (!textEntry) Modifier.focusRequester(pickerFocusRequester)
+            else Modifier).semantics {
+            contentDescription = accessibleName
+            if (!textEntry) {
+                if (pickerAccessibleState.isNotBlank()) stateDescription = pickerAccessibleState
+                if (pickerError.isNotBlank()) error(pickerError)
+            }
+        }
+        @Composable fun button() {
+            IconButton(onClick = togglePicker, modifier = actionModifier) {
+                Box(Modifier.size(22.dp).background(color ?: Color.LightGray,
+                    RoundedCornerShape(4.dp)).border(1.dp, Color.Gray, RoundedCornerShape(4.dp)))
+            }
+        }
+        if (cupertino) CupertinoActionTooltip(accessibleName) { button() }
+        else MaterialActionTooltip(accessibleName) { button() }
     }
     Column(
         modifier = if (!textEntry) Modifier.onFocusChanged { focusState ->
@@ -313,27 +336,27 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (!compact || !textEntry) Box(Modifier.size(36.dp).background(
+            if (!textEntry) Box(Modifier.size(36.dp).background(
                 color ?: Color.Transparent, RoundedCornerShape(6.dp)))
             Box(Modifier.weight(1f)) {
                 if (textEntry) {
                     if (cupertino) CupertinoInputControl(textInputProps, textDraft,
                         localError = textError, storedValueStatus = invalidStatus,
                         compact = compact,
-                        trailingContent = if (compact && editable) ({ compactPickerAction() }) else null,
+                        trailingContent = if (editable) ({ pickerAction() }) else null,
                         clearLabel = translateControlClear(props.state.jsonforms.i18n),
                         onChange = onTextChange)
                     else MaterialInputControl(textInputProps, textDraft,
                         localError = textError, storedValueStatus = invalidStatus,
                         compact = compact,
-                        trailingIcon = if (compact && editable) ({ compactPickerAction() }) else null,
+                        leadingIcon = if (editable) ({ pickerAction() }) else null,
                         clearLabel = translateControlClear(props.state.jsonforms.i18n),
                         onChange = onTextChange)
                 }
                 else if (cupertino) CupertinoText(value?.contentOrNull.orEmpty())
                 else Text(value?.contentOrNull.orEmpty())
             }
-            if (compact && !textEntry && editable) compactPickerAction()
+            if (!textEntry && editable) pickerAction()
         }
         if (importedColorError != null) {
             if (cupertino) CupertinoText(importedColorError) else Text(importedColorError)
@@ -341,21 +364,22 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
         if (!textEntry && invalidStatus != null) {
             if (cupertino) CupertinoText(invalidStatus) else Text(invalidStatus)
         }
-        if (editable && !compact) {
-            ColorPickerAction(cupertino = cupertino, label = if (pickerOpen) {
-                colorText("close", "Close")
-            } else colorText("choose", "Choose color"),
-                modifier = if (!textEntry) Modifier.focusRequester(pickerFocusRequester).semantics {
-                    if (pickerAccessibleState.isNotBlank()) stateDescription = pickerAccessibleState
-                    if (pickerError.isNotBlank()) error(pickerError)
-                } else Modifier,
-                onClick = togglePicker)
-        }
-        if (editable && pickerOpen) {
-            if (!textEntry && clearable && value != null) {
-                ColorPickerAction(cupertino = cupertino,
-                    label = colorText("clear", "Clear"),
-                    onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
+        if (editable && pickerOpen) Dialog(onDismissRequest = { pickerOpen = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)) {
+          Surface(modifier = Modifier.fillMaxWidth(0.94f).widthIn(max = 560.dp),
+              shape = RoundedCornerShape(16.dp)) {
+           Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState())
+               .padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(colorText("choose", "Choose color"))
+            if (clearable && !value?.contentOrNull.isNullOrEmpty()) {
+                val clearText = translateControlClear(i18n)
+                if (cupertino) CupertinoActionTooltip(clearText) {
+                    ColorPickerAction(cupertino = true, label = clearText,
+                        onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
+                } else MaterialActionTooltip(clearText) {
+                    ColorPickerAction(cupertino = false, label = clearText,
+                        onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
+                }
             }
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -483,6 +507,10 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                 }
                 if (cupertino) CupertinoText(message) else Text(message)
             }
+            ColorPickerAction(cupertino = cupertino, label = colorText("close", "Close"),
+                onClick = { pickerOpen = false })
+           }
+          }
         }
         if (!textEntry && visibleDescription != null) Text(visibleDescription)
         if (!textEntry && visibleError.isNotBlank()) Text(visibleError)

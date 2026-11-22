@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.ComposeViewport
 import com.chobantonov.jsonfroms.examples.compose.ExamplesComposeApp
+import com.chobantonov.jsonfroms.examples.compose.DemoBrowserRuntime
 import com.chobantonov.jsonfroms.examples.compose.DemoUrlState
 import com.chobantonov.jsonfroms.examples.compose.DemoUrlViewState
 import com.chobantonov.jsonfroms.examples.compose.parseDemoUrl
@@ -17,7 +18,10 @@ import org.w3c.dom.events.EventListener
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    val runtime = DemoBrowserRuntime.Js
+    val initialTransfer = consumeRuntimeHandoff(runtime)
     ComposeViewport {
+        var transfer by remember { mutableStateOf(initialTransfer) }
         var route by remember { mutableStateOf(parseDemoUrl(window.location.search, window.location.hash)) }
         fun navigate(next: DemoUrlState) {
             if (next == route) return
@@ -43,6 +47,10 @@ fun main() {
             onBrowserViewStateChange = { navigate(route.copy(view = it)) },
             onExampleSelected = { name -> navigate(route.copy(exampleName = name)) },
             onHomeSelected = { navigate(DemoUrlState(null, DemoUrlViewState())) },
+            browserRuntime = runtime,
+            onBrowserRuntimeSwitch = { target, handoff -> changeRuntime(runtime, target, handoff) },
+            initialRuntimeHandoff = transfer,
+            onRuntimeHandoffConsumed = { transfer = null },
         )
     }
 }

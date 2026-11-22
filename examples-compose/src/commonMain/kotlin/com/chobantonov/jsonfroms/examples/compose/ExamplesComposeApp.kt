@@ -221,6 +221,10 @@ fun ExamplesComposeApp(
     settingsStore: Settings? = null,
     browserViewState: DemoUrlViewState? = null,
     onBrowserViewStateChange: (DemoUrlViewState) -> Unit = {},
+    browserRuntime: DemoBrowserRuntime? = null,
+    onBrowserRuntimeSwitch: ((DemoBrowserRuntime, DemoRuntimeHandoff?) -> Unit)? = null,
+    initialRuntimeHandoff: DemoRuntimeHandoff? = null,
+    onRuntimeHandoffConsumed: () -> Unit = {},
 ) {
     val preferences = remember(settingsStore) { DemoPreferences(settingsStore ?: Settings()) }
     var settings by remember(preferences) { mutableStateOf(preferences.load()) }
@@ -259,10 +263,20 @@ fun ExamplesComposeApp(
         val selected = examples.firstOrNull { it.name == effectiveSelectedName } ?: examples.first()
         val showLanding = showLandingWhenUnselected && selectedExampleName == null
         val originalState = remember(selected.name) { selected.toStateProps() }
-        var state by remember(selected.name) { mutableStateOf(originalState) }
+        var state by remember(selected.name) {
+            mutableStateOf(if (initialRuntimeHandoff?.exampleName == selected.name &&
+                initialRuntimeHandoff.target == browserRuntime)
+                originalState.copy(data = initialRuntimeHandoff.data,
+                    dataProvided = initialRuntimeHandoff.dataProvided)
+            else originalState)
+        }
+        LaunchedEffect(initialRuntimeHandoff) {
+            if (initialRuntimeHandoff != null) onRuntimeHandoffConsumed()
+        }
         var analysisPending by remember(selected.name) { mutableStateOf(false) }
         var editorDrafts by remember(selected.name) { mutableStateOf(EditorDrafts.from(state)) }
         var settingsOpen by remember { mutableStateOf(false) }
+        var runtimeSwitchError by remember { mutableStateOf(false) }
         val settingsButtonFocus = remember { FocusRequester() }
         val closeSettings: () -> Unit = {
             settingsOpen = false
@@ -285,6 +299,18 @@ fun ExamplesComposeApp(
                     editorDrafts = editorDrafts.refreshDataAfterFormEdit(nextState)
                 }
                 state = nextState
+            }
+            val switchRuntime: (DemoBrowserRuntime, Boolean) -> Unit = { target, openDemo ->
+                if (target != browserRuntime && onBrowserRuntimeSwitch != null) {
+                    val handoff = if (!showLanding || openDemo)
+                        DemoRuntimeHandoff(target, selected.name, state.data, state.dataProvided)
+                    else null
+                    runCatching { onBrowserRuntimeSwitch(target, handoff) }
+                        .onFailure { runtimeSwitchError = true }
+                } else if (openDemo) {
+                    updateView(view.copy(formOnly = false))
+                    selectExample(examples.first())
+                }
             }
             Column(Modifier.fillMaxSize()) {
                 if (!view.formOnly) DemoTopBar(
@@ -311,6 +337,7 @@ fun ExamplesComposeApp(
                         showLanding, { updateView(view.copy(formOnly = false)); selectExample(examples.first()) },
                         onHomeSelected?.takeIf { !showBrandLogo },
                         analysisPending, { analysisPending = it },
+                        browserRuntime, { target -> switchRuntime(target, true) },
                     )
                 } else {
                     ExpandedLayout(
@@ -319,6 +346,7 @@ fun ExamplesComposeApp(
                         editorDrafts, { editorDrafts = it }, selectExample, updateState, updateSettings,
                         showLanding, { updateView(view.copy(formOnly = false)); selectExample(examples.first()) },
                         analysisPending, { analysisPending = it },
+                        browserRuntime, { target -> switchRuntime(target, true) },
                     )
                 }
             }
@@ -337,12 +365,24 @@ fun ExamplesComposeApp(
                 SettingsPanel(
                     effectiveSettings, state.config, {
                         updateSettings(it)
-                    }, closeSettings,
+                    }, closeSettings, browserRuntime,
+                    { target -> switchRuntime(target, false) },
                     Modifier.zIndex(3f).align(Alignment.TopEnd)
                         .padding(top = 68.dp, end = 12.dp, bottom = 12.dp)
                         .width(if (compact) maxWidth - 24.dp else 390.dp).fillMaxHeight(),
                 )
             }
+            if (runtimeSwitchError) AlertDialog(
+                onDismissRequest = { runtimeSwitchError = false },
+                title = { Text(demoText("Unable to switch runtime", "Неуспешна смяна на средата")) },
+                text = { Text(demoText(
+                    "The browser could not preserve the current form data. Free browser storage and try again.",
+                    "Браузърът не можа да запази данните на формуляра. Освободете място и опитайте отново.",
+                )) },
+                confirmButton = { TextButton(onClick = { runtimeSwitchError = false }) {
+                    Text(demoText("OK", "Добре"))
+                } },
+            )
             if (view.webComponent && supportsWebComponentView) {
                 WebComponentOverlay(
                     input = webComponentInput(state, settings,
@@ -494,6 +534,7 @@ private fun CompactLayout(
     onSettingsChange: (DemoSettings) -> Unit,
     showLanding: Boolean, onOpenDemo: () -> Unit, onCompactHome: (() -> Unit)?,
     analysisPending: Boolean, onAnalysisPendingChange: (Boolean) -> Unit,
+    browserRuntime: DemoBrowserRuntime?, onRuntimeSwitch: (DemoBrowserRuntime) -> Unit,
 ) {
     if (navigationVisible) {
         // On a phone the picker is the current navigation surface. Keeping the
@@ -507,7 +548,7 @@ private fun CompactLayout(
             onHome = onCompactHome,
         )
     } else if (showLanding) {
-        DemoLandingPage(onOpenDemo, Modifier.fillMaxSize())
+        DemoLandingPage(onOpenDemo, browserRuntime, onRuntimeSwitch, Modifier.fillMaxSize())
     } else {
         val validationIssues = remember(state.data, state.dataProvided, state.schema, state.uischema,
             state.additionalErrors, state.middleware, settings.validationMode) {
@@ -556,6 +597,7 @@ private fun ExpandedLayout(
     onSettingsChange: (DemoSettings) -> Unit,
     showLanding: Boolean, onOpenDemo: () -> Unit,
     analysisPending: Boolean, onAnalysisPendingChange: (Boolean) -> Unit,
+    browserRuntime: DemoBrowserRuntime?, onRuntimeSwitch: (DemoBrowserRuntime) -> Unit,
 ) {
     var splitFraction by remember(selected.name) { mutableFloatStateOf(0.75f) }
     val validationIssues = remember(state.data, state.dataProvided, state.schema, state.uischema,
@@ -569,7 +611,7 @@ private fun ExpandedLayout(
             examples, selected.takeUnless { showLanding }, onSelected, Modifier.width(260.dp).fillMaxHeight(),
         )
         if (showLanding) {
-            DemoLandingPage(onOpenDemo, Modifier.fillMaxSize())
+            DemoLandingPage(onOpenDemo, browserRuntime, onRuntimeSwitch, Modifier.fillMaxSize())
         } else Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (!formOnly) ExampleHeader(selected)
             if (!formOnly) {
@@ -867,7 +909,12 @@ internal fun ExampleHeader(example: ExampleDescription) {
 }
 
 @Composable
-private fun DemoLandingPage(onOpenDemo: () -> Unit, modifier: Modifier = Modifier) {
+private fun DemoLandingPage(
+    onOpenDemo: () -> Unit,
+    browserRuntime: DemoBrowserRuntime?,
+    onRuntimeSwitch: (DemoBrowserRuntime) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val compact = maxWidth < 600.dp
         Column(
@@ -902,7 +949,25 @@ private fun DemoLandingPage(onOpenDemo: () -> Unit, modifier: Modifier = Modifie
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
-            Button(onClick = onOpenDemo) { Text(demoText("Open Demo", "Отвори демото")) }
+            if (browserRuntime == null) {
+                Button(onClick = onOpenDemo) { Text(demoText("Open Demo", "Отвори демото")) }
+            } else {
+                Text(demoText("Choose a web runtime", "Изберете уеб среда"),
+                    style = MaterialTheme.typography.titleMedium)
+                val runtimeButtons: @Composable () -> Unit = {
+                    DemoBrowserRuntime.entries.forEach { runtime ->
+                        val action = { if (runtime == browserRuntime) onOpenDemo() else onRuntimeSwitch(runtime) }
+                        if (runtime == browserRuntime) Button(onClick = action) {
+                            Text(runtime.label)
+                        } else OutlinedButton(onClick = action) {
+                            Text(runtime.label)
+                        }
+                    }
+                }
+                if (compact) Column(verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) { runtimeButtons() }
+                else Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { runtimeButtons() }
+            }
         }
     }
 }
@@ -1253,7 +1318,9 @@ private fun JsonElement.toKotlinValue(): Any? = when (this) {
 @Composable
 private fun SettingsPanel(
     settings: DemoSettings, exampleConfig: Map<String, Any?>,
-    onChange: (DemoSettings) -> Unit, onClose: () -> Unit, modifier: Modifier,
+    onChange: (DemoSettings) -> Unit, onClose: () -> Unit,
+    browserRuntime: DemoBrowserRuntime?, onRuntimeSwitch: (DemoBrowserRuntime) -> Unit,
+    modifier: Modifier,
 ) {
     val closeButtonFocus = remember { FocusRequester() }
     val lastSwitchFocus = remember { FocusRequester() }
@@ -1287,6 +1354,13 @@ private fun SettingsPanel(
                     }
                 }
             }
+            if (browserRuntime != null) SettingsSelect(
+                label = demoText("Web runtime", "Уеб среда"),
+                selected = browserRuntime,
+                values = DemoBrowserRuntime.entries,
+                displayName = DemoBrowserRuntime::label,
+                onSelected = { if (it != browserRuntime) onRuntimeSwitch(it) },
+            )
             SettingsSelect(
                 label = demoText("Locale", "Език"),
                 selected = settings.locale,

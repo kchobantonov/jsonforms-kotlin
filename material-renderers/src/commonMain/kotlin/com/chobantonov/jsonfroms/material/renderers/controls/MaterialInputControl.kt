@@ -40,10 +40,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.contentDescription
@@ -94,11 +92,11 @@ fun MaterialInputControl(
     val description = props.description
     val variant = useInputVariant(props.config, props.uischema)
     var hovered by remember(props.path) { mutableStateOf(false) }
+    var fieldFocused by remember(props.path) { mutableStateOf(false) }
     var hasReceivedFocus by remember(props.path) { mutableStateOf(false) }
     var touched by remember(props.path) { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val focused by interactionSource.collectIsFocusedAsState()
-    val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
     val appliedOptions = props.config + props.uischema.options
     val translator = useJsonForms().state.jsonforms.i18n.translate
     val startAdornments = resolveInputAdornments(props.uischema.options, "startAdornment", translator)
@@ -133,7 +131,7 @@ fun MaterialInputControl(
     }
     val clearable = (props.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
     val canClear = clearable && value.isNotEmpty() && props.enabled && !props.readonly
-    val showClear = canClear && (focused || hovered || touch)
+    val showClear = canClear && (focused || fieldFocused || hovered)
     val effectiveTrailingIcon: (@Composable () -> Unit)? = if (canClear || trailingIcon != null) {{
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (showClear) {
@@ -175,8 +173,9 @@ fun MaterialInputControl(
         else if (effectiveError.isNotBlank()) error(effectiveError.toMaterialSupportingText())
         if (accessibleState.isNotBlank()) stateDescription = accessibleState
     }.onFocusChanged { focusState ->
+        fieldFocused = focusState.hasFocus
         if (focusState.isFocused) hasReceivedFocus = true
-        else if (hasReceivedFocus) touched = true
+        else if (!focusState.hasFocus && hasReceivedFocus) touched = true
     }.pointerInput(props.path) {
         awaitPointerEventScope {
             while (true) {

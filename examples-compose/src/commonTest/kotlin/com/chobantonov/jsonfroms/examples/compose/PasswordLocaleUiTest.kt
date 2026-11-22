@@ -79,6 +79,7 @@ class PasswordLocaleUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithContentDescription("Show password").assertExists()
+        onAllNodes(hasSetTextAction()).onLast().performClick()
         onNodeWithContentDescription("Clear value").assertExists()
         onNodeWithContentDescription("Show password").performClick()
         onNodeWithContentDescription("Hide password").assertExists()
@@ -90,6 +91,7 @@ class PasswordLocaleUiTest {
         onNodeWithContentDescription("Show password").assertExists()
         assertEquals(0, changes)
         runOnIdle { readonly = false }
+        onAllNodes(hasSetTextAction()).onLast().performClick()
         onNodeWithContentDescription("Clear value").performClick()
         waitForIdle()
         assertEquals(null, data.jsonObject["password"])

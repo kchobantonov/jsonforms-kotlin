@@ -4,12 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
@@ -61,7 +63,7 @@ class DurationControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("Weeks").onLast().assertExists()
         onAllNodesWithText("Weeks").onFirst().performClick()
         onAllNodesWithText("OK").onLast().performClick()
@@ -82,7 +84,7 @@ class DurationControlUiTest {
         }
         assertEquals(JsonPrimitive("P000W"), data.jsonObject["duration"])
         assertEquals(0, changes)
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("0").onLast().performTextReplacement("00")
         onAllNodesWithText("OK").onLast().performClick()
         waitForIdle()
@@ -129,6 +131,7 @@ class DurationControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
+        onNodeWithContentDescription("Choose duration").performClick()
         onAllNodesWithText("150").onLast().performTextReplacement("151")
         waitForIdle()
         assertEquals(JsonPrimitive("PT151M"), data.jsonObject["duration"])
@@ -153,7 +156,7 @@ class DurationControlUiTest {
         onAllNodesWithText("P1D").onLast().performTextReplacement("P1")
         waitForIdle()
         assertEquals(CombinedValidityStatus.Pending, validity)
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("Weeks").onLast().performClick()
         onNodeWithText("Years").assertDoesNotExist()
         onAllNodesWithText("0").onLast().assertExists()
@@ -233,12 +236,12 @@ class DurationControlUiTest {
                 onValidityChange = { validity = it.status })
         }
         assertEquals(0, changes)
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onNodeWithText("23").performTextReplacement("24")
         assertEquals(JsonPrimitive(original), data.jsonObject["duration"])
         onAllNodesWithText("Cancel").onLast().performClick()
         assertEquals(0, changes)
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("23").onLast().performTextReplacement("oops")
         onAllNodesWithText("OK").onLast().assertIsNotEnabled()
         waitForIdle()
@@ -248,7 +251,7 @@ class DurationControlUiTest {
         waitForIdle()
         assertEquals(CombinedValidityStatus.Valid, validity)
         runOnIdle { locale = "bg" }
-        onAllNodesWithText("Избери продължителност").onLast().performClick()
+        onAllNodesWithContentDescription("Избери продължителност").onLast().performClick()
         if (cupertino) {
             onAllNodesWithText("23").onLast().performTextReplacement("-1")
             onNodeWithText("Въведете неотрицателно цяло число.").assertExists()
@@ -273,7 +276,7 @@ class DurationControlUiTest {
         }
         onNodeWithText("OK").assertDoesNotExist()
         assertEquals(0, changes)
-        onAllNodesWithText("Choose duration").onLast().performClick()
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onNodeWithText("0").performTextReplacement("90")
         onNodeWithText("OK").performClick()
         waitForIdle()

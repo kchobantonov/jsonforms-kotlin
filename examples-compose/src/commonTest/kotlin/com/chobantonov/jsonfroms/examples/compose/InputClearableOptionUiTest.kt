@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -50,10 +52,12 @@ class InputClearableOptionUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { clearable = true }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
         onNodeWithContentDescription("Clear value").assertExists()
         runOnIdle { readonly = true }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { readonly = false }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("name" in data.jsonObject)
@@ -72,6 +76,7 @@ class InputClearableOptionUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { clearable = true }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
         onNodeWithContentDescription("Clear value").assertExists()
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -106,6 +107,7 @@ class ReadonlyRulePrecedenceUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { data = buildJsonObject { put("name", "Ada"); put("unlock", true) } }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
         onNodeWithContentDescription("Clear value").assertExists()
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {

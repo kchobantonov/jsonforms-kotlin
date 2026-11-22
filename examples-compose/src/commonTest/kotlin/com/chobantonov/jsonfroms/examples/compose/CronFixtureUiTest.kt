@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onFirst
@@ -62,7 +63,7 @@ class CronFixtureUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose schedule").assertExists()
+        onNodeWithContentDescription("Choose schedule").assertExists()
         onAllNodes(hasSetTextAction() and hasText("0 0/15 * * * *")).onFirst()
             .performTextReplacement("0 0/20 * * * *")
         waitForIdle()
@@ -82,7 +83,7 @@ class CronFixtureUiTest {
                     renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                     onChange = { data = it.data; changes++ })
             }
-            onNodeWithText("Choose schedule").assertExists()
+            onNodeWithContentDescription("Choose schedule").assertExists()
             onAllNodes(hasSetTextAction() and hasText("10 * * * * *")).onFirst()
                 .performTextReplacement("20 * * * * *")
             waitForIdle()
@@ -99,7 +100,7 @@ class CronFixtureUiTest {
                     renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                     onChange = { changes++ })
             }
-            onNodeWithText("Choose schedule").performClick()
+            onNodeWithContentDescription("Choose schedule").performClick()
             onNodeWithText("Cancel").performClick()
             assertEquals(0, changes)
         }
@@ -140,12 +141,12 @@ class CronFixtureUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodes(hasSetTextAction() and hasText(raw)).onFirst().assertExists()
         onNodeWithText("Apply").performClick()
         waitForIdle()
         assertEquals(0, changes)
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodes(hasSetTextAction() and hasText(raw)).onFirst()
             .performTextReplacement(replacement)
         onNodeWithText("Apply").performClick()

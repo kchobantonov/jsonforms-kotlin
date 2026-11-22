@@ -98,34 +98,31 @@ class AdornmentNativeActionHoverUiTest {
         val start = edge("S")
         val end = edge("E")
         val field = onAllNodes(hasSetTextAction()).onFirst().fetchSemanticsNode().boundsInRoot
-        val picker = if (extended) null else action(pickerLabel)
-        if (extended) onNodeWithText(pickerLabel).assertExists()
+        val picker = action(pickerLabel)
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
         waitForIdle()
         val clear = action("Clear value")
         assertEquals(start, edge("S"))
         assertEquals(end, edge("E"))
-        if (picker != null) assertEquals(picker, action(pickerLabel))
-        for (part in listOfNotNull(start, end, clear, picker)) {
+        assertEquals(picker, action(pickerLabel))
+        for (part in listOf(start, end, clear, picker)) {
             assertTrue(part.left >= field.left - 2f && part.right <= field.right + 2f,
                 "$kind part escapes 240 dp field: $part, $field")
         }
         assertTrue(end.right <= clear.left || clear.right <= end.left,
             "$kind end adornment overlaps clear: $end, $clear")
-        if (picker != null) {
-            assertTrue(end.right <= picker.left || picker.right <= end.left,
-                "$kind end adornment overlaps picker: $end, $picker")
-            assertTrue(clear.right <= picker.left || picker.right <= clear.left,
-                "$kind clear overlaps picker: $clear, $picker")
-        }
+        assertTrue(end.right <= picker.left || picker.right <= end.left,
+            "$kind end adornment overlaps picker: $end, $picker")
+        assertTrue(clear.right <= picker.left || picker.right <= clear.left,
+            "$kind clear overlaps picker: $clear, $picker")
         assertEquals(0, writes)
         onRoot().performMouseInput { moveTo(Offset(-10f, -10f)) }
         waitForIdle()
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         assertEquals(start, edge("S"))
         assertEquals(end, edge("E"))
-        if (picker != null) assertEquals(picker, action(pickerLabel))
+        assertEquals(picker, action(pickerLabel))
         onAllNodes(hasSetTextAction()).onFirst().performMouseInput { moveTo(center) }
         waitForIdle()
         onNodeWithContentDescription("Clear value")

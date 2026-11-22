@@ -63,19 +63,20 @@ class ControlLocaleUiTest {
                 onChange = { data = it.data },
             )
         }
-        onAllNodesWithContentDescription("Clear value").assertCountEquals(2)
+        onAllNodesWithContentDescription("Clear value").assertCountEquals(0)
         onAllNodes(hasSetTextAction()).onFirst().performTextReplacement("bad")
         onAllNodes(hasSetTextAction()).onLast().performTextReplacement("bad")
+        onAllNodesWithContentDescription("Clear value").assertCountEquals(1)
         onNodeWithText("Invalid integer.").assertExists()
         onNodeWithText("Invalid number.").assertExists()
         runOnIdle { locale = "bg-BG" }
-        onAllNodesWithContentDescription("Изчисти стойността").assertCountEquals(2)
+        onAllNodesWithContentDescription("Изчисти стойността").assertCountEquals(1)
         onNodeWithText("Невалидно цяло число.").assertExists()
         onNodeWithText("Невалидно число.").assertExists()
         runOnIdle { overrideClear = true }
-        onAllNodesWithContentDescription("Custom clear").assertCountEquals(2)
+        onAllNodesWithContentDescription("Custom clear").assertCountEquals(1)
         runOnIdle { preferScoped = true }
-        onAllNodesWithContentDescription("Scoped clear").assertCountEquals(2)
+        onAllNodesWithContentDescription("Scoped clear").assertCountEquals(1)
     }
 
     @Test fun materialEnumClearUsesLocaleDefault() = enumClear(false, false)

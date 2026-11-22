@@ -45,7 +45,6 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
         options.stringOption("dateTimeSaveFormat"), DEFAULT_DATE_TIME_SAVE_FORMAT,
         bindings.stateProps.path, props.config)
     val timeViews = resolveTimeViews(options["views"], displayFormat)
-    val pickerTimeViews = timeViews ?: defaultTimeViews(displayFormat)
     val dateMode = resolveDateViewMode(options["views"], displayFormat)
     val showActions = options.booleanOption("showActions") == true
     val i18nKeyPrefix = bindings.stateProps.i18nKeyPrefix
@@ -226,9 +225,9 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
         }
         PickerStep.Time -> {
             val initial = pendingValue ?: currentTemporalValue()
-            MaterialTimeViewsDialog(
+            if (timeViews != null) MaterialTimeViewsDialog(
                 initial = initial,
-                views = pickerTimeViews,
+                views = timeViews,
                 is24Hour = options.booleanOption("ampm") != true,
                 cancelLabel = cancelText,
                 okLabel = okText,
@@ -250,6 +249,32 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
                 onDismiss = { pickerStep = null },
                 onConfirm = { selected ->
                     if (restrict && rangeError(selected) != null) return@MaterialTimeViewsDialog
+                    commit(selected)
+                    pickerStep = null
+                },
+            ) else MaterialTimePickerDialog(
+                initialHour = initial.hour,
+                initialMinute = initial.minute,
+                is24Hour = options.booleanOption("ampm") != true,
+                cancelLabel = cancelText,
+                okLabel = okText,
+                titleLabel = selectTimeText,
+                invalidSelectionMessage = pickerRangeText,
+                showActions = showActions,
+                canConfirm = { hour, minute ->
+                    !restrict || rangeError(initial.copy(hour = hour, minute = minute)) == null
+                },
+                onSelectionChange = { hour, minute ->
+                    val selected = initial.copy(hour = hour, minute = minute)
+                    if (!restrict || rangeError(selected) == null) {
+                        pendingValue = selected
+                        commit(selected)
+                    }
+                },
+                onDismiss = { pickerStep = null },
+                onConfirm = { hour, minute ->
+                    val selected = initial.copy(hour = hour, minute = minute)
+                    if (restrict && rangeError(selected) != null) return@MaterialTimePickerDialog
                     commit(selected)
                     pickerStep = null
                 },

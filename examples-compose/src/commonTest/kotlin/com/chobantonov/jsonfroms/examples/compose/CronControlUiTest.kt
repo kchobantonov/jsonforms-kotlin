@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onLast
@@ -64,7 +65,7 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data })
         }
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         assertEquals(true, onAllNodesWithText("Day").onFirst()
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
         assertEquals("Selected period", onAllNodesWithText("Day").onFirst()
@@ -85,7 +86,7 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodesWithText("Hour").onFirst().performClick()
         onAllNodesWithText("0").onFirst().performTextReplacement("60")
         onNodeWithText("Invalid cron expression.").assertExists()
@@ -106,7 +107,7 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodesWithText("Hour").onFirst().performClick()
         runOnIdle { data = Json.parseToJsonElement("""{"schedule":"@weekly"}""") }
         waitForIdle()
@@ -133,16 +134,16 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("Choose schedule").performClick()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodesWithText("Hour").onFirst().performClick()
         runOnIdle { data = Json.parseToJsonElement("""{"schedule":"@daily","lock":true}""") }
         waitForIdle()
         onNodeWithText("Apply").assertDoesNotExist()
-        onNodeWithText("Choose schedule").assertDoesNotExist()
+        onNodeWithContentDescription("Choose schedule").assertDoesNotExist()
         runOnIdle { data = Json.parseToJsonElement("""{"schedule":"@daily","lock":false}""") }
         waitForIdle()
         onNodeWithText("Apply").assertDoesNotExist()
-        onNodeWithText("Choose schedule").assertExists()
+        onNodeWithContentDescription("Choose schedule").assertExists()
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
         assertEquals(0, changes)
     }
@@ -160,18 +161,19 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithContentDescription("Clear value").assertExists()
-        onAllNodesWithText("Choose schedule").onLast().assertExists()
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodesWithContentDescription("Choose schedule").onLast().assertExists()
         runOnIdle { readonly = true; locale = "bg" }
         onNodeWithContentDescription("Изчисти стойността").assertDoesNotExist()
-        onNodeWithText("Избери график").assertDoesNotExist()
+        onNodeWithContentDescription("Избери график").assertDoesNotExist()
         assertEquals(JsonPrimitive("@weekly"), data.jsonObject["schedule"])
         runOnIdle { readonly = false }
-        onNodeWithText("Избери график").assertExists()
-        onNodeWithText("Избери график").performClick()
+        onNodeWithContentDescription("Избери график").assertExists()
+        onNodeWithContentDescription("Избери график").performClick()
         assertEquals("Избран период", onAllNodesWithText("Седмица").onFirst()
             .fetchSemanticsNode().config[SemanticsProperties.StateDescription])
         onNodeWithText("Отказ").performClick()
+        onAllNodesWithText("@weekly").onLast().performClick()
         onNodeWithContentDescription("Изчисти стойността").performClick()
         waitForIdle()
         assertEquals(null, data.jsonObject["schedule"])
@@ -187,18 +189,18 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onAllNodesWithText("Choose schedule").onLast().performClick()
+        onAllNodesWithContentDescription("Choose schedule").onLast().performClick()
         onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
         assertEquals(0, changes)
-        onAllNodesWithText("Choose schedule").onLast().performClick()
+        onAllNodesWithContentDescription("Choose schedule").onLast().performClick()
         onAllNodesWithText("Hour").onFirst().performClick()
         onAllNodesWithText("Cancel").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
         assertEquals(0, changes)
-        onAllNodesWithText("Choose schedule").onLast().performClick()
+        onAllNodesWithContentDescription("Choose schedule").onLast().performClick()
         onAllNodesWithText("Hour").onFirst().performClick()
         onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
@@ -233,7 +235,7 @@ class CronControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data })
         }
-        onNodeWithText("Choose schedule").assertDoesNotExist()
+        onNodeWithContentDescription("Choose schedule").performClick()
         onAllNodesWithText("Hour").onLast().performClick()
         onAllNodesWithText("*").onFirst().performTextReplacement("15")
         waitForIdle()

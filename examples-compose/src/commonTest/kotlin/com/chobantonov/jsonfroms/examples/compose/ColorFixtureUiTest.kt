@@ -50,18 +50,18 @@ class ColorFixtureUiTest {
                 onChange = { data = it.data; changes++ })
         }
         assertEquals(JsonPrimitive("color"), selected.options["format"])
-        onNodeWithText("Choose color").assertExists()
+        onNodeWithContentDescription("Choose color").assertExists()
         assertEquals(JsonPrimitive("rgb(82, 196, 26)"), data.jsonObject["statusDot"])
         assertEquals(0, changes)
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Color #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("rgb(239, 68, 68)"), data.jsonObject["statusDot"])
 
         runOnIdle { selected = control("brandPrimary") }
-        onNodeWithText("Choose color").assertExists()
+        onNodeWithContentDescription("Choose color").assertExists()
         assertEquals(JsonPrimitive("#3a7bd5"), data.jsonObject["brandPrimary"])
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithContentDescription("Color #ef4444").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["brandPrimary"])
@@ -86,7 +86,7 @@ class ColorFixtureUiTest {
         }
         fun show(name: String) { runOnIdle { selected = control(name) } }
         fun choosePreset() {
-            onNodeWithText("Choose color").performClick()
+            onNodeWithContentDescription("Choose color").performClick()
             onNodeWithContentDescription("Color #ef4444").performClick()
             waitForIdle()
         }
@@ -108,7 +108,7 @@ class ColorFixtureUiTest {
 
         show("watermark")
         assertEquals(JsonPrimitive("#3a7bd540"), data.jsonObject["watermark"])
-        onNodeWithText("Choose color").performClick()
+        onNodeWithContentDescription("Choose color").performClick()
         onNodeWithText("Close").performClick()
         assertEquals(JsonPrimitive("#3a7bd540"), data.jsonObject["watermark"])
 

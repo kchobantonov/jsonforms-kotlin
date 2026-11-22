@@ -59,7 +59,7 @@ class ExtendedInvalidScalarUiTest {
         }
         onNodeWithText("Invalid value: {\"raw\":true}").assertExists()
         if (pickerOnly) {
-            assertTrue(onNodeWithText("Choose color").fetchSemanticsNode()
+            assertTrue(onNodeWithContentDescription("Choose color").fetchSemanticsNode()
                 .config[SemanticsProperties.Error].contains("Invalid value: {\"raw\":true}"))
         } else {
             onAllNodes(hasSetTextAction()).onFirst()
@@ -75,7 +75,7 @@ class ExtendedInvalidScalarUiTest {
         onNodeWithText("Невалидна стойност: null").assertExists()
         runOnIdle { data = Json.parseToJsonElement("""{"value":{"raw":true}}""") }
         if (pickerOnly) {
-            onNodeWithText("Избери цвят").performClick()
+            onNodeWithContentDescription("Избери цвят").performClick()
             onNodeWithContentDescription("Цвят #ef4444").performClick()
             runOnIdle { assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["value"]) }
         } else {
