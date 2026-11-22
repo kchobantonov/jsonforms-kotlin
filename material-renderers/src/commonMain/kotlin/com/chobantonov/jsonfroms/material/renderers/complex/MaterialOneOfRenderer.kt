@@ -90,6 +90,7 @@ fun MaterialOneOfRenderer(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "oneOf")
 
     val renderInfos = createCombinatorRenderInfos(
         combinatorSubSchemas = controlProps.schema.oneOf.orEmpty(),

@@ -1,126 +1,126 @@
 {
-  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
   "sourceRoot": "../jsonforms-extended-spec",
   "rule": "Pinned source identifiers only. An entry is not evidence of Kotlin support; map each to the requirement ledger and executed tests.",
   "sections": [
     {
-      "line": 70,
+      "line": 71,
       "text": "## 1. Purpose and portability"
     },
     {
-      "line": 183,
+      "line": 184,
       "text": "## 2. Reference type declarations"
     },
     {
-      "line": 220,
+      "line": 221,
       "text": "## 3. Runtime context and the action contract"
     },
     {
-      "line": 262,
+      "line": 263,
       "text": "## 4. Reuse before adding types"
     },
     {
-      "line": 287,
+      "line": 288,
       "text": "## 5. Established presentation options and canonical variants"
     },
     {
-      "line": 500,
+      "line": 501,
       "text": "## 6. Layout types and sizing"
     },
     {
-      "line": 634,
+      "line": 635,
       "text": "## 7. Wrap, defaults, splitter and Spacer"
     },
     {
-      "line": 720,
+      "line": 721,
       "text": "## 8. Group and Categorization"
     },
     {
-      "line": 1096,
+      "line": 1160,
       "text": "## 9. Internationalizable text"
     },
     {
-      "line": 1390,
+      "line": 1454,
       "text": "## 10. Markdown policy"
     },
     {
-      "line": 1478,
+      "line": 1542,
       "text": "## 11. Dynamic values and path grammar"
     },
     {
-      "line": 2093,
+      "line": 2160,
       "text": "## 12. URL and extension security configuration"
     },
     {
-      "line": 2157,
+      "line": 2224,
       "text": "## 13. ImageView, Separator, Link and templates"
     },
     {
-      "line": 2309,
+      "line": 2376,
       "text": "## 14. Button, actions and script"
     },
     {
-      "line": 2507,
+      "line": 2574,
       "text": "## 15. Read-only, restrict and mutation constraints"
     },
     {
-      "line": 3439,
+      "line": 3506,
       "text": "## 16. Adaptive behaviour"
     },
     {
-      "line": 3462,
+      "line": 3529,
       "text": "## 17. External context, visibility and security"
     },
     {
-      "line": 3489,
+      "line": 3556,
       "text": "## 18. Renderer behaviour specifications"
     },
     {
-      "line": 7424,
+      "line": 7587,
       "text": "## 19. Honest rendering of invalid and out-of-domain data"
     },
     {
-      "line": 7445,
+      "line": 7608,
       "text": "## 20. Optional editor and tooling capability catalogues"
     },
     {
-      "line": 7499,
+      "line": 7662,
       "text": "## 21. Diagnostics"
     },
     {
-      "line": 7528,
+      "line": 7691,
       "text": "## 22. Runtime state"
     },
     {
-      "line": 7537,
+      "line": 7700,
       "text": "## 23. Reserved portable names"
     },
     {
-      "line": 7551,
+      "line": 7714,
       "text": "## 24. Examples requirement"
     },
     {
-      "line": 7577,
+      "line": 7740,
       "text": "## 25. Conformance suites"
     },
     {
-      "line": 7595,
+      "line": 7758,
       "text": "## 26. Normative requirements summary"
     },
     {
-      "line": 7623,
+      "line": 7786,
       "text": "## 27. Verification before implementation"
     },
     {
-      "line": 7641,
+      "line": 7804,
       "text": "## 28. Capability declarations"
     },
     {
-      "line": 7654,
+      "line": 7817,
       "text": "## 29. JSON schema artifacts and validation boundary"
     },
     {
-      "line": 7709,
+      "line": 7872,
       "text": "## 30. Host, demo and accessibility contracts"
     }
   ],
@@ -964,6 +964,54 @@
       "section": null,
       "schema": "jsonforms-extended-uischema.schema.json",
       "valid": true
+    },
+    {
+      "id": "adornment-literal",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "adornment-single-icon",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "adornment-ordered-array",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": true
+    },
+    {
+      "id": "adornment-array-string",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "adornment-missing-icon-label",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "adornment-decorative-tooltip",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "adornment-markup",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
+    },
+    {
+      "id": "adornment-invalid-kind",
+      "section": "18.3a",
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "valid": false
     }
   ],
   "behaviorVectors": [
@@ -1058,6 +1106,34 @@
     {
       "id": "template-policy-update-preserves-draft",
       "section": "12, 13"
+    },
+    {
+      "id": "adornment-display-only",
+      "section": "18.3a"
+    },
+    {
+      "id": "adornment-translation-and-icon-fallback",
+      "section": "18.3a"
+    },
+    {
+      "id": "adornment-ordered-composition",
+      "section": "18.3a"
+    },
+    {
+      "id": "adornment-outer-edge-native-controls",
+      "section": "18.3a"
+    },
+    {
+      "id": "adornment-library-slot-convention",
+      "section": "18.3a"
+    },
+    {
+      "id": "group-header-accessible-name",
+      "section": "8.1"
+    },
+    {
+      "id": "adornment-text-like-variant-coverage",
+      "section": "18.3a"
     }
   ],
   "configPaths": [
@@ -1793,6 +1869,18 @@
     },
     {
       "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/cover"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/header"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/group/properties/footer"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
       "pointer": "/$defs/group/properties/elements"
     },
     {
@@ -2250,6 +2338,14 @@
     {
       "schema": "jsonforms-extended-uischema.schema.json",
       "pointer": "/$defs/controlOptions/properties/showRadio"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/startAdornment"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/controlOptions/properties/endAdornment"
     },
     {
       "schema": "jsonforms-extended-uischema.schema.json",
@@ -2864,6 +2960,50 @@
       "pointer": "/$defs/rowDetail/allOf/0/if/properties/presentation"
     },
     {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/0/properties/kind"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/0/properties/text"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/0/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/0/properties/tooltip"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/kind"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/icon"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/label"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/i18n"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/tooltip"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/properties/decorative"
+    },
+    {
+      "schema": "jsonforms-extended-uischema.schema.json",
+      "pointer": "/$defs/inputAdornment/oneOf/1/allOf/0/if/properties/decorative"
+    },
+    {
       "schema": "jsonforms-extended-config.schema.json",
       "pointer": "/allOf/1/properties/jsonformsExtended"
     },
@@ -3198,6 +3338,18 @@
     {
       "schema": "jsonforms-uischema.schema.json",
       "pointer": "/$defs/group/properties/label"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/cover"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/header"
+    },
+    {
+      "schema": "jsonforms-uischema.schema.json",
+      "pointer": "/$defs/group/properties/footer"
     },
     {
       "schema": "jsonforms-uischema.schema.json",
@@ -4201,6 +4353,7 @@
     "editor-details",
     "file-control",
     "group-layout",
+    "input-adornments",
     "job-application",
     "json-editor",
     "json-inference",

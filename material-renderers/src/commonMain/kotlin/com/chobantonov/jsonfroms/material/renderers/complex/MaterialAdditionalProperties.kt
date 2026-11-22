@@ -122,6 +122,10 @@ internal fun MaterialAdditionalProperties(
     val canRemove = interactive && !pendingEditor && (!restrict || schema.minProperties == null || data.size > schema.minProperties!!)
     var newName by remember(controlProps.path) { mutableStateOf("") }
     var addError by remember(controlProps.path) { mutableStateOf<String?>(null) }
+    LaunchedEffect(interactive, data) {
+        newName = ""
+        addError = null
+    }
     val emptyDraftAllowed = newName.isNotEmpty() ||
         (validateAdditionalPropertyName(schema, "", data.keys, nameConfig, controlProps.rootSchema, validator) == null &&
             additionalPropertySchema(schema, "", controlProps.rootSchema) != null)

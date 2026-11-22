@@ -7,6 +7,7 @@ import com.chobantonov.jsonfroms.core.i18n.translateRadioUnknownValue
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,13 +31,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -45,6 +51,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.focused
+import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
@@ -73,6 +81,7 @@ import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.withIncreasedRank
 import com.chobantonov.jsonfroms.material.renderers.controls.materialEnumControlTester
 import com.chobantonov.jsonfroms.core.util.JsonPath
+import com.chobantonov.jsonfroms.core.util.resolveInputAdornments
 import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
 import com.chobantonov.jsonfroms.core.i18n.translateControlLocalError
 import com.chobantonov.jsonfroms.core.util.resolveAutocomplete
@@ -102,6 +111,7 @@ fun CupertinoEnumControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -138,6 +148,9 @@ internal fun CupertinoSelectControl(
         stateProps.config + stateProps.uischema.options, enabled)
     val canClear = hasValue && enabled &&
         (stateProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val translator = useJsonForms().state.jsonforms.i18n.translate
+    val startAdornments = resolveInputAdornments(stateProps.uischema.options, "startAdornment", translator)
+    val endAdornments = resolveInputAdornments(stateProps.uischema.options, "endAdornment", translator)
     val colors = LocalCupertinoColors.current
     val hideAsterisk = strictControlBooleanOption(stateProps.config + stateProps.uischema.options,
         "hideRequiredAsterisk") ?: false
@@ -149,7 +162,10 @@ internal fun CupertinoSelectControl(
     var selectorHovered by remember(stateProps.path) { mutableStateOf(false) }
     var clearFocused by remember(stateProps.path) { mutableStateOf(false) }
     var clearHovered by remember(stateProps.path) { mutableStateOf(false) }
+    val clearFocusRequester = remember(stateProps.path) { FocusRequester() }
     val inputModeManager = LocalInputModeManager.current
+    val showClear = canClear && (selectorFocused || selectorHovered || clearFocused || clearHovered ||
+        inputModeManager.inputMode == InputMode.Touch)
     val clearModifier = Modifier.size(28.dp)
         .onFocusChanged { clearFocused = it.isFocused }
         .pointerInput(stateProps.path) {
@@ -161,11 +177,6 @@ internal fun CupertinoSelectControl(
                     }
                 }
             }
-        }
-        // Draw-only reveal avoids rebuilding the clickable selector on focus.
-        .graphicsLayer {
-            alpha = if (selectorFocused || selectorHovered || clearFocused || clearHovered ||
-                inputModeManager.inputMode == InputMode.Touch) 1f else 0f
         }
     val visibleError = if (touched) stateProps.errors else stateProps.errorsBeforeTouch
     val showUnfocusedDescription = strictControlBooleanOption(
@@ -214,27 +225,41 @@ internal fun CupertinoSelectControl(
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                CupertinoAdornments(startAdornments)
                 Text(
                     displayedValue,
                     modifier = Modifier.weight(1f),
                     color = if (enabled) colors.label else colors.secondaryLabel,
                 )
-                if (canClear) {
+                if (showClear) {
                     ActionTooltip(clearLabel) {
                         IconButton(
                             onClick = { dispatch.handleChange(stateProps.path, null); expanded = false },
                             enabled = enabled,
-                            modifier = clearModifier,
+                            modifier = clearModifier.focusRequester(clearFocusRequester).focusable()
+                                .onPreviewKeyEvent { event ->
+                                    if (event.type == KeyEventType.KeyUp &&
+                                        (event.key == Key.Enter || event.key == Key.Spacebar)) {
+                                        dispatch.handleChange(stateProps.path, null)
+                                        expanded = false
+                                        true
+                                    } else false
+                                }.semantics {
+                                focused = clearFocused
+                                requestFocus { clearFocusRequester.requestFocus(); true }
+                            },
                         ) {
                             Icon(JsonFormsActionIcons.Clear, clearLabel, tint = colors.secondaryLabel, modifier = Modifier.size(15.dp))
                         }
                     }
-                }
+                } else if (canClear) Spacer(Modifier.size(28.dp))
                 Spacer(Modifier.width(8.dp))
                 CupertinoDropdownChevron(
                     expanded = expanded,
                     color = colors.secondaryLabel,
+                    modifier = Modifier.testTag("choice-dropdown-arrow"),
                 )
+                CupertinoAdornments(endAdornments)
             }
             CupertinoDropdownMenu(
                 expanded = expanded && enabled,
@@ -370,8 +395,8 @@ private fun CupertinoSearchableSelectControl(
 }
 
 @Composable
-internal fun CupertinoDropdownChevron(expanded: Boolean, color: Color) {
-    Canvas(Modifier.size(14.dp).rotate(if (expanded) 180f else 0f)) {
+internal fun CupertinoDropdownChevron(expanded: Boolean, color: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier.size(14.dp).rotate(if (expanded) 180f else 0f)) {
         val strokeWidth = 1.5.dp.toPx()
         drawLine(
             color = color,

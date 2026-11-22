@@ -115,6 +115,21 @@ class UiSchemaJsonTest {
     }
 
     @Test
+    fun parsesGroupCardRegionsOutsideBody() {
+        val group = Json.parseToJsonElement("""{
+          "type":"Group","cover":{"type":"ImageView","src":"/cover.png","alt":"Cover"},
+          "header":[{"type":"Label","text":"Heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/name"}],
+          "footer":[{"type":"Label","text":"After body"}]
+        }""") as JsonObject
+        val parsed = assertIs<GroupElement>(group.toUiSchemaElement())
+        assertIs<ImageViewElement>(parsed.cover)
+        assertEquals("Heading", assertIs<LabelElement>(parsed.header.single()).text)
+        assertIs<ControlElement>(parsed.elements.single())
+        assertEquals("After body", assertIs<LabelElement>(parsed.footer.single()).text)
+    }
+
+    @Test
     fun preservesUnknownNamespaceAndExplicitEmptyChildren() {
         val authored = Json.parseToJsonElement(
             """{"type":"VendorWidget","name":"stable","options":{"vendor":{"mode":"wide"}},"payload":{"enabled":true},"elements":[]}"""

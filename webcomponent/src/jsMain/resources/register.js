@@ -1,7 +1,7 @@
 window.jsonFormsKotlinElementFactory = (mount) => class JsonFormsKotlinElement extends HTMLElement {
   static get observedAttributes() {
     return ['data', 'schema', 'uischema', 'uischemas', 'config', 'context', 'translations', 'additional-errors',
-      'readonly', 'data-provided', 'validation-mode', 'dir', 'lang', 'theme'];
+      'readonly', 'data-provided', 'validation-mode', 'dir', 'lang', 'theme', 'renderer-family'];
   }
 
   get uiSchemaRegistry() {
@@ -27,6 +27,7 @@ window.jsonFormsKotlinElementFactory = (mount) => class JsonFormsKotlinElement e
     } else if (this._jsonformsRefresh) {
       this._jsonformsRefresh();
     }
+    this._jsonformsConnectionChange?.(true);
     if (!this._jsonformsColorSchemeQuery && window.matchMedia) {
       const query = window.matchMedia('(prefers-color-scheme: dark)');
       const refresh = () => this._jsonformsRefresh?.();
@@ -37,6 +38,7 @@ window.jsonFormsKotlinElementFactory = (mount) => class JsonFormsKotlinElement e
   }
 
   disconnectedCallback() {
+    this._jsonformsConnectionChange?.(false);
     if (this._jsonformsColorSchemeQuery) {
       this._jsonformsColorSchemeQuery.removeEventListener('change', this._jsonformsColorSchemeRefresh);
       this._jsonformsColorSchemeQuery = null;

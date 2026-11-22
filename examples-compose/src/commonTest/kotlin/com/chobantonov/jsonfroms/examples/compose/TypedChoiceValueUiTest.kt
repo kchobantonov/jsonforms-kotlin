@@ -520,6 +520,7 @@ class TypedChoiceValueUiTest {
         var data by mutableStateOf(Json.parseToJsonElement("""{"choice":null}"""))
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/choice", options = mapOf(
                     "autocomplete" to JsonPrimitive(false),

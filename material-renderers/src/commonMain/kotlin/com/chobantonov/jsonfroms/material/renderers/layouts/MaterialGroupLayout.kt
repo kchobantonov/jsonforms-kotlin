@@ -5,6 +5,7 @@ import com.chobantonov.jsonfroms.core.i18n.translateGroupRendererText
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,14 +44,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.LocalHandledDependencyErrors
+import com.chobantonov.jsonfroms.compose.LocalGroupHeaderLabelText
 import com.chobantonov.jsonfroms.compose.ReportLayoutDiagnostics
 import com.chobantonov.jsonfroms.compose.useJsonForms
+import com.chobantonov.jsonfroms.material.renderers.additional.LocalMaterialGroupSupportingLabel
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporter
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporterConfigKey
 import com.chobantonov.jsonfroms.core.i18n.defaultErrorTranslator
 import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
+import com.chobantonov.jsonfroms.core.i18n.deriveLabelForUISchemaElement
 import com.chobantonov.jsonfroms.core.i18n.getCombinedErrorMessage
 import com.chobantonov.jsonfroms.core.i18n.translateGroupValidationIndicator
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfLayout
@@ -58,6 +64,7 @@ import com.chobantonov.jsonfroms.core.mappers.groupBoundScopes
 import com.chobantonov.jsonfroms.core.mappers.resolveGroupExpansionOptions
 import com.chobantonov.jsonfroms.core.mappers.mapStateToLayoutProps
 import com.chobantonov.jsonfroms.core.models.GroupElement
+import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.store.getData
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.rankWith
@@ -88,6 +95,7 @@ fun MaterialGroupLayout(
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -106,7 +114,13 @@ fun MaterialGroupLayout(
         expansion.diagnostic?.let { reporter?.report(it.copy(details = it.details + ("path" to props.path))) }
     }
     var expanded by remember(props.path) { mutableStateOf(!expansion.collapsed) }
-    LaunchedEffect(expansion.collapsed) { expanded = !expansion.collapsed }
+    var previousCollapsed by remember(props.path) { mutableStateOf(expansion.collapsed) }
+    LaunchedEffect(expansion.collapsed) {
+        if (previousCollapsed != expansion.collapsed) {
+            previousCollapsed = expansion.collapsed
+            expanded = !expansion.collapsed
+        }
+    }
     val i18n = props.state.jsonforms.i18n
     val title = label?.takeIf { it.isNotBlank() }
         ?: translateGroupRendererText(i18n, "group.label", "Group")
@@ -131,38 +145,97 @@ fun MaterialGroupLayout(
         errorIndex.countAny(scopes.validationScopes, props.path) + unrepresentedDependencies
     } else null
     val errorLabel = translateGroupValidationIndicator(i18n, errorCount)
+    val hasRegions = layout.cover != null || layout.header.isNotEmpty() || layout.footer.isNotEmpty()
+    val headingLabels = layout.header.filterIsInstance<LabelElement>()
+    val headingOther = layout.header.filterNot { it is LabelElement }
+    val firstHeaderLabel = headingLabels.firstOrNull()
+    val firstHeaderLabelIndex = layout.header.indexOfFirst { it is LabelElement }
+    val renderedHeaderName = remember(firstHeaderLabel, props.path) { mutableStateOf<String?>(null) }
+    val publishHeaderName = remember(renderedHeaderName) {
+        { text: String? -> renderedHeaderName.value = text }
+    }
+    val accessibleName = renderedHeaderName.value?.takeIf(String::isNotBlank)
+        ?: firstHeaderLabel
+        ?.let { deriveLabelForUISchemaElement(it, i18n.translate ?: defaultTranslator) }
+        ?.takeIf(String::isNotBlank) ?: title
+
+    @Composable fun disclosureButton(modifier: Modifier) {
+        TextButton(
+            onClick = { expanded = !expanded },
+            modifier = modifier.semantics {
+                contentDescription = accessibleName
+                stateDescription = stateText
+                if (hasErrors) error(errorLabel)
+            },
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (hasRegions && layout.header.isNotEmpty() && headingLabels.isNotEmpty()) {
+                    FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        headingLabels.forEachIndexed { index, child ->
+                            CompositionLocalProvider(
+                                LocalMaterialGroupSupportingLabel provides (index == 1),
+                                LocalGroupHeaderLabelText provides
+                                    (if (index == 0) publishHeaderName else null),
+                            ) {
+                                JsonFormsDispatchRenderer(props.copy(uischema = child,
+                                    enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                            }
+                        }
+                    }
+                } else Text(if (layout.header.isEmpty()) title else
+                    translateGroupRendererText(i18n, "group.label", "Group"), Modifier.weight(1f))
+                Icon(
+                    JsonFormsActionIcons.ChevronRight,
+                    contentDescription = null,
+                    modifier = Modifier.rotate(if (expanded) 90f else 0f),
+                )
+            }
+        }
+    }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().then(if (expansion.collapsible) Modifier
+            else Modifier.semantics { contentDescription = accessibleName }),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
+        if (hasRegions) layout.cover?.let { cover ->
+            JsonFormsDispatchRenderer(props.copy(uischema = cover, enabled = layoutProps.enabled,
+                readonly = layoutProps.readonly, id = null))
+        }
         if (expansion.collapsible) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    modifier = Modifier.weight(1f).semantics {
-                        stateDescription = stateText
-                        if (hasErrors) error(errorLabel)
-                    },
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(title, Modifier.weight(1f))
-                        Icon(
-                            JsonFormsActionIcons.ChevronRight,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(if (expanded) 90f else 0f),
-                        )
+                if (hasRegions && headingOther.isNotEmpty()) {
+                    FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        disclosureButton(Modifier)
+                        headingOther.forEach { child ->
+                            JsonFormsDispatchRenderer(props.copy(uischema = child,
+                                enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                        }
                     }
-                }
+                } else disclosureButton(Modifier.weight(1f))
                 if (hasErrors) Badge(
                     modifier = Modifier.padding(end = 8.dp)
                         .clearAndSetSemantics { contentDescription = errorLabel },
                 ) { if (errorCount != null) Text(errorCount.toString()) }
                 if (containsData) DataIndicatorBadge(dataLabel, Modifier.padding(end = 16.dp))
+            }
+        } else if (hasRegions && layout.header.isNotEmpty()) {
+            FlowRow(Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                layout.header.forEachIndexed { index, child ->
+                    CompositionLocalProvider(
+                        LocalMaterialGroupSupportingLabel provides (index == 1 && child is LabelElement),
+                        LocalGroupHeaderLabelText provides
+                            (if (index == firstHeaderLabelIndex) publishHeaderName else null),
+                    ) {
+                        JsonFormsDispatchRenderer(props.copy(uischema = child,
+                            enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                    }
+                }
             }
         } else if (!label.isNullOrBlank()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -194,13 +267,23 @@ fun MaterialGroupLayout(
                     CompositionLocalProvider(LocalHandledDependencyErrors provides
                         (handledDependencies + missingDependencyErrors)) {
                         MaterialLayoutRenderer(
-                            props = props.copy(enabled = layoutProps.enabled),
+                            props = props.copy(enabled = layoutProps.enabled, readonly = layoutProps.readonly),
                             elements = layout.elements,
                             direction = LayoutDirection.Column,
                             reportDiagnostics = false,
                         )
                     }
                     footer?.invoke()
+                }
+            }
+            if (hasRegions && layout.footer.isNotEmpty()) {
+                HorizontalDivider()
+                FlowRow(Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    layout.footer.forEach { child ->
+                        JsonFormsDispatchRenderer(props.copy(uischema = child,
+                            enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                    }
                 }
             }
         }

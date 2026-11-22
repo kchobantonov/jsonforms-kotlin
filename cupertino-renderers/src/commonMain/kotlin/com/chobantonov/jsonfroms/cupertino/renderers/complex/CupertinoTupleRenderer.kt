@@ -104,6 +104,7 @@ fun CupertinoTupleRenderer(props: ComposeJsonFormsRendererProps) {
         ),
     ))
     if (!state.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "tuple")
     val explicitVariant = (control.options["variant"] as? JsonPrimitive)?.contentOrNull == "tuple"
     val tuple = resolveTupleSchema(state.schema, explicitVariant)
     if (tuple == null) {

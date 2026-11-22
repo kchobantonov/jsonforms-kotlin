@@ -147,6 +147,9 @@ data class GroupElement(
     override val options: JsonOptions = emptyMap(),
     override val elements: List<UiSchemaElement> = emptyList(),
     override val name: String? = null,
+    val cover: UiSchemaElement? = null,
+    val header: List<UiSchemaElement> = emptyList(),
+    val footer: List<UiSchemaElement> = emptyList(),
 ) : GroupLayout {
     override val type: String = "Group"
 }

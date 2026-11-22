@@ -19,7 +19,7 @@ Kotlin Multiplatform port of JSON Forms.
 - `:extended-renderers` is an optional renderer project. It exports `materialExtendedRenderers`
   and `cupertinoExtendedRenderers`, which add portable controls, layouts, links, images, and basic
   Markdown/Label interpolation to the corresponding base registry.
-- `:webcomponent` packages the Material renderer registry as a Kotlin/JS custom element.
+- `:webcomponent` packages the Material and Cupertino renderer registries as a Kotlin/JS custom element.
 - `:examples` contains shared example definitions based on the TypeScript examples package.
 - `:examples-compose` contains the shared Compose demo app.
 - `:examples-compose-android` contains the thin Android launcher app for the demo.
@@ -292,7 +292,9 @@ The optional `context` attribute accepts a JSON object, including `external` and
 fields. Its values are available in action events; live form fields override matching host keys.
 The optional `additional-errors` attribute accepts a JSON array of host validation errors with
 `instancePath`, `message`, and optional `schemaPath`, `keyword`, and string `params` fields.
-Set `lang` to `en` or `bg`, `theme` to `light` or `dark`, and `dir` to `ltr` or `rtl`;
+Set `renderer-family` to `material` (the default) or `cupertino`. Changing it switches the
+mounted form and theme without replacing the host element or changing data. Set `lang` to
+`en` or `bg`, `theme` to `light` or `dark`, and `dir` to `ltr` or `rtl`;
 unsupported language values fall back to English. Attribute changes refresh the mounted form.
 Set `validation-mode` to `validate-and-show` (the default), `validate-and-hide`, or
 `no-validation`. Use `data-provided="false"` to distinguish missing form data from an explicit
@@ -328,6 +330,8 @@ To run the mounted action test, build the development bundle and then run the Ch
 ```bash
 GRADLE_USER_HOME=$PWD/.gradle-user-home ./gradlew :webcomponent:jsBrowserDevelopmentWebpack
 node --test scripts/test-webcomponent-browser.mjs
+node --test scripts/test-webcomponent-image-browser.mjs
+node --test scripts/test-webcomponent-adornment-viewport-browser.mjs
 ```
 
 To exercise the shipped bundle instead, run:
@@ -335,6 +339,8 @@ To exercise the shipped bundle instead, run:
 ```bash
 ./gradlew :webcomponent:jsBrowserProductionWebpack
 WEBCOMPONENT_BUNDLE_MODE=production node scripts/test-webcomponent-browser.mjs
+WEBCOMPONENT_BUNDLE_MODE=production node --test scripts/test-webcomponent-image-browser.mjs
+WEBCOMPONENT_BUNDLE_MODE=production node --test scripts/test-webcomponent-adornment-viewport-browser.mjs
 ```
 
 The demo's Settings panel has an **Interface Style** selector:

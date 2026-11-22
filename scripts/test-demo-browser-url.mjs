@@ -137,6 +137,77 @@ class DevTools {
   }
 }
 
+if (target === 'wasmJs') test('Wasm Group cover paints imported image pixels', { timeout: 120_000 }, async () => {
+  await access(join(bundle, 'examples-compose.js'));
+  await access(chromePath);
+  const server = serveDemo();
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  const port = server.address().port;
+  const profile = await mkdtemp(join(tmpdir(), 'jsonforms-wasm-cover-'));
+  const chrome = spawn(chromePath, [
+    '--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
+    '--disable-dev-shm-usage', '--window-size=1000,800', '--remote-debugging-port=0',
+    `--user-data-dir=${profile}`, `http://127.0.0.1:${port}/#spec-group-layout?form-only=true`,
+  ], { stdio: 'ignore' });
+  let devtools;
+  try {
+    const activePort = await until(async () => {
+      try { return (await readFile(join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0]; }
+      catch { return null; }
+    }, Boolean, 'Chrome DevTools');
+    const page = await until(async () => {
+      const tabs = await (await fetch(`http://127.0.0.1:${activePort}/json`)).json();
+      return tabs.find(tab => tab.type === 'page' && tab.url.includes(`127.0.0.1:${port}/`));
+    }, Boolean, 'Wasm demo page');
+    const socket = new WebSocket(page.webSocketDebuggerUrl);
+    await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
+    devtools = new DevTools(socket);
+    await devtools.click('Card regions');
+    const alt = 'Sunlit courtyard at a boutique hotel';
+    const imageNode = await until(() => devtools.namedNode(alt), Boolean, 'Group cover alternative text');
+    const { model } = await devtools.send('DOM.getBoxModel', { backendNodeId: imageNode.backendDOMNodeId });
+    const bounds = model.border;
+    const colors = await until(async () => {
+      const { data } = await devtools.send('Page.captureScreenshot', { format: 'png' });
+      return devtools.evaluate(`(async () => {
+        const image = new Image();
+        image.src = ${JSON.stringify(`data:image/png;base64,${data}`)};
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width; canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0);
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        const box = ${JSON.stringify(bounds)};
+        const left = Math.max(0, Math.floor(Math.min(box[0], box[2])));
+        const right = Math.min(canvas.width, Math.ceil(Math.max(box[0], box[2])));
+        const top = Math.max(0, Math.floor(Math.min(box[1], box[5])));
+        const bottom = Math.min(canvas.height, Math.ceil(Math.max(box[1], box[5])));
+        const colors = new Set();
+        for (let y = top + Math.floor((bottom-top)*0.2); y < top + Math.floor((bottom-top)*0.8); y += 4) {
+          for (let x = left + Math.floor((right-left)*0.25); x < left + Math.floor((right-left)*0.75); x += 4) {
+            const index = (y * canvas.width + x) * 4;
+            colors.add((pixels[index] << 16) | (pixels[index+1] << 8) | pixels[index+2]);
+          }
+        }
+        return colors.size;
+      })()`);
+    }, count => count > 100, 'decoded Group cover pixels', 30_000);
+    assert.ok(colors > 100);
+  } finally {
+    devtools?.socket.close();
+    chrome.kill('SIGTERM');
+    if (chrome.exitCode === null && chrome.signalCode === null) {
+      await new Promise(resolve => chrome.once('exit', resolve));
+    }
+    await new Promise(resolve => server.close(resolve));
+    await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  }
+});
+
 test('demo URL controls form-only view and browser history', { timeout: 120_000 }, async () => {
   await access(join(bundle, 'examples-compose.js'));
   await access(chromePath);

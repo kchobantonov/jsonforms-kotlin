@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.material.renderers.additional
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
@@ -17,6 +18,8 @@ import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 val MaterialLabelRenderer: ComposeJsonFormsRenderer = ComposeJsonFormsRenderer { props ->
     MaterialLabelRenderer(props)
 }
+
+internal val LocalMaterialGroupSupportingLabel = compositionLocalOf { false }
 
 @Composable
 fun MaterialLabelRenderer(
@@ -48,10 +51,10 @@ fun MaterialLabelRenderer(
         return
     }
 
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
-    )
+    val supporting = LocalMaterialGroupSupportingLabel.current
+    if (supporting) Text(text, style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant)
+    else Text(text, style = MaterialTheme.typography.titleLarge)
 }
 
 val materialLabelRendererTester: RankedTester = rankWith(

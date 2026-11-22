@@ -2,6 +2,8 @@ package com.chobantonov.jsonfroms.extended.renderers
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -20,6 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -56,6 +59,13 @@ internal fun imageDimensionPixels(value: JsonElement?): Float? {
     val primitive = value as? JsonPrimitive ?: return null
     val number = primitive.content.removeSuffix("px").toFloatOrNull() ?: return null
     return number.takeIf { it.isFinite() && it > 0f }
+}
+
+internal fun imageWidthFraction(value: JsonElement?): Float? {
+    val primitive = value as? JsonPrimitive ?: return null
+    if (!primitive.isString || !primitive.content.endsWith('%')) return null
+    val percent = primitive.content.dropLast(1).toFloatOrNull() ?: return null
+    return percent.takeIf { it.isFinite() && it > 0f && it <= 100f }?.div(100f)
 }
 
 @Composable
@@ -127,7 +137,23 @@ private fun ImageView(props: ComposeJsonFormsRendererProps, cupertino: Boolean) 
     val alt = translateScopedText(props.state.jsonforms.i18n.translate, element.i18n, "alt", element.alt.orEmpty())
     val density = LocalDensity.current
     val authoredWidth = imageDimensionPixels(element.options["width"])?.let { with(density) { it.toDp() } }
+    val authoredWidthFraction = imageWidthFraction(element.options["width"])
     val authoredHeight = imageDimensionPixels(element.options["height"])?.let { with(density) { it.toDp() } }
+    if (authoredWidthFraction != null) {
+        // Keep the authored width measurable while the async painter has no intrinsic size.
+        Box(Modifier.fillMaxWidth(authoredWidthFraction)
+            .then(if (authoredHeight != null) Modifier.height(authoredHeight)
+                else Modifier.heightIn(min = 1.dp))
+            .then(if (alt.isNotEmpty()) Modifier.semantics { contentDescription = alt }
+                else Modifier)) {
+            AsyncImage(model = url, contentDescription = null,
+                modifier = Modifier.fillMaxWidth()
+                    .then(if (authoredHeight != null) Modifier.height(authoredHeight)
+                        else Modifier.heightIn(max = 256.dp)),
+                contentScale = ContentScale.Fit, onError = { loadFailed = true })
+        }
+        return
+    }
     AsyncImage(
         model = url,
         contentDescription = alt.takeIf(String::isNotEmpty),

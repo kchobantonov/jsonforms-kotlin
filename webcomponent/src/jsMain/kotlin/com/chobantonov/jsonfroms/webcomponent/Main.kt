@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,6 +32,7 @@ import com.chobantonov.jsonfroms.core.store.Translator
 import com.chobantonov.jsonfroms.core.store.ValidationMode
 import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
 import com.chobantonov.jsonfroms.extended.renderers.materialExtendedRenderers
+import com.chobantonov.jsonfroms.extended.renderers.cupertinoExtendedRenderers
 import com.chobantonov.jsonfroms.extended.renderers.ExtendedActionEventHandler
 import com.chobantonov.jsonfroms.extended.renderers.ExtendedActionEventHandlerConfigKey
 import com.chobantonov.jsonfroms.extended.renderers.ExtendedScriptHandler
@@ -38,6 +40,8 @@ import com.chobantonov.jsonfroms.extended.renderers.ExtendedScriptHandlerConfigK
 import com.chobantonov.jsonfroms.extended.renderers.ExtendedFilePickerConfigKey
 import com.chobantonov.jsonfroms.extended.renderers.browserFilePicker
 import com.chobantonov.jsonfroms.material.renderers.materialCells
+import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoCells
+import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoAppTheme
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonArray
@@ -93,6 +97,9 @@ private fun mountForm(element: dynamic) {
     var additionalErrorsText by mutableStateOf(element.getAttribute("additional-errors") as String?)
     var localeText by mutableStateOf(supportedLocale(element.getAttribute("lang") as String?))
     var themeText by mutableStateOf(resolvedTheme(element.getAttribute("theme") as String?).toString())
+    var rendererFamily by mutableStateOf(if (element.getAttribute("renderer-family") == "cupertino")
+        "cupertino" else "material")
+    var connected by mutableStateOf(true)
     var readonly by mutableStateOf(element.hasAttribute("readonly") as Boolean)
     var validationModeText by mutableStateOf(element.getAttribute("validation-mode") as String?)
     var direction by mutableStateOf((element.getAttribute("dir") as String?)?.lowercase())
@@ -122,6 +129,8 @@ private fun mountForm(element: dynamic) {
         additionalErrorsText = element.getAttribute("additional-errors") as String?
         localeText = supportedLocale(element.getAttribute("lang") as String?)
         themeText = resolvedTheme(element.getAttribute("theme") as String?).toString()
+        rendererFamily = if (element.getAttribute("renderer-family") == "cupertino")
+            "cupertino" else "material"
         readonly = element.hasAttribute("readonly") as Boolean
         validationModeText = element.getAttribute("validation-mode") as String?
         direction = (element.getAttribute("dir") as String?)?.lowercase()
@@ -129,6 +138,9 @@ private fun mountForm(element: dynamic) {
     element._jsonformsRegistryRefresh = {
         propertyUiSchemaRegistry = element.uiSchemaRegistry as Any?
         registryEpoch++
+    }
+    element._jsonformsConnectionChange = { isConnected: Boolean ->
+        connected = isConnected
     }
     val actionHandler = ExtendedActionEventHandler { event ->
         val dispatchAction: dynamic = js("window.jsonFormsKotlinDispatchAction")
@@ -155,6 +167,7 @@ private fun mountForm(element: dynamic) {
     val filePicker = browserFilePicker()
 
     ComposeViewport(viewportContainer = host.unsafeCast<HTMLElement>()) {
+        if (!connected) return@ComposeViewport
         val data = parseJson(dataText)
         val schema = schemaText?.let(::parseJson) as? JsonObject
         val uiSchema = (uiSchemaText?.let(::parseJson) as? JsonObject)
@@ -181,56 +194,63 @@ private fun mountForm(element: dynamic) {
         })
         CompositionLocalProvider(LocalLayoutDirection provides if (direction == "rtl")
             LayoutDirection.Rtl else LayoutDirection.Ltr) {
-            MaterialTheme(colorScheme = if (themeText == "dark") darkColorScheme() else lightColorScheme()) {
-            if (data == null || (schemaText != null && schema == null) ||
-                (uiSchemaText != null && uiSchema == null) ||
-                (uiSchemasText != null && namedUiSchemas == null) ||
-                functionUiSchemas == null ||
-                (configText != null && authoredConfig == null) ||
-                (contextText != null && authoredContext !is JsonObject) ||
-                (translationsText != null && catalogs == null) || additionalErrors == null
-            ) {
-                Text("Invalid JSON Forms input")
-            } else {
-                JsonForms(
-                    data = data,
-                    dataProvided = dataProvided,
-                    context = authoredContext,
-                    schema = schema?.let(::JsonSchema),
-                    uischema = uiSchema,
-                    uischemas = namedUiSchemas.orEmpty() + functionUiSchemas,
-                    readonly = readonly,
-                    validationMode = when (validationModeText) {
-                        "validate-and-hide" -> ValidationMode.ValidateAndHide
-                        "no-validation" -> ValidationMode.NoValidation
-                        else -> ValidationMode.ValidateAndShow
-                    },
-                    i18n = i18n,
-                    additionalErrors = additionalErrors,
-                    config = authoredConfig?.toConfigMap().orEmpty() + mapOf(
-                        ExtendedActionEventHandlerConfigKey to actionHandler,
-                        ExtendedScriptHandlerConfigKey to scriptHandler,
-                        ExtendedFilePickerConfigKey to filePicker,
-                        UiDiagnosticReporterConfigKey to diagnosticReporter,
-                    ),
-                    renderers = materialExtendedRenderers,
-                    cells = materialCells,
-                    onChange = { change ->
-                        val value = change.data.toString()
-                        if (value != dataText || change.dataProvided != dataProvided) {
-                            dataText = value
-                            dataProvided = change.dataProvided
-                            val detail: dynamic = js("({})")
-                            detail.data = JSON.parse<dynamic>(value)
-                            detail.dataProvided = change.dataProvided
-                            val options: dynamic = js("({})")
-                            options.detail = detail
-                            options.bubbles = true
-                            element.dispatchEvent(BrowserCustomEvent("jsonforms-change", options))
-                        }
-                    },
-                )
+            val formContent: @Composable () -> Unit = {
+                if (data == null || (schemaText != null && schema == null) ||
+                    (uiSchemaText != null && uiSchema == null) ||
+                    (uiSchemasText != null && namedUiSchemas == null) ||
+                    functionUiSchemas == null ||
+                    (configText != null && authoredConfig == null) ||
+                    (contextText != null && authoredContext !is JsonObject) ||
+                    (translationsText != null && catalogs == null) || additionalErrors == null
+                ) {
+                    Text("Invalid JSON Forms input")
+                } else {
+                    JsonForms(
+                        data = data,
+                        dataProvided = dataProvided,
+                        context = authoredContext,
+                        schema = schema?.let(::JsonSchema),
+                        uischema = uiSchema,
+                        uischemas = namedUiSchemas.orEmpty() + functionUiSchemas,
+                        readonly = readonly,
+                        validationMode = when (validationModeText) {
+                            "validate-and-hide" -> ValidationMode.ValidateAndHide
+                            "no-validation" -> ValidationMode.NoValidation
+                            else -> ValidationMode.ValidateAndShow
+                        },
+                        i18n = i18n,
+                        additionalErrors = additionalErrors,
+                        config = authoredConfig?.toConfigMap().orEmpty() + mapOf(
+                            ExtendedActionEventHandlerConfigKey to actionHandler,
+                            ExtendedScriptHandlerConfigKey to scriptHandler,
+                            ExtendedFilePickerConfigKey to filePicker,
+                            UiDiagnosticReporterConfigKey to diagnosticReporter,
+                        ),
+                        renderers = if (rendererFamily == "cupertino") cupertinoExtendedRenderers
+                            else materialExtendedRenderers,
+                        cells = if (rendererFamily == "cupertino") cupertinoCells else materialCells,
+                        onChange = { change ->
+                            val value = change.data.toString()
+                            if (value != dataText || change.dataProvided != dataProvided) {
+                                dataText = value
+                                dataProvided = change.dataProvided
+                                val detail: dynamic = js("({})")
+                                detail.data = JSON.parse<dynamic>(value)
+                                detail.dataProvided = change.dataProvided
+                                val options: dynamic = js("({})")
+                                options.detail = detail
+                                options.bubbles = true
+                                element.dispatchEvent(BrowserCustomEvent("jsonforms-change", options))
+                            }
+                        },
+                    )
+                }
             }
+            if (rendererFamily == "cupertino") {
+                CupertinoAppTheme(darkTheme = themeText == "dark", content = formContent)
+            } else {
+                MaterialTheme(colorScheme = if (themeText == "dark") darkColorScheme() else lightColorScheme(),
+                    content = formContent)
             }
         }
     }
@@ -240,7 +260,7 @@ private fun parseJson(value: String): JsonElement? =
     try { Json.parseToJsonElement(value) } catch (_: Exception) { null }
 
 private fun supportedLocale(value: String?): String =
-    if (value?.substringBefore('-')?.lowercase() == "bg") "bg" else "en"
+    if (value?.trim()?.replace('_', '-')?.substringBefore('-')?.lowercase() == "bg") "bg" else "en"
 
 private val CatalogParameter = Regex("\\{([A-Za-z][A-Za-z0-9_]*)\\}")
 

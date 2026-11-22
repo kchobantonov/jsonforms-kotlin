@@ -8,6 +8,8 @@ import com.chobantonov.jsonfroms.core.util.StringMask
 
 /** Shows separators without adding them to the text field's editable buffer. */
 class StringMaskVisualTransformation(private val mask: StringMask) : VisualTransformation {
+    fun visualize(input: String): StringMask.Display = mask.visualize(input)
+
     override fun filter(text: AnnotatedString): TransformedText {
         val display = mask.visualize(text.text)
         val offsets = display.rawOffsets

@@ -190,7 +190,8 @@ private fun uiSchemaElements(uiSchema: UiSchemaElement): List<UiSchemaElement> =
     when (uiSchema) {
         is VerticalLayout -> uiSchema.elements
         is HorizontalLayout -> uiSchema.elements
-        is GroupElement -> uiSchema.elements
+        is GroupElement -> listOfNotNull(uiSchema.cover) + uiSchema.header +
+            uiSchema.elements + uiSchema.footer
         is com.chobantonov.jsonfroms.core.models.CategoryElement -> uiSchema.elements
         is com.chobantonov.jsonfroms.core.models.CategorizationElement -> uiSchema.elements
         else -> emptyList()
@@ -216,7 +217,12 @@ private fun mapUiSchema(
     when (uiSchema) {
         is VerticalLayout -> uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
         is HorizontalLayout -> uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
-        is GroupElement -> uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
+        is GroupElement -> uiSchema.copy(
+            cover = uiSchema.cover?.let { mapUiSchema(it, transformLeaf) },
+            header = uiSchema.header.map { mapUiSchema(it, transformLeaf) },
+            elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) },
+            footer = uiSchema.footer.map { mapUiSchema(it, transformLeaf) },
+        )
         is com.chobantonov.jsonfroms.core.models.CategoryElement ->
             uiSchema.copy(elements = uiSchema.elements.map { mapUiSchema(it, transformLeaf) })
         is com.chobantonov.jsonfroms.core.models.CategorizationElement ->

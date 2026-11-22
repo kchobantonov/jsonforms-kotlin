@@ -56,6 +56,7 @@ fun CupertinoAllOfRenderer(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "allOf")
 
     val explicitGenerate = (control.options["detail"] as? JsonPrimitive)?.contentOrNull
         ?.equals("GENERATE", ignoreCase = true) == true

@@ -103,6 +103,55 @@ class GroupExpansionUiTest {
 
     @Test fun cupertinoCollapsePreservesEditedInvalidField() = collapsePreservesEditedInvalidField(true)
 
+    @Test fun materialCardCollapsePreservesBodyValidation() = cardCollapsePreservesBodyValidation(false)
+
+    @Test fun cupertinoCardCollapsePreservesBodyValidation() = cardCollapsePreservesBodyValidation(true)
+
+    private fun cardCollapsePreservesBodyValidation(cupertino: Boolean) = runComposeUiTest {
+        val constrainedSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","properties":{"note":{"type":"string","minLength":5}}}"""
+        ).jsonObject)
+        val ui = Json.parseToJsonElement("""{
+          "type":"Group","label":"Unused label",
+          "options":{"collapsible":true,"showValidationIndicator":true,
+            "showValidationIndicatorCount":true},
+          "cover":{"type":"Label","text":"Cover"},
+          "header":[{"type":"Label","text":"Card heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/note"}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject.toUiSchemaElement()
+        var current by mutableStateOf(Json.parseToJsonElement("""{"note":"Stored"}"""))
+        var writes = 0
+        var status = CombinedValidityStatus.Valid
+        setContent {
+            JsonForms(data = current, schema = constrainedSchema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { current = it.data; writes++ },
+                onValidityChange = { status = it.status })
+        }
+        onAllNodes(hasSetTextAction())[0].performTextReplacement("A")
+        waitForIdle()
+        assertEquals(1, writes)
+        assertEquals(CombinedValidityStatus.Invalid, status)
+        assertEquals("1 error", onNodeWithText("Card heading").fetchSemanticsNode()
+            .config[SemanticsProperties.Error])
+        onNodeWithText("Card heading").performClick()
+        onNodeWithText("Cover").assertExists()
+        onNodeWithText("Card heading").assertExists()
+        onNodeWithText("Footer").assertDoesNotExist()
+        assertEquals(0, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        assertEquals("A", current.jsonObject["note"]?.jsonPrimitive?.content)
+        assertEquals(CombinedValidityStatus.Invalid, status)
+        assertEquals("1 error", onNodeWithText("Card heading").fetchSemanticsNode()
+            .config[SemanticsProperties.Error])
+        onNodeWithText("Card heading").performClick()
+        onNodeWithText("Footer").assertExists()
+        assertEquals("A", onAllNodes(hasSetTextAction())[0].fetchSemanticsNode()
+            .config[SemanticsProperties.EditableText].text)
+        assertEquals(1, writes)
+        assertEquals(CombinedValidityStatus.Invalid, status)
+    }
+
     private fun collapsePreservesEditedInvalidField(cupertino: Boolean) = runComposeUiTest {
         val constrainedSchema = JsonSchema(Json.parseToJsonElement(
             """{"type":"object","properties":{"note":{"type":"string","minLength":5}}}"""

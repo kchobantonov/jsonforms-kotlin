@@ -19,12 +19,16 @@ kotlin {
             implementation(project(":core"))
             implementation(project(":compose"))
             implementation(project(":material-renderers"))
+            implementation(project(":cupertino-renderers"))
             implementation(project(":extended-renderers"))
             implementation(libs.kotlinx.serialization.json)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(libs.compose.material3)
             implementation(compose.ui)
+        }
+        jsTest.dependencies {
+            implementation(kotlin("test"))
         }
     }
 }

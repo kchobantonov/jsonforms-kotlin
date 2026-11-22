@@ -122,6 +122,39 @@ class ConfirmationUiTest {
 
     @Test fun cupertinoTableElementAlwaysOverridesGlobalNever() = verifyTableAlways(true)
 
+    @Test fun materialAlwaysConfirmsFalseAndZero() = verifyFalsyArrayValues(false, listOf("false", "0"))
+    @Test fun cupertinoAlwaysConfirmsFalseAndZero() = verifyFalsyArrayValues(true, listOf("false", "0"))
+    @Test fun materialAlwaysConfirmsEmptyStringAndNull() = verifyFalsyArrayValues(false, listOf("\"\"", "null"))
+    @Test fun cupertinoAlwaysConfirmsEmptyStringAndNull() = verifyFalsyArrayValues(true, listOf("\"\"", "null"))
+    @Test fun materialAlwaysConfirmsEmptyContainers() = verifyFalsyArrayValues(false, listOf("{}", "[]"))
+    @Test fun cupertinoAlwaysConfirmsEmptyContainers() = verifyFalsyArrayValues(true, listOf("{}", "[]"))
+
+    private fun verifyFalsyArrayValues(cupertino: Boolean, values: List<String>) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement("""{"type":"array","items":{"type":"string"}}""").jsonObject)
+        var data by mutableStateOf(Json.parseToJsonElement("[false]"))
+        var changes = 0
+        setContent {
+            JsonForms(
+                data = data, schema = schema,
+                uischema = ControlElement(scope = "#", options = mapOf(
+                    "confirmation" to Json.parseToJsonElement("""{"delete":"always"}"""),
+                )),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { changes++ },
+            )
+        }
+        for (old in values) {
+            val original = Json.parseToJsonElement("[$old]")
+            runOnIdle { data = original }
+            onNodeWithContentDescription("Delete item").performClick()
+            onNodeWithText("Delete this value?").assertExists()
+            onNodeWithText("No").performClick()
+            waitForIdle()
+            assertEquals(original, data, old)
+        }
+        assertEquals(0, changes)
+    }
+
     @Test fun materialTableRestrictPreventsMinimumDeletion() = verifyTableMinimum(false)
 
     @Test fun cupertinoTableRestrictPreventsMinimumDeletion() = verifyTableMinimum(true)

@@ -74,7 +74,14 @@ internal fun UiSchemaElement.toJsonObject(): JsonObject = buildJsonObject {
         is GroupElement -> {
             element.label?.let { put("label", it) }
             element.i18n?.let { put("i18n", it) }
+            element.cover?.let { put("cover", it.toJsonObject()) }
+            if (element.header.isNotEmpty()) {
+                put("header", JsonArray(element.header.map(UiSchemaElement::toJsonObject)))
+            }
             put("elements", JsonArray(element.elements.map(UiSchemaElement::toJsonObject)))
+            if (element.footer.isNotEmpty()) {
+                put("footer", JsonArray(element.footer.map(UiSchemaElement::toJsonObject)))
+            }
         }
         is CategoryElement -> {
             put("label", element.label)

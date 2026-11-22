@@ -5,8 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.hasAnyDescendant
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -28,6 +26,8 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class TemporalDateTimeActionsUiTest {
@@ -105,16 +105,23 @@ class TemporalDateTimeActionsUiTest {
                 renderers = cupertinoRenderers,
                 onChange = { changes++; data = it.data })
         }
+        waitForIdle()
         onNodeWithContentDescription("Choose date and time").performClick()
+        waitForIdle()
         onNodeWithText("OK").assertDoesNotExist()
         onNodeWithText("Cancel").assertDoesNotExist()
         assertEquals(0, changes)
-        // The 24-hour wheel wraps its semantic indices around the initial hour.
-        onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex) and
-            hasAnyDescendant(hasText("02")))
+        // Native date-time exposes date, hour, and minute wheels in that order.
+        // Visible hour labels depend on the host time zone, so select the wheel by position.
+        val wheels = SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)
+        waitUntil(timeoutMillis = 5_000) { onAllNodes(wheels).fetchSemanticsNodes().size >= 3 }
+        onAllNodes(wheels)[1]
             .performSemanticsAction(SemanticsActions.ScrollToIndex) { it(20) }
         waitForIdle()
-        assertEquals(Json.parseToJsonElement("""{"value":"2025-01-10T10:30:37Z"}"""), data)
+        val committed = data.jsonObject.getValue("value").toString().trim('"')
+        assertNotEquals("2025-01-10T09:30:37Z", committed)
+        assertTrue(committed.startsWith("2025-01-10T"))
+        assertTrue(committed.endsWith(":30:37Z"))
         assertEquals(1, changes)
     }
 }

@@ -53,9 +53,11 @@ function createScriptExecutor() {
 test('connected element mounts once and refreshes when reconnected', () => {
   let mounts = 0;
   let refreshes = 0;
+  const connections = [];
   const Element = createElementClass(element => {
     mounts++;
     element._jsonformsRefresh = () => { refreshes++; };
+    element._jsonformsConnectionChange = connected => connections.push(connected);
   });
   const element = new Element();
 
@@ -63,8 +65,11 @@ test('connected element mounts once and refreshes when reconnected', () => {
   element.connectedCallback();
   assert.equal(mounts, 1);
   assert.equal(refreshes, 0);
+  assert.deepEqual(connections, [true]);
 
   element.isConnected = false;
+  element.disconnectedCallback();
+  assert.deepEqual(connections, [true, false]);
   element.attributeChangedCallback('data', 'null', 'null');
   assert.equal(refreshes, 0);
   assert.equal(element._jsonformsDataChangedWhileDetached, true);
@@ -73,6 +78,7 @@ test('connected element mounts once and refreshes when reconnected', () => {
   element.connectedCallback();
   assert.equal(mounts, 1);
   assert.equal(refreshes, 1);
+  assert.deepEqual(connections, [true, false, true]);
 });
 
 test('connected attributes including direction refresh the mounted form', () => {
@@ -88,7 +94,7 @@ test('connected attributes including direction refresh the mounted form', () => 
   assert.equal(refreshes, 1);
   assert.ok(Element.observedAttributes.includes('config'));
   assert.ok(Element.observedAttributes.includes('dir'));
-  for (const attribute of ['uischemas', 'translations', 'context', 'lang', 'theme',
+  for (const attribute of ['uischemas', 'translations', 'context', 'lang', 'theme', 'renderer-family',
     'data-provided', 'validation-mode', 'additional-errors']) {
     assert.ok(Element.observedAttributes.includes(attribute));
   }

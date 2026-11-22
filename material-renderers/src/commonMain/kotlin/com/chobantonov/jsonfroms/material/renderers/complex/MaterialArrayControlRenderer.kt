@@ -276,6 +276,7 @@ fun MaterialArrayControlRenderer(
     )
 
     if (!stateProps.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "array")
 
     val storedValue = Resolve.data(props.state.jsonforms.core.data, stateProps.path)
     val itemsArray = storedValue as? JsonArray ?: JsonArray(emptyList())

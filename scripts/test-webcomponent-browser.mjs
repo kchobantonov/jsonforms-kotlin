@@ -252,7 +252,7 @@ test('mounted web component waits for host action completion', { timeout: 120_00
     await devtools.evaluate('window.__wcProbe.resolve()');
     await devtools.evaluate(`(() => {
       const form=document.querySelector('#contact-form');
-      form.setAttribute('lang','bg');
+      form.setAttribute('lang','bg_BG');
       form.setAttribute('validation-mode','no-validation');
       form.setAttribute('context',JSON.stringify({external:{tenant:'B'},custom:{flag:false}}));
     })()`);
@@ -618,10 +618,64 @@ test('mounted web component waits for host action completion', { timeout: 120_00
     await until(() => devtools.evaluate('window.__profileDiagnostics'),
       values => values.some(value => value.code === 'variant.unsupported'),
       'AG Grid fallback diagnostic');
+    await devtools.evaluate(`(() => {
+      const form=document.querySelector('#contact-form');
+      form.setAttribute('renderer-family','cupertino');
+      window.__profileDiagnostics=[];
+      form.setAttribute('data',JSON.stringify({source:'first'}));
+      form.setAttribute('schema',JSON.stringify({type:'object',properties:{source:{type:'string'}}}));
+      form.setAttribute('uischema',JSON.stringify({type:'Control',scope:'#/properties/source',
+        options:{format:'code',language:'json'}}));
+    })()`);
+    await until(async () => {
+      const tree = await devtools.send('Accessibility.getFullAXTree');
+      return tree.nodes.some(node => node.name?.value === 'Monaco editor is unavailable on this host');
+    }, Boolean, 'visible Cupertino Monaco fallback');
+    await until(() => devtools.evaluate('window.__profileDiagnostics'),
+      values => values.some(value => value.code === 'editor.monacoUnavailable'),
+      'Cupertino Monaco fallback diagnostic');
+    await devtools.evaluate(`(() => {
+      const form=document.querySelector('#contact-form');
+      window.__profileDiagnostics=[];
+      form.setAttribute('data',JSON.stringify({name:'Grace'}));
+      form.setAttribute('schema',JSON.stringify({type:'object',properties:{name:{type:'string'}}}));
+      form.setAttribute('config',JSON.stringify({jsonformsExtended:{security:{allowScriptEvaluation:true}}}));
+      form.setAttribute('uischema',JSON.stringify({type:'TemplateLayout',lang:'jsx',
+        template:'<div>{elements}</div>',elements:[{type:'Control',scope:'#/properties/name'}]}));
+    })()`);
+    await until(async () => {
+      const tree = await devtools.send('Accessibility.getFullAXTree');
+      return tree.nodes.some(node => node.name?.value ===
+        'Template engine is unavailable on this host: jsx');
+    }, Boolean, 'visible Cupertino TemplateLayout fallback');
+    await until(() => devtools.evaluate('window.__profileDiagnostics'),
+      values => values.some(value => value.code === 'template.engineUnavailable'),
+      'Cupertino TemplateLayout fallback diagnostic');
+    await devtools.evaluate(`(() => {
+      const form=document.querySelector('#contact-form');
+      window.__profileDiagnostics=[];
+      form.setAttribute('data',JSON.stringify({rows:['A']}));
+      form.setAttribute('schema',JSON.stringify({type:'object',properties:{rows:{type:'array',
+        items:{type:'string'}}}}));
+      form.setAttribute('config','{}');
+      form.setAttribute('uischema',JSON.stringify({type:'Control',scope:'#/properties/rows',
+        options:{variant:'ag-grid'}}));
+    })()`);
+    await until(async () => {
+      const tree = await devtools.send('Accessibility.getFullAXTree');
+      return tree.nodes.some(node => node.name?.value ===
+        'AG Grid is unavailable here; showing an array table.');
+    }, Boolean, 'visible Cupertino AG Grid table fallback');
+    await until(() => devtools.evaluate('window.__profileDiagnostics'),
+      values => values.some(value => value.code === 'variant.unsupported'),
+      'Cupertino AG Grid fallback diagnostic');
+    assert.equal(await devtools.evaluate("document.querySelector('#contact-form').getAttribute('data')"),
+      JSON.stringify({ rows: ['A'] }));
     assert.equal(await devtools.evaluate('window.__presenceChanges.length'),
       await devtools.evaluate('window.__profileChangeCount'));
     await devtools.evaluate(`(() => {
       const form=document.querySelector('#contact-form');
+      form.setAttribute('renderer-family','material');
       form.setAttribute('data',JSON.stringify({name:'Grace'}));
       form.setAttribute('schema',window.__nameSchema);
       form.setAttribute('config',window.__nameConfig);

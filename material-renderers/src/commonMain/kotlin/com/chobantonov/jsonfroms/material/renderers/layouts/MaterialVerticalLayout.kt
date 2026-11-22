@@ -28,6 +28,7 @@ fun MaterialVerticalLayout(
                 uischema = layout,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -37,7 +38,7 @@ fun MaterialVerticalLayout(
     if (!layoutProps.visible) return
     MaterialDependencyLayoutFeedback(props, layout.elements) {
         MaterialLayoutRenderer(
-            props = props.copy(enabled = layoutProps.enabled),
+            props = props.copy(enabled = layoutProps.enabled, readonly = layoutProps.readonly),
             elements = layout.elements,
             direction = LayoutDirection.Column,
         )

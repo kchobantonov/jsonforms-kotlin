@@ -20,6 +20,8 @@ Reference checkouts (clean at planning inspection):
 | jsonforms-svelte | b0fb61ed002bf377108089bcc7f1251d6884ffc6 |
 | jsonforms-kotlin | ca3ce86580b92290b3ae11aacc3d35e953e4190c |
 
+The current source inventory and example catalog are pinned to sibling specification revision `4d368072be7d3d94bba30227c9d57108d2c50029`. The table above records the original planning inspection revisions.
+
 Primary reading under ../jsonforms-extended-spec: docs/spec.md, docs/renderer-and-demo.md, docs/renderer-selection.md, docs/implementation-guide.md, docs/implementation-pitfalls.md, docs/conditional-fields.md, docs/draft-07-visual-support.md; schemas; conformance/{authoring,behavior,config-consumption,expected-invalid}.json; examples/catalog.json.
 Reference lessons: ../jsonforms-react-renderers/docs/TODO.md and relevant changesets/tests; ../jsonforms-svelte/docs/{spec-upgrade-plan,renderer-porting-checklist,spec-section-evidence,renderer-parity-audit,renderer-owned-validation,rule-validation-isolation,dynamic-child-readers,localization-source-audit}.md and feature-specific native reviews.
 

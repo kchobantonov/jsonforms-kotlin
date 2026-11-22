@@ -422,7 +422,17 @@ internal fun JsonObject.toUiSchemaElement(): UiSchemaElement {
     return when (type) {
         "VerticalLayout" -> VerticalLayout(rule, options, elements, optionalString("name"))
         "HorizontalLayout" -> HorizontalLayout(rule, options, elements, optionalString("name"))
-        "Group" -> GroupElement(optionalString("label"), optionalString("i18n"), rule, options, elements, optionalString("name"))
+        "Group" -> GroupElement(
+            label = optionalString("label"), i18n = optionalString("i18n"), rule = rule,
+            options = options, elements = elements, name = optionalString("name"),
+            cover = this["cover"]?.requiredObject("cover")?.toUiSchemaElement(),
+            header = optionalArray("header")?.mapIndexed { index, child ->
+                child.requiredObject("header[$index]").toUiSchemaElement()
+            }.orEmpty(),
+            footer = optionalArray("footer")?.mapIndexed { index, child ->
+                child.requiredObject("footer[$index]").toUiSchemaElement()
+            }.orEmpty(),
+        )
         "Category" -> CategoryElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements, optionalString("name"))
         "Categorization" -> CategorizationElement(optionalString("label").orEmpty(), optionalString("i18n"), rule, options, elements, optionalString("name"))
         "Label" -> LabelElement(requiredString("text"), optionalString("i18n"), rule, options, optionalString("name"))

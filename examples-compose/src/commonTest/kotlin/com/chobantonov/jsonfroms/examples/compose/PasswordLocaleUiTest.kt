@@ -71,6 +71,7 @@ class PasswordLocaleUiTest {
         var readonly by mutableStateOf(false)
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/password"),
                 readonly = readonly,

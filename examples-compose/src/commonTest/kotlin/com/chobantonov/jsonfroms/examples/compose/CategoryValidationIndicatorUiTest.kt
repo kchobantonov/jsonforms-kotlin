@@ -14,6 +14,10 @@ import com.chobantonov.jsonfroms.core.models.CategorizationElement
 import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.Rule
+import com.chobantonov.jsonfroms.core.models.RuleEffect
+import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
+import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.core.store.ValidationMode
 import com.chobantonov.jsonfroms.core.validation.ErrorObject
@@ -23,9 +27,51 @@ import kotlin.test.Test
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 
 @OptIn(ExperimentalTestApi::class)
 class CategoryValidationIndicatorUiTest {
+    @Test fun materialTabsCountRuleHiddenDescendant() = hiddenDescendant(false, null)
+    @Test fun cupertinoTabsCountRuleHiddenDescendant() = hiddenDescendant(true, null)
+    @Test fun materialStepsCountRuleHiddenDescendant() = hiddenDescendant(false, "stepper")
+    @Test fun cupertinoStepsCountRuleHiddenDescendant() = hiddenDescendant(true, "stepper")
+    @Test fun materialAccordionCountsRuleHiddenDescendant() = hiddenDescendant(false, "accordion")
+    @Test fun cupertinoAccordionCountsRuleHiddenDescendant() = hiddenDescendant(true, "accordion")
+
+    private fun hiddenDescendant(cupertino: Boolean, variant: String?) = runComposeUiTest {
+        val hiddenSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"show":{"type":"boolean"}}}"""
+        ).jsonObject)
+        val conditionalName = ControlElement(scope = "#/properties/name", rule = Rule(
+            effect = RuleEffect.SHOW,
+            condition = SchemaBasedCondition(scope = "#/properties/show",
+                schema = buildJsonSchema { put("const", true) }, failWhenUndefined = true),
+        ))
+        val ui = CategorizationElement(
+            options = variant?.let { mapOf("variant" to JsonPrimitive(it)) } ?: emptyMap(),
+            elements = listOf(
+                CategoryElement(label = "Basic", elements = listOf(ControlElement("#/properties/show"))),
+                CategoryElement(label = "Details", options = mapOf(
+                    "showValidationIndicator" to JsonPrimitive(true),
+                    "showValidationIndicatorCount" to JsonPrimitive(true),
+                ), elements = listOf(conditionalName)),
+            ),
+        )
+        var data by mutableStateOf(Json.parseToJsonElement("{}"))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = hiddenSchema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithContentDescription("Details, 1 error").assertExists()
+        onNodeWithText("Name").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true}""") }
+        onNodeWithContentDescription("Details, 1 error").assertExists()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true,"name":"Ada"}""") }
+        onNodeWithContentDescription("Details, 1 error").assertDoesNotExist()
+        kotlin.test.assertEquals(0, writes)
+    }
     @Test fun materialTabsUseBuiltInBulgarianStatus() = builtInBulgarianStatus(false, null)
     @Test fun cupertinoTabsUseBuiltInBulgarianStatus() = builtInBulgarianStatus(true, null)
     @Test fun materialStepsUseBuiltInBulgarianStatus() = builtInBulgarianStatus(false, "stepper")

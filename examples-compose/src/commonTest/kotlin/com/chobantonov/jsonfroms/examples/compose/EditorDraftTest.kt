@@ -48,6 +48,22 @@ class EditorDraftTest {
     }
 
     @Test
+    fun `group card regions and input adornments survive UI schema editor round trip`() {
+        val source = Json.parseToJsonElement("""{
+          "type":"Group","label":"Fallback","options":{"collapsible":true},
+          "cover":{"type":"ImageView","src":"/cover.png","alt":"Cover"},
+          "header":[{"type":"Label","text":"Heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/name","options":{
+            "startAdornment":"#","endAdornment":{"kind":"text","text":"internal"}}}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject
+        val parsed = applyEditorDraft(DemoPane.UiSchema, source.toString(), state).getOrThrow()
+
+        assertEquals(source, parsed.uischema?.toJsonObject())
+        assertEquals(source, Json.parseToJsonElement(editorText(DemoPane.UiSchema, parsed)).jsonObject)
+    }
+
+    @Test
     fun `unknown renderer namespace survives UI schema editor round trip`() {
         val authored = """{"type":"VendorWidget","name":"stable","options":{"vendor":{"mode":"wide"}},"payload":{"enabled":true},"elements":[]}"""
         val source = Json.parseToJsonElement(authored).jsonObject

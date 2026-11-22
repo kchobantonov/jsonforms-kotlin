@@ -8,7 +8,12 @@ import com.chobantonov.jsonfroms.core.i18n.translateRadioUnknownValue
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,20 +25,28 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.focused
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -63,6 +76,8 @@ import com.chobantonov.jsonfroms.core.testers.NOT_APPLICABLE
 import com.chobantonov.jsonfroms.core.testers.isEnumControl
 import com.chobantonov.jsonfroms.core.testers.schemaMatches
 import com.chobantonov.jsonfroms.core.util.JsonPath
+import com.chobantonov.jsonfroms.core.util.InputAdornment
+import com.chobantonov.jsonfroms.core.util.resolveInputAdornments
 import com.chobantonov.jsonfroms.material.renderers.util.MaterialInputVariant
 import com.chobantonov.jsonfroms.material.renderers.util.useInputVariant
 import kotlinx.serialization.json.JsonPrimitive
@@ -95,6 +110,7 @@ fun MaterialEnumControl(
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -117,6 +133,10 @@ fun MaterialEnumControl(
     val trim = (stateProps.uischema.options["trim"] as? JsonPrimitive)?.contentOrNull == "true"
     val modifier = if (trim) Modifier else Modifier.fillMaxWidth()
     val variant = useInputVariant(stateProps.config, stateProps.uischema)
+    val translator = props.state.jsonforms.i18n.translate
+    val startAdornments = resolveInputAdornments(stateProps.uischema.options, "startAdornment", translator)
+    val endAdornments = resolveInputAdornments(stateProps.uischema.options, "endAdornment", translator)
+    val keepLabelMinimized = startAdornments.isNotEmpty() || endAdornments.isNotEmpty()
     val selectedOption = stateProps.options.firstOrNull { jsonSchemaChoiceEquals(it.value, stateProps.data) }
     val unknownStatus = stateProps.data.takeIf { stateProps.dataProvided && selectedOption == null }
         ?.let { "${translateRadioUnknownValue(props.state.jsonforms.i18n)}: $it" }
@@ -138,6 +158,14 @@ fun MaterialEnumControl(
     var hasReceivedFocus by remember(stateProps.path) { mutableStateOf(false) }
     var touched by remember(stateProps.path) { mutableStateOf(false) }
     var query by remember(stateProps.path) { mutableStateOf(committedText) }
+    val choiceState = remember(stateProps.path) { TextFieldState(query) }
+    // Observe edits here so host replacements and rejected queries reconcile after recomposition.
+    if (keepLabelMinimized) {
+        choiceState.text.toString()
+        SideEffect {
+            if (choiceState.text.toString() != query) choiceState.setTextAndPlaceCursorAtEnd(query)
+        }
+    }
     var observedCommittedText by remember(stateProps.path) { mutableStateOf(committedText) }
     var observedCommittedValue by remember(stateProps.path) { mutableStateOf(stateProps.data) }
     val setPending = rememberPendingEditOwner("enum:${stateProps.path}:${props.id}")
@@ -145,7 +173,10 @@ fun MaterialEnumControl(
     var selectorHovered by remember(stateProps.path) { mutableStateOf(false) }
     var clearFocused by remember(stateProps.path) { mutableStateOf(false) }
     var clearHovered by remember(stateProps.path) { mutableStateOf(false) }
+    val clearFocusRequester = remember(stateProps.path) { FocusRequester() }
     val inputModeManager = LocalInputModeManager.current
+    fun clearVisible() = selectorFocused || selectorHovered || clearFocused || clearHovered ||
+        inputModeManager.inputMode == InputMode.Touch
     val clearModifier = Modifier.size(32.dp)
         .onFocusChanged { clearFocused = it.isFocused }
         .pointerInput(stateProps.path) {
@@ -157,11 +188,6 @@ fun MaterialEnumControl(
                     }
                 }
             }
-        }
-        // Draw-only reveal keeps the exposed menu anchor mounted during pointer focus.
-        .graphicsLayer {
-            alpha = if (selectorFocused || selectorHovered || clearFocused || clearHovered ||
-                inputModeManager.inputMode == InputMode.Touch) 1f else 0f
         }
 
     LaunchedEffect(stateProps.data, committedText) {
@@ -209,6 +235,60 @@ fun MaterialEnumControl(
     } else {
         stateProps.options
     }
+    fun updateQuery(value: String) {
+        if (autocomplete) {
+            query = value
+            setPending(value != committedText)
+            expanded = stateProps.options.any { option ->
+                value.isBlank() || option.label.contains(value, ignoreCase = true)
+            }
+        }
+    }
+    val inputTransformation = InputTransformation {
+        if (autocomplete) updateQuery(toString()) else revertAllChanges()
+    }
+    val prefixContent: (@Composable () -> Unit)? =
+        startAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+            { MaterialAdornments(items) }
+        }
+    val suffixContent: (@Composable () -> Unit)? =
+        endAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+            { MaterialAdornments(items) }
+        }
+    fun clearValue() {
+        query = ""; observedCommittedText = ""; expanded = false
+        setPending(false)
+        dispatchProps.handleChange(stateProps.path, null)
+    }
+    val trailingContent: @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (canClear && keepLabelMinimized) Spacer(Modifier.width(4.dp))
+            if (canClear) ActionTooltip(clearLabel) {
+                IconButton(onClick = {
+                    if (clearVisible()) clearValue()
+                },
+                    modifier = clearModifier.graphicsLayer {
+                        alpha = if (clearVisible()) 1f else 0f
+                    }.focusRequester(clearFocusRequester)
+                        .focusProperties { canFocus = clearVisible() }
+                        .clearAndSetSemantics {
+                            if (clearVisible()) {
+                                contentDescription = clearLabel
+                                focused = clearFocused
+                                onClick { clearValue(); true }
+                                requestFocus { clearFocusRequester.requestFocus(); true }
+                            }
+                        }) {
+                    Icon(JsonFormsActionIcons.Clear,
+                        null,
+                        modifier = Modifier.size(16.dp))
+                }
+            }
+            ExposedDropdownMenuDefaults.TrailingIcon(
+                expanded = expanded && filteredOptions.isNotEmpty(),
+                modifier = Modifier.testTag("choice-dropdown-arrow"))
+        }
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded && filteredOptions.isNotEmpty() && stateProps.enabled && !stateProps.readonly,
@@ -240,18 +320,11 @@ fun MaterialEnumControl(
         )
         when (variant) {
             MaterialInputVariant.Outlined -> {
-                OutlinedTextField(
+                if (keepLabelMinimized) OutlinedTextField(
                     modifier = fieldModifier,
-                    value = query,
-                    onValueChange = { value ->
-                        if (autocomplete) {
-                            query = value
-                            setPending(value != committedText)
-                            expanded = stateProps.options.any { option ->
-                                value.isBlank() || option.label.contains(value, ignoreCase = true)
-                            }
-                        }
-                    },
+                    state = choiceState,
+                    inputTransformation = inputTransformation,
+                    labelPosition = TextFieldLabelPosition.Cutout(isAlwaysMinimized = true),
                     enabled = stateProps.enabled && !stateProps.readonly,
                     readOnly = stateProps.readonly || !autocomplete,
                     isError = accessibleError.isNotBlank(),
@@ -261,36 +334,30 @@ fun MaterialEnumControl(
                         null
                     },
                     supportingText = supportingText,
-                    trailingIcon = { Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (canClear) ActionTooltip(clearLabel) {
-                            IconButton(onClick = {
-                                query = ""; observedCommittedText = ""; expanded = false
-                                setPending(false)
-                                dispatchProps.handleChange(stateProps.path, null)
-                            }, modifier = clearModifier) {
-                                Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
-                    } },
+                    prefix = prefixContent,
+                    suffix = suffixContent,
+                    trailingIcon = trailingContent,
+                ) else OutlinedTextField(
+                    modifier = fieldModifier,
+                    value = query,
+                    onValueChange = ::updateQuery,
+                    enabled = stateProps.enabled && !stateProps.readonly,
+                    readOnly = stateProps.readonly || !autocomplete,
+                    isError = accessibleError.isNotBlank(),
+                    label = if (label.isNotBlank()) {{ Text(label) }} else null,
+                    supportingText = supportingText,
+                    trailingIcon = trailingContent,
                 )
             }
 
             MaterialInputVariant.Filled,
             MaterialInputVariant.Standard,
             -> {
-                TextField(
+                if (keepLabelMinimized) TextField(
                     modifier = fieldModifier,
-                    value = query,
-                    onValueChange = { value ->
-                        if (autocomplete) {
-                            query = value
-                            setPending(value != committedText)
-                            expanded = stateProps.options.any { option ->
-                                value.isBlank() || option.label.contains(value, ignoreCase = true)
-                            }
-                        }
-                    },
+                    state = choiceState,
+                    inputTransformation = inputTransformation,
+                    labelPosition = TextFieldLabelPosition.Inside(isAlwaysMinimized = true),
                     enabled = stateProps.enabled && !stateProps.readonly,
                     readOnly = stateProps.readonly || !autocomplete,
                     isError = accessibleError.isNotBlank(),
@@ -300,18 +367,19 @@ fun MaterialEnumControl(
                         null
                     },
                     supportingText = supportingText,
-                    trailingIcon = { Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (canClear) ActionTooltip(clearLabel) {
-                            IconButton(onClick = {
-                                query = ""; observedCommittedText = ""; expanded = false
-                                setPending(false)
-                                dispatchProps.handleChange(stateProps.path, null)
-                            }, modifier = clearModifier) {
-                                Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
-                    } },
+                    prefix = prefixContent,
+                    suffix = suffixContent,
+                    trailingIcon = trailingContent,
+                ) else TextField(
+                    modifier = fieldModifier,
+                    value = query,
+                    onValueChange = ::updateQuery,
+                    enabled = stateProps.enabled && !stateProps.readonly,
+                    readOnly = stateProps.readonly || !autocomplete,
+                    isError = accessibleError.isNotBlank(),
+                    label = if (label.isNotBlank()) {{ Text(label) }} else null,
+                    supportingText = supportingText,
+                    trailingIcon = trailingContent,
                 )
             }
         }

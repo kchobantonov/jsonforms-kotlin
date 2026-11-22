@@ -1,11 +1,13 @@
 package com.chobantonov.jsonfroms.cupertino.renderers.controls
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -13,9 +15,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -35,6 +41,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.error as accessibilityError
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,8 +52,13 @@ import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
 import com.chobantonov.jsonfroms.core.mappers.computeLabel
+import com.chobantonov.jsonfroms.core.util.InputAdornment
+import com.chobantonov.jsonfroms.compose.inputAdornmentGlyph
+import com.chobantonov.jsonfroms.compose.LocalInputAdornmentIconResolver
+import com.chobantonov.jsonfroms.core.util.resolveInputAdornments
 import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
 import com.chobantonov.jsonfroms.cupertino.renderers.ActionTooltip
+import com.chobantonov.jsonfroms.cupertino.renderers.CupertinoPlainTooltip
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 
@@ -75,6 +87,9 @@ fun CupertinoInputControl(
     var touched by remember(props.path) { mutableStateOf(false) }
     val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
     val appliedOptions = props.config + props.uischema.options
+    val translator = useJsonForms().state.jsonforms.i18n.translate
+    val startAdornments = resolveInputAdornments(props.uischema.options, "startAdornment", translator)
+    val endAdornments = resolveInputAdornments(props.uischema.options, "endAdornment", translator)
     fun booleanOption(key: String): Boolean = when (val option = appliedOptions[key]) {
         is Boolean -> option
         is JsonPrimitive -> !option.isString && option.booleanOrNull == true
@@ -151,6 +166,7 @@ fun CupertinoInputControl(
             ),
             decorationBox = { inner ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    CupertinoAdornments(startAdornments)
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                         if (value.isEmpty() && !placeholder.isNullOrBlank()) Text(
                             placeholder,
@@ -159,11 +175,11 @@ fun CupertinoInputControl(
                         )
                         inner()
                     }
-                    if (canClear) {
+                    if (showClear) {
                         ActionTooltip(clearLabel) {
                             IconButton(
-                                onClick = { onChange("") },
-                                modifier = Modifier.size(30.dp).graphicsLayer { alpha = if (showClear) 1f else 0f },
+                                onClick = { onChange(""); focusRequester.requestFocus() },
+                                modifier = Modifier.size(30.dp),
                             ) {
                                 Icon(
                                     JsonFormsActionIcons.Clear,
@@ -173,8 +189,9 @@ fun CupertinoInputControl(
                                 )
                             }
                         }
-                    }
+                    } else if (canClear) Spacer(Modifier.size(30.dp))
                     trailingContent?.invoke()
+                    CupertinoAdornments(endAdornments)
                 }
             },
         )
@@ -190,4 +207,49 @@ fun CupertinoInputControl(
     }
     if (compact && accessibleError.isNotBlank()) ActionTooltip(accessibleError) { inputField() }
     else inputField()
+}
+
+@Composable
+internal fun CupertinoAdornments(items: List<InputAdornment>) {
+    items.forEach { item ->
+        CupertinoAdornment(item)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CupertinoAdornment(item: InputAdornment) {
+    val painter = item.icon?.let { LocalInputAdornmentIconResolver.current?.invoke(it) }
+    val display = inputAdornmentGlyph(item.icon) ?: item.text
+    if (item.decorative) {
+        if (painter != null) Icon(painter, null, Modifier.size(18.dp), tint = LocalCupertinoColors.current.label)
+        else if (display.isNotEmpty()) Text(display, Modifier.clearAndSetSemantics { })
+        return
+    }
+    val explanation = item.tooltip?.takeIf(String::isNotBlank)
+    if (explanation == null) {
+        if (painter != null) Icon(painter, item.text, Modifier.size(18.dp), tint = LocalCupertinoColors.current.label)
+        else Text(display, if (item.icon == null) Modifier else Modifier.semantics {
+            contentDescription = item.text
+        })
+        return
+    }
+    val tooltip = rememberTooltipState()
+    var focused by remember { mutableStateOf(false) }
+    LaunchedEffect(focused, tooltip) {
+        if (focused) tooltip.show() else tooltip.dismiss()
+    }
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+        tooltip = { CupertinoPlainTooltip(explanation) },
+        state = tooltip,
+    ) {
+        val modifier = Modifier.onFocusChanged { focused = it.isFocused }
+            .semantics {
+                if (item.icon != null) contentDescription = item.text
+                stateDescription = explanation
+            }.focusable()
+        if (painter != null) Icon(painter, item.text, modifier.size(18.dp), tint = LocalCupertinoColors.current.label)
+        else Text(display, modifier)
+    }
 }

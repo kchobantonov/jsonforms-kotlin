@@ -124,6 +124,8 @@ data class ComposeJsonFormsRendererProps(
     val cells: List<JsonFormsCellRendererRegistryEntry<ComposeJsonFormsCellRenderer>>,
     val id: String? = null,
     val config: Map<String, Any?> = emptyMap(),
+    val readonly: Boolean? = null,
+    val occurrenceRevision: Long = 0L,
 )
 
 data class ComposeJsonFormsCellProps(
@@ -211,6 +213,10 @@ class JsonFormsComposeController(
     var hostSubjectVersion by mutableStateOf(0L)
         private set
 
+    /** Accepted row moves can keep JSON data structurally equal (for duplicate values). */
+    var occurrenceRevision by mutableStateOf(0L)
+        private set
+
     /** Start an async validation; only the returned version may publish its result. */
     fun beginAdditionalErrors(ownerId: String, targetPath: String = ""): Long {
         val version = ++nextOwnedRequestVersion
@@ -286,6 +292,7 @@ class JsonFormsComposeController(
         state = state.copy(
             jsonforms = state.jsonforms.copy(core = nextCore),
         )
+        if (occurrenceMove) occurrenceRevision++
         if (nextCore.data != currentCore.data || occurrenceMove) {
             val editedPath = (action as? UpdateAction)?.path?.let { path ->
                 if (path.isEmpty()) "" else path.split('.')
@@ -563,6 +570,7 @@ fun JsonFormsDispatchRenderer() {
             cells = state.jsonforms.cells,
             id = rememberControlId(uischema, core.schema),
             config = getConfig(state),
+            occurrenceRevision = context.controller.occurrenceRevision,
         ),
     )
 }
@@ -606,6 +614,7 @@ fun JsonFormsDispatchRenderer(
             props.schema, control.scope, props.rootSchema, value, contextData)
         if (activeSchema != null) props.copy(schema = activeSchema) else props
     } else props
+    if (control != null) ReportInvalidInputAdornments(effectiveProps)
     val testerContext = remember(props.rootSchema, props.config) {
         TesterContext(
             rootSchema = props.rootSchema,

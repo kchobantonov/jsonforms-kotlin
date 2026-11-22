@@ -73,7 +73,7 @@ object RuleEvaluator {
                     config = config,
                 ),
             )
-            is SchemaBasedCondition -> evaluateSchemaBasedCondition(condition, data, validator)
+            is SchemaBasedCondition -> evaluateSchemaBasedCondition(condition, data, validator, path)
         }
 
     private fun evaluateRule(
@@ -100,8 +100,9 @@ object RuleEvaluator {
         condition: SchemaBasedCondition,
         data: JsonData,
         validator: JsonSchemaValidator,
+        path: String?,
     ): Boolean {
-        val scopedData = resolveScopedData(data, condition.scope)
+        val scopedData = resolveScopedData(data, condition.scope, path)
         if (scopedData == null) {
             return !condition.failWhenUndefined
         }
@@ -112,8 +113,10 @@ object RuleEvaluator {
     private fun resolveScopedData(
         data: JsonElement,
         scope: String?,
+        path: String? = null,
     ): JsonElement? {
-        if (scope.isNullOrBlank() || scope == "#") return data
+        if (scope.isNullOrBlank()) return data
+        if (scope == "#") return if (path.isNullOrBlank()) data else Resolve.data(data, path)
 
         val segments = scope
             .removePrefix("#")
@@ -124,7 +127,8 @@ object RuleEvaluator {
         }
 
         return if (isSchemaPath) {
-            Resolve.data(data, toDataPath(scope))
+            val contextData = if (path.isNullOrBlank()) data else Resolve.data(data, path) ?: return null
+            Resolve.data(contextData, toDataPath(scope))
         } else {
             // Retain support for direct JSON Pointer condition scopes such as "#/role".
             JsonPointer.resolve(data, scope)

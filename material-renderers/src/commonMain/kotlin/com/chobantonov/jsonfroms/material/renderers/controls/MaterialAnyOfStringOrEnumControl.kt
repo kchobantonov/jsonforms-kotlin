@@ -43,6 +43,8 @@ import com.chobantonov.jsonfroms.core.testers.schemaMatches
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.util.acceptsRestrictedStringEdit
 import com.chobantonov.jsonfroms.core.util.resolveRestrict
+import com.chobantonov.jsonfroms.core.util.InputAdornment
+import com.chobantonov.jsonfroms.core.util.resolveInputAdornments
 import com.chobantonov.jsonfroms.material.renderers.util.MaterialInputVariant
 import com.chobantonov.jsonfroms.material.renderers.util.useInputVariant
 import kotlinx.serialization.json.JsonPrimitive
@@ -82,6 +84,9 @@ fun MaterialAnyOfStringOrEnumControl(
         controlProps.uischema.options["restrict"], controlProps.config)
     val trim = appliedOptions["trim"].toBooleanStrictOrNullCompat() ?: false
     val variant = useInputVariant(controlProps.config, controlProps.uischema)
+    val translator = props.state.jsonforms.i18n.translate
+    val startAdornments = resolveInputAdornments(controlProps.uischema.options, "startAdornment", translator)
+    val endAdornments = resolveInputAdornments(controlProps.uischema.options, "endAdornment", translator)
     val committedValue = bindings.stateProps.data.toMaterialInputString()
     val invalidStatus = invalidStringStoredValue(bindings.stateProps.data,
         bindings.stateProps.dataProvided)?.let {
@@ -169,6 +174,12 @@ fun MaterialAnyOfStringOrEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    prefix = startAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+                        { MaterialAdornments(items) }
+                    },
+                    suffix = endAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+                        { MaterialAdornments(items) }
+                    },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
                     },
@@ -195,6 +206,12 @@ fun MaterialAnyOfStringOrEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    prefix = startAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+                        { MaterialAdornments(items) }
+                    },
+                    suffix = endAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
+                        { MaterialAdornments(items) }
+                    },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded && filteredOptions.isNotEmpty())
                     },

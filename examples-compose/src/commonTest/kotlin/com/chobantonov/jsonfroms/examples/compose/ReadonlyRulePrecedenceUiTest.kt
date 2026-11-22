@@ -90,6 +90,7 @@ class ReadonlyRulePrecedenceUiTest {
         var data by mutableStateOf(buildJsonObject { put("name", "Ada"); put("unlock", false) })
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(
                 data = data,
                 schema = schema,

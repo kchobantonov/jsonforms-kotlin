@@ -66,6 +66,7 @@ fun CupertinoAnyOfRenderer(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "anyOf")
 
     val renderInfos = createCombinatorRenderInfos(
         combinatorSubSchemas = controlProps.schema.anyOf.orEmpty(),

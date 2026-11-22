@@ -353,6 +353,7 @@ class GroupValidationIndicatorUiTest {
             elements = listOf(ControlElement(scope = "#/properties/a")),
         )
         setContent {
+            TestTouchInputMode()
             JsonForms(
                 data = Json.parseToJsonElement(if (oneOf) """{"a":"yes"}""" else """{"a":"red"}"""),
                 schema = schema, uischema = ui,

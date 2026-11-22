@@ -91,6 +91,8 @@ private fun CupertinoArrayChoiceRenderer(props: ComposeJsonFormsRendererProps, c
             enabled = props.enabled, path = props.path, renderers = props.renderers, cells = props.cells),
     ))
     if (!state.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props,
+        if (chips) "chips" else "multi-select")
     val choices = if (chips) finiteChipsChoices(state.schema, state.rootSchema)
         else finiteStringArrayChoices(state.schema, state.rootSchema) ?: return
     val selected = (state.data as? JsonArray)?.toList().orEmpty()

@@ -3,6 +3,9 @@ package com.chobantonov.jsonfroms.examples
 import com.chobantonov.jsonfroms.core.models.Categorization
 import com.chobantonov.jsonfroms.core.models.Layout
 import com.chobantonov.jsonfroms.core.models.HorizontalLayout
+import com.chobantonov.jsonfroms.core.models.GroupElement
+import com.chobantonov.jsonfroms.core.models.LabelElement
+import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -18,8 +21,43 @@ import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.test.assertIs
 
 class ExampleCatalogTest {
+    @Test
+    fun updatedSpecExamplesExposeCardRegionsAndAdornmentOptions() {
+        val examples = getBuiltInExamples().associateBy(ExampleDescription::name)
+        fun visit(element: UiSchemaElement): List<UiSchemaElement> = listOf(element) + when (element) {
+            is Layout -> element.elements.flatMap(::visit)
+            is Categorization -> element.elements.flatMap(::visit)
+            else -> emptyList()
+        }
+        val groupNodes = visit(assertNotNull(examples["spec-group-layout"]?.uischema))
+        val card = groupNodes.filterIsInstance<GroupElement>().first { it.cover != null }
+        assertTrue(card.header.isNotEmpty())
+        assertTrue(card.footer.isNotEmpty())
+
+        val adornmentNodes = visit(assertNotNull(examples["spec-input-adornments"]?.uischema))
+        val controls = adornmentNodes.filterIsInstance<ControlElement>()
+        assertTrue(controls.any { "startAdornment" in it.options })
+        assertTrue(controls.any { "endAdornment" in it.options })
+    }
+
+    @Test
+    fun bundledExampleParserPreservesGroupCardRegions() {
+        val source = Json.parseToJsonElement("""{
+          "type":"Group","cover":{"type":"Label","text":"Cover"},
+          "header":[{"type":"Label","text":"Heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/name"}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject
+        val group = assertIs<GroupElement>(source.toUiSchemaElement())
+        assertEquals("Cover", assertIs<LabelElement>(group.cover).text)
+        assertEquals("Heading", assertIs<LabelElement>(group.header.single()).text)
+        assertEquals("Footer", assertIs<LabelElement>(group.footer.single()).text)
+        assertEquals(1, group.elements.size)
+    }
+
     @Test
     fun builtInExamplesHaveFeatureGroupsWithoutChangingTheirStableIds() {
         val examples = getBuiltInExamples()
@@ -82,7 +120,9 @@ class ExampleCatalogTest {
         assertNotNull(nestedValidation.uischema)
         assertEquals("http://json-schema.org/draft-07/schema#",
             examples.first { it.name == "mixed-object" }.schema?.schemaUri)
-        assertEquals(46, specSnapshotExampleNames.size)
+        assertEquals(47, specSnapshotExampleNames.size)
+        assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-input-adornments" }
+            .localizedTranslations.keys)
         assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-array-controls" }.localizedTranslations.keys)
         assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-kitchen-sink" }.localizedTranslations.keys)
         assertEquals(setOf("en", "bg"), examples.first { it.name == "spec-job-application" }.localizedTranslations.keys)

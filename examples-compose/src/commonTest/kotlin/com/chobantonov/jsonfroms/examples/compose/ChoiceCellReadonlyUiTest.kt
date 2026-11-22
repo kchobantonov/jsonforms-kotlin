@@ -47,6 +47,7 @@ class ChoiceCellReadonlyUiTest {
             "cells" to Json.parseToJsonElement("""{"choice":{"format":"radio"}}"""),
         ) else mapOf("table" to JsonPrimitive(true))
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#", options = options),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,

@@ -35,6 +35,7 @@ fun CupertinoOneOfRadioGroupControl(props: ComposeJsonFormsRendererProps, compac
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -46,6 +47,7 @@ fun CupertinoOneOfRadioGroupControl(props: ComposeJsonFormsRendererProps, compac
         props.dispatch(action)
         action
     })
+    if (stateProps.visible) com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "radio")
 
     var touched by remember(stateProps.path) { mutableStateOf(false) }
     var hasReceivedFocus by remember(stateProps.path) { mutableStateOf(false) }

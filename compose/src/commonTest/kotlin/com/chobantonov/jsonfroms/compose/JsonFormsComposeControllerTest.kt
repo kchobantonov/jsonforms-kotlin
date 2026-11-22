@@ -38,6 +38,7 @@ class JsonFormsComposeControllerTest {
         val controller = JsonFormsComposeController(ComposeJsonFormsState(JsonFormsSubStates(
             core = JsonFormsCoreState().copy(data = before),
         )))
+        assertEquals(0L, controller.occurrenceRevision)
         val change = controller.dispatchAndGetChange(UpdateAction(
             path = "",
             context = MoveArrayContext(listOf(MoveOperation(1, 0))),
@@ -47,6 +48,7 @@ class JsonFormsComposeControllerTest {
         assertEquals(before, change?.data)
         assertEquals(true, after !== before)
         assertEquals(true, after[0] === before[1])
+        assertEquals(1L, controller.occurrenceRevision)
 
         val invalid = controller.dispatchAndGetChange(UpdateAction(
             path = "",
@@ -54,6 +56,7 @@ class JsonFormsComposeControllerTest {
             updater = { JsonArray(after) },
         ))
         assertNull(invalid)
+        assertEquals(1L, controller.occurrenceRevision)
     }
 
     @Test

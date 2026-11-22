@@ -38,6 +38,7 @@ internal fun cupertinoControlBindings(
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,

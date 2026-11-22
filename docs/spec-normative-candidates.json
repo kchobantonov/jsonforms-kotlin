@@ -1,5 +1,5 @@
 {
-  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
   "rule": "Overinclusive keyword candidates, not an atomic normative ledger. Review table rows, amendments, proposals, wrapped clauses and requirements without capitalized keywords before assigning capability IDs.",
   "candidates": [
     {
@@ -16,7 +16,7 @@
       "classification": "normative"
     },
     {
-      "line": 81,
+      "line": 82,
       "section": "## 1. Purpose and portability",
       "subsection": "",
       "keywords": [
@@ -27,7 +27,7 @@
       "classification": "normative"
     },
     {
-      "line": 87,
+      "line": 88,
       "section": "## 1. Purpose and portability",
       "subsection": "### 1.1 Portability classes",
       "keywords": [
@@ -39,7 +39,7 @@
       "classification": "normative"
     },
     {
-      "line": 96,
+      "line": 97,
       "section": "## 1. Purpose and portability",
       "subsection": "### 1.1 Portability classes",
       "keywords": [
@@ -49,7 +49,7 @@
       "classification": "normative"
     },
     {
-      "line": 207,
+      "line": 208,
       "section": "## 2. Reference type declarations",
       "subsection": "### 2.1 `name` belongs to the element model",
       "keywords": [
@@ -60,7 +60,7 @@
       "classification": "normative"
     },
     {
-      "line": 264,
+      "line": 265,
       "section": "## 4. Reuse before adding types",
       "subsection": "### 2.1 `name` belongs to the element model",
       "keywords": [
@@ -70,7 +70,7 @@
       "classification": "normative"
     },
     {
-      "line": 289,
+      "line": 290,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 2.1 `name` belongs to the element model",
       "keywords": [
@@ -80,7 +80,7 @@
       "classification": "normative"
     },
     {
-      "line": 307,
+      "line": 308,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 2.1 `name` belongs to the element model",
       "keywords": [
@@ -90,7 +90,7 @@
       "classification": "normative"
     },
     {
-      "line": 317,
+      "line": 318,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.1 Schema-driven and UI-driven format selection",
       "keywords": [
@@ -101,7 +101,7 @@
       "classification": "normative"
     },
     {
-      "line": 326,
+      "line": 327,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.1 Schema-driven and UI-driven format selection",
       "keywords": [
@@ -112,7 +112,7 @@
       "classification": "normative"
     },
     {
-      "line": 333,
+      "line": 334,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.1 Schema-driven and UI-driven format selection",
       "keywords": [
@@ -122,7 +122,7 @@
       "classification": "normative"
     },
     {
-      "line": 348,
+      "line": 349,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.2 Provenance, and why it must be recorded",
       "keywords": [
@@ -132,7 +132,7 @@
       "classification": "normative"
     },
     {
-      "line": 375,
+      "line": 376,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.3 Global defaults, local options, and tester selection",
       "keywords": [
@@ -142,7 +142,7 @@
       "classification": "normative"
     },
     {
-      "line": 386,
+      "line": 387,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.3 Global defaults, local options, and tester selection",
       "keywords": [
@@ -153,7 +153,7 @@
       "classification": "normative"
     },
     {
-      "line": 404,
+      "line": 405,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.3a Renderer selection and default presentations",
       "keywords": [
@@ -164,7 +164,7 @@
       "classification": "normative"
     },
     {
-      "line": 428,
+      "line": 429,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.4 Additional presentation variants",
       "keywords": [
@@ -175,7 +175,7 @@
       "classification": "normative"
     },
     {
-      "line": 444,
+      "line": 445,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.4 Additional presentation variants",
       "keywords": [
@@ -187,7 +187,7 @@
       "classification": "normative"
     },
     {
-      "line": 452,
+      "line": 453,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.4 Additional presentation variants",
       "keywords": [
@@ -197,7 +197,7 @@
       "classification": "normative"
     },
     {
-      "line": 459,
+      "line": 460,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.5 Choice searchability",
       "keywords": [
@@ -207,7 +207,7 @@
       "classification": "normative"
     },
     {
-      "line": 467,
+      "line": 468,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.5 Choice searchability",
       "keywords": [
@@ -217,7 +217,7 @@
       "classification": "normative"
     },
     {
-      "line": 479,
+      "line": 480,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.6 Orientation of choice groups",
       "keywords": [
@@ -227,7 +227,7 @@
       "classification": "normative"
     },
     {
-      "line": 495,
+      "line": 496,
       "section": "## 5. Established presentation options and canonical variants",
       "subsection": "### 5.6 Orientation of choice groups",
       "keywords": [
@@ -237,7 +237,7 @@
       "classification": "normative"
     },
     {
-      "line": 594,
+      "line": 595,
       "section": "## 6. Layout types and sizing",
       "subsection": "### 6.4 Resolution order for a mixed row",
       "keywords": [
@@ -247,7 +247,7 @@
       "classification": "normative"
     },
     {
-      "line": 600,
+      "line": 601,
       "section": "## 6. Layout types and sizing",
       "subsection": "### 6.5 Only effective visible children participate",
       "keywords": [
@@ -257,7 +257,7 @@
       "classification": "normative"
     },
     {
-      "line": 604,
+      "line": 605,
       "section": "## 6. Layout types and sizing",
       "subsection": "### 6.5 Only effective visible children participate",
       "keywords": [
@@ -267,7 +267,7 @@
       "classification": "normative"
     },
     {
-      "line": 616,
+      "line": 617,
       "section": "## 6. Layout types and sizing",
       "subsection": "### 6.6 Options excluded from the portable model",
       "keywords": [
@@ -277,7 +277,7 @@
       "classification": "normative"
     },
     {
-      "line": 625,
+      "line": 626,
       "section": "## 6. Layout types and sizing",
       "subsection": "### 6.6 Options excluded from the portable model",
       "keywords": [
@@ -288,7 +288,7 @@
       "classification": "normative"
     },
     {
-      "line": 642,
+      "line": 643,
       "section": "## 7. Wrap, defaults, splitter and Spacer",
       "subsection": "### 7.1 Defaults and their resolution order",
       "keywords": [
@@ -298,7 +298,7 @@
       "classification": "normative"
     },
     {
-      "line": 644,
+      "line": 645,
       "section": "## 7. Wrap, defaults, splitter and Spacer",
       "subsection": "### 7.1 Defaults and their resolution order",
       "keywords": [
@@ -308,7 +308,7 @@
       "classification": "normative"
     },
     {
-      "line": 646,
+      "line": 647,
       "section": "## 7. Wrap, defaults, splitter and Spacer",
       "subsection": "### 7.1 Defaults and their resolution order",
       "keywords": [
@@ -318,7 +318,7 @@
       "classification": "normative"
     },
     {
-      "line": 666,
+      "line": 667,
       "section": "## 7. Wrap, defaults, splitter and Spacer",
       "subsection": "### 7.3 Splitter",
       "keywords": [
@@ -329,7 +329,7 @@
       "classification": "normative"
     },
     {
-      "line": 782,
+      "line": 846,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.2 The data-presence indicator",
       "keywords": [
@@ -339,7 +339,7 @@
       "classification": "normative"
     },
     {
-      "line": 790,
+      "line": 854,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.2 The data-presence indicator",
       "keywords": [
@@ -349,7 +349,7 @@
       "classification": "normative"
     },
     {
-      "line": 885,
+      "line": 949,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.3 The container validation indicator",
       "keywords": [
@@ -359,7 +359,7 @@
       "classification": "normative"
     },
     {
-      "line": 890,
+      "line": 954,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.3 The container validation indicator",
       "keywords": [
@@ -369,7 +369,7 @@
       "classification": "normative"
     },
     {
-      "line": 898,
+      "line": 962,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.3 The container validation indicator",
       "keywords": [
@@ -379,7 +379,7 @@
       "classification": "normative"
     },
     {
-      "line": 930,
+      "line": 994,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.3 The container validation indicator",
       "keywords": [
@@ -389,7 +389,7 @@
       "classification": "normative"
     },
     {
-      "line": 997,
+      "line": 1061,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.5 Runtime expansion is not UI-schema state",
       "keywords": [
@@ -399,7 +399,7 @@
       "classification": "normative"
     },
     {
-      "line": 1002,
+      "line": 1066,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.5 Runtime expansion is not UI-schema state",
       "keywords": [
@@ -409,7 +409,7 @@
       "classification": "normative"
     },
     {
-      "line": 1032,
+      "line": 1096,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.6 Categorization",
       "keywords": [
@@ -419,7 +419,7 @@
       "classification": "normative"
     },
     {
-      "line": 1040,
+      "line": 1104,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.6 Categorization",
       "keywords": [
@@ -429,7 +429,7 @@
       "classification": "normative"
     },
     {
-      "line": 1056,
+      "line": 1120,
       "section": "## 8. Group and Categorization",
       "subsection": "### 8.7 Container visibility and hidden children",
       "keywords": [
@@ -439,7 +439,7 @@
       "classification": "normative"
     },
     {
-      "line": 1123,
+      "line": 1187,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.1 One expression language, and two scopes",
       "keywords": [
@@ -449,7 +449,7 @@
       "classification": "normative"
     },
     {
-      "line": 1142,
+      "line": 1206,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.1 One expression language, and two scopes",
       "keywords": [
@@ -459,7 +459,7 @@
       "classification": "normative"
     },
     {
-      "line": 1180,
+      "line": 1244,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.1 One expression language, and two scopes",
       "keywords": [
@@ -469,7 +469,7 @@
       "classification": "normative"
     },
     {
-      "line": 1218,
+      "line": 1282,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.3 Locale-aware formatting is supplied as functions",
       "keywords": [
@@ -480,7 +480,7 @@
       "classification": "normative"
     },
     {
-      "line": 1229,
+      "line": 1293,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.3 Locale-aware formatting is supplied as functions",
       "keywords": [
@@ -490,7 +490,7 @@
       "classification": "normative"
     },
     {
-      "line": 1242,
+      "line": 1306,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.4 Substitution, escaping and order",
       "keywords": [
@@ -500,7 +500,7 @@
       "classification": "normative"
     },
     {
-      "line": 1260,
+      "line": 1324,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.5 Absent data is not an authoring error",
       "keywords": [
@@ -512,7 +512,7 @@
       "classification": "normative"
     },
     {
-      "line": 1284,
+      "line": 1348,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.5 Absent data is not an authoring error",
       "keywords": [
@@ -522,7 +522,7 @@
       "classification": "normative"
     },
     {
-      "line": 1290,
+      "line": 1354,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.6 Host functions are registered, never passed in",
       "keywords": [
@@ -533,7 +533,7 @@
       "classification": "normative"
     },
     {
-      "line": 1307,
+      "line": 1371,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.7 A property named `constructor`",
       "keywords": [
@@ -544,7 +544,7 @@
       "classification": "normative"
     },
     {
-      "line": 1329,
+      "line": 1393,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.8 Renderer-owned strings",
       "keywords": [
@@ -554,7 +554,7 @@
       "classification": "normative"
     },
     {
-      "line": 1336,
+      "line": 1400,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.8 Renderer-owned strings",
       "keywords": [
@@ -564,7 +564,7 @@
       "classification": "normative"
     },
     {
-      "line": 1348,
+      "line": 1412,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.8 Renderer-owned strings",
       "keywords": [
@@ -574,7 +574,7 @@
       "classification": "normative"
     },
     {
-      "line": 1368,
+      "line": 1432,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -584,7 +584,7 @@
       "classification": "normative"
     },
     {
-      "line": 1385,
+      "line": 1449,
       "section": "## 9. Internationalizable text",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -594,7 +594,7 @@
       "classification": "normative"
     },
     {
-      "line": 1395,
+      "line": 1459,
       "section": "## 10. Markdown policy",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -604,7 +604,7 @@
       "classification": "normative"
     },
     {
-      "line": 1400,
+      "line": 1464,
       "section": "## 10. Markdown policy",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -615,7 +615,7 @@
       "classification": "normative"
     },
     {
-      "line": 1405,
+      "line": 1469,
       "section": "## 10. Markdown policy",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -625,7 +625,7 @@
       "classification": "normative"
     },
     {
-      "line": 1421,
+      "line": 1485,
       "section": "## 10. Markdown policy",
       "subsection": "### 9.9 A missing translation falls back to the locale, then to the default",
       "keywords": [
@@ -635,7 +635,7 @@
       "classification": "normative"
     },
     {
-      "line": 1437,
+      "line": 1501,
       "section": "## 10. Markdown policy",
       "subsection": "### 10.1 Requesting markup, and being refused",
       "keywords": [
@@ -645,7 +645,7 @@
       "classification": "normative"
     },
     {
-      "line": 1443,
+      "line": 1507,
       "section": "## 10. Markdown policy",
       "subsection": "### 10.1 Requesting markup, and being refused",
       "keywords": [
@@ -655,7 +655,7 @@
       "classification": "normative"
     },
     {
-      "line": 1449,
+      "line": 1513,
       "section": "## 10. Markdown policy",
       "subsection": "### 10.2 Typography",
       "keywords": [
@@ -665,7 +665,7 @@
       "classification": "normative"
     },
     {
-      "line": 1456,
+      "line": 1520,
       "section": "## 10. Markdown policy",
       "subsection": "### 10.2 Typography",
       "keywords": [
@@ -675,7 +675,7 @@
       "classification": "normative"
     },
     {
-      "line": 2145,
+      "line": 2212,
       "section": "## 12. URL and extension security configuration",
       "subsection": "### 11.10 Proposed acceptance cases and remaining decisions",
       "keywords": [
@@ -686,7 +686,7 @@
       "classification": "normative"
     },
     {
-      "line": 2186,
+      "line": 2253,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.1 ImageView",
       "keywords": [
@@ -696,7 +696,7 @@
       "classification": "normative"
     },
     {
-      "line": 2216,
+      "line": 2283,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.3 Link",
       "keywords": [
@@ -707,7 +707,7 @@
       "classification": "normative"
     },
     {
-      "line": 2231,
+      "line": 2298,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.4 Template and Slot",
       "keywords": [
@@ -718,7 +718,7 @@
       "classification": "normative"
     },
     {
-      "line": 2241,
+      "line": 2308,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.4 Template and Slot",
       "keywords": [
@@ -728,7 +728,7 @@
       "classification": "normative"
     },
     {
-      "line": 2252,
+      "line": 2319,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.4 Template and Slot",
       "keywords": [
@@ -738,7 +738,7 @@
       "classification": "normative"
     },
     {
-      "line": 2260,
+      "line": 2327,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -748,7 +748,7 @@
       "classification": "normative"
     },
     {
-      "line": 2270,
+      "line": 2337,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -759,7 +759,7 @@
       "classification": "normative"
     },
     {
-      "line": 2283,
+      "line": 2350,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -770,7 +770,7 @@
       "classification": "normative"
     },
     {
-      "line": 2299,
+      "line": 2366,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -780,7 +780,7 @@
       "classification": "normative"
     },
     {
-      "line": 2301,
+      "line": 2368,
       "section": "## 13. ImageView, Separator, Link and templates",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -792,7 +792,7 @@
       "classification": "normative"
     },
     {
-      "line": 2343,
+      "line": 2410,
       "section": "## 14. Button, actions and script",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -802,7 +802,7 @@
       "classification": "normative"
     },
     {
-      "line": 2352,
+      "line": 2419,
       "section": "## 14. Button, actions and script",
       "subsection": "### 13.5 TemplateLayout",
       "keywords": [
@@ -812,7 +812,7 @@
       "classification": "normative"
     },
     {
-      "line": 2364,
+      "line": 2431,
       "section": "## 14. Button, actions and script",
       "subsection": "### Button width",
       "keywords": [
@@ -823,7 +823,7 @@
       "classification": "normative"
     },
     {
-      "line": 2393,
+      "line": 2460,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.1 The action path",
       "keywords": [
@@ -834,7 +834,7 @@
       "classification": "normative"
     },
     {
-      "line": 2408,
+      "line": 2475,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.2 The script path",
       "keywords": [
@@ -845,7 +845,7 @@
       "classification": "normative"
     },
     {
-      "line": 2416,
+      "line": 2483,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.2 The script path",
       "keywords": [
@@ -855,7 +855,7 @@
       "classification": "normative"
     },
     {
-      "line": 2429,
+      "line": 2496,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.2 The script path",
       "keywords": [
@@ -865,7 +865,7 @@
       "classification": "normative"
     },
     {
-      "line": 2481,
+      "line": 2548,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.3 Shared destructive-change confirmation",
       "keywords": [
@@ -877,7 +877,7 @@
       "classification": "normative"
     },
     {
-      "line": 2494,
+      "line": 2561,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.3 Shared destructive-change confirmation",
       "keywords": [
@@ -887,7 +887,7 @@
       "classification": "normative"
     },
     {
-      "line": 2504,
+      "line": 2571,
       "section": "## 14. Button, actions and script",
       "subsection": "### 14.3 Shared destructive-change confirmation",
       "keywords": [
@@ -897,7 +897,7 @@
       "classification": "normative"
     },
     {
-      "line": 2530,
+      "line": 2597,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.1 Read-only sources and precedence",
       "keywords": [
@@ -908,7 +908,7 @@
       "classification": "normative"
     },
     {
-      "line": 2572,
+      "line": 2639,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.2 Rules and effective state",
       "keywords": [
@@ -918,7 +918,7 @@
       "classification": "normative"
     },
     {
-      "line": 2581,
+      "line": 2648,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.2 Rules and effective state",
       "keywords": [
@@ -928,7 +928,7 @@
       "classification": "normative"
     },
     {
-      "line": 2604,
+      "line": 2671,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.3 Validation execution and error visibility",
       "keywords": [
@@ -938,7 +938,7 @@
       "classification": "normative"
     },
     {
-      "line": 2609,
+      "line": 2676,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.3 Validation execution and error visibility",
       "keywords": [
@@ -948,7 +948,7 @@
       "classification": "normative"
     },
     {
-      "line": 2625,
+      "line": 2692,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.4 Change events, context errors and combined validity",
       "keywords": [
@@ -959,7 +959,7 @@
       "classification": "normative"
     },
     {
-      "line": 2644,
+      "line": 2711,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.5 Additional-error ownership and changing data paths",
       "keywords": [
@@ -969,7 +969,7 @@
       "classification": "normative"
     },
     {
-      "line": 2655,
+      "line": 2722,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.5 Additional-error ownership and changing data paths",
       "keywords": [
@@ -979,7 +979,7 @@
       "classification": "normative"
     },
     {
-      "line": 2662,
+      "line": 2729,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.5 Additional-error ownership and changing data paths",
       "keywords": [
@@ -989,7 +989,7 @@
       "classification": "normative"
     },
     {
-      "line": 2673,
+      "line": 2740,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.6 Renderer-published additional errors",
       "keywords": [
@@ -1000,7 +1000,7 @@
       "classification": "normative"
     },
     {
-      "line": 2684,
+      "line": 2751,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.6 Renderer-published additional errors",
       "keywords": [
@@ -1011,7 +1011,7 @@
       "classification": "normative"
     },
     {
-      "line": 2712,
+      "line": 2779,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.6 Renderer-published additional errors",
       "keywords": [
@@ -1021,7 +1021,7 @@
       "classification": "normative"
     },
     {
-      "line": 2726,
+      "line": 2793,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.7 Pre-touch error filtering",
       "keywords": [
@@ -1031,7 +1031,7 @@
       "classification": "normative"
     },
     {
-      "line": 2733,
+      "line": 2800,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.7 Pre-touch error filtering",
       "keywords": [
@@ -1041,7 +1041,7 @@
       "classification": "normative"
     },
     {
-      "line": 2745,
+      "line": 2812,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.8 Read-only interaction and restrictive editing",
       "keywords": [
@@ -1051,7 +1051,7 @@
       "classification": "normative"
     },
     {
-      "line": 2766,
+      "line": 2833,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.8 Read-only interaction and restrictive editing",
       "keywords": [
@@ -1062,7 +1062,7 @@
       "classification": "normative"
     },
     {
-      "line": 2792,
+      "line": 2859,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.8 Read-only interaction and restrictive editing",
       "keywords": [
@@ -1072,7 +1072,7 @@
       "classification": "normative"
     },
     {
-      "line": 2893,
+      "line": 2960,
       "section": "## 15. Read-only, restrict and mutation constraints",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1082,7 +1082,7 @@
       "classification": "normative"
     },
     {
-      "line": 3448,
+      "line": 3515,
       "section": "## 16. Adaptive behaviour",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1092,7 +1092,7 @@
       "classification": "normative"
     },
     {
-      "line": 3454,
+      "line": 3521,
       "section": "## 16. Adaptive behaviour",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1102,7 +1102,7 @@
       "classification": "normative"
     },
     {
-      "line": 3458,
+      "line": 3525,
       "section": "## 16. Adaptive behaviour",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1112,7 +1112,7 @@
       "classification": "definition"
     },
     {
-      "line": 3473,
+      "line": 3540,
       "section": "## 17. External context, visibility and security",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1122,7 +1122,7 @@
       "classification": "normative"
     },
     {
-      "line": 3491,
+      "line": 3558,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 15.9 Data schemas, rules and validator profile",
       "keywords": [
@@ -1132,7 +1132,7 @@
       "classification": "normative"
     },
     {
-      "line": 3504,
+      "line": 3571,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.1 Catalogue structure and provenance",
       "keywords": [
@@ -1143,7 +1143,7 @@
       "classification": "normative"
     },
     {
-      "line": 3517,
+      "line": 3584,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.1 Catalogue structure and provenance",
       "keywords": [
@@ -1153,7 +1153,7 @@
       "classification": "normative"
     },
     {
-      "line": 3521,
+      "line": 3588,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.1 Catalogue structure and provenance",
       "keywords": [
@@ -1163,7 +1163,7 @@
       "classification": "normative"
     },
     {
-      "line": 3554,
+      "line": 3621,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.2a Temporal pickers and `views`",
       "keywords": [
@@ -1173,7 +1173,7 @@
       "classification": "normative"
     },
     {
-      "line": 3579,
+      "line": 3646,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.3 Shared control behaviours",
       "keywords": [
@@ -1183,7 +1183,7 @@
       "classification": "normative"
     },
     {
-      "line": 3584,
+      "line": 3651,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.3 Shared control behaviours",
       "keywords": [
@@ -1194,7 +1194,7 @@
       "classification": "normative"
     },
     {
-      "line": 3589,
+      "line": 3656,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.3 Shared control behaviours",
       "keywords": [
@@ -1204,7 +1204,64 @@
       "classification": "normative"
     },
     {
-      "line": 3610,
+      "line": 3669,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3a Input adornments",
+      "keywords": [
+        "MAY"
+      ],
+      "text": "An applicable input Control MAY declare `options.startAdornment` and\n`options.endAdornment`. These are logical start and end edges of the editable\nfield, following writing direction. Each value is a literal string, one\nadornment object, or an ordered array of adornment objects. An empty string or\nempty array contributes nothing. Arrays preserve authored order; strings\ninside arrays are not part of this grammar (use a text object). A renderer\nnormalizes the three shapes to an ordered list before presentation.",
+      "classification": "normative"
+    },
+    {
+      "line": 3697,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3a Input adornments",
+      "keywords": [
+        "MUST",
+        "MUST NOT",
+        "MUST NOT"
+      ],
+      "text": "`icon` is a semantic identifier resolved through a renderer/host icon mapping,\nnot a UI-library icon name or markup. The mapping may render a platform-native\nsymbol. If the identifier is unavailable, display the localized `label` as\ntext; an unavailable decorative icon may be omitted. A nondecorative icon MUST\nhave a nonempty fallback `label`; `decorative: true` removes it from the\naccessibility tree and MUST NOT be paired with `label`, `i18n`, or `tooltip`.\nA nondecorative icon's localized label is its accessible name. A configured tooltip on either kind of adornment supplements its\nvisible text or accessible name, is accessible by keyboard focus and pointer,\nand does not replace validation or field help. An icon with a tooltip is an information affordance,\nnot an action; it MUST NOT mutate data. Interactive adornments require a\nseparate action contract.",
+      "classification": "normative"
+    },
+    {
+      "line": 3709,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3a Input adornments",
+      "keywords": [
+        "MUST NOT",
+        "SHOULD",
+        "MAY",
+        "MUST",
+        "SHOULD",
+        "MAY",
+        "MUST",
+        "MAY",
+        "MUST"
+      ],
+      "text": "Adornment content is display-only. It MUST NOT be stored, parsed as part of the\nvalue, submitted, included in copyable input text, or used to change the JSON\nSchema unit or validation. Applicability depends on the rendered editor, not\nonly its schema type or `format`. An input-like Control with a coherent text-entry\nsurface SHOULD support adornments where its renderer can attach them without\nbreaking editing or native controls. This includes ordinary and multiline text,\nmasked and password inputs, number and integer entry, editable choices, and\ntext-entry presentations for date, time, date-time, duration, cron, and color.\nFor password, end placement must preserve reveal and clear; for time, duration,\nand cron it must preserve picker and clear actions. A color swatch or picker\ntrigger remains operable. A slider, checkbox, OTP box group, composite editor,\nor code editor is not automatically eligible merely because its value is text or\nit contains an internal text field. Such a variant MAY support adornments only\nwhen it defines a coherent outer field boundary and satisfies the same\nplacement, focus, and accessibility contract. A renderer set MUST declare\nsupport by control/variant and SHOULD diagnose an inapplicable or unsupported\nvalue rather than silently claiming support. A supported renderer MAY use native\ninput slots or an attached field wrapper. The adornment MUST appear within the\nvisible input boundary, sharing its field chrome with editable text and native\ncontrols. Placing it beside a separately bordered input is insufficient.\nBy default, `startAdornment` occupies the outermost logical start position:\nit precedes native input parts such as a leading date/time/date-time picker\nicon, duration or cron picker trigger, color swatch or picker trigger, password\nicon, and search icon. By default, `endAdornment` occupies the outermost\nlogical end position: it follows native clear/reveal buttons, dropdown arrows,\npicker triggers, number steppers, validation indicators, and other built-in end\ncontent. A renderer MAY follow its UI library's established adornment slot or\nordering convention instead. In that case it MUST preserve\nthe library's familiar control placement and keep both adornments and native\ncontrols visible, operable, and distinguishable.",
+      "classification": "normative"
+    },
+    {
+      "line": 3740,
+      "section": "## 18. Renderer behaviour specifications",
+      "subsection": "### 18.3a Input adornments",
+      "keywords": [
+        "MUST",
+        "MUST NOT",
+        "MUST",
+        "MUST NOT",
+        "MUST NOT",
+        "MUST NOT",
+        "MUST NOT",
+        "MUST"
+      ],
+      "text": "Composition MUST preserve input focus, validation, accessible naming, and\nnarrow-layout usability. Hovering, focusing, editing, and revealing native\ncontrols MUST NOT shift the value or hide an adornment. When a password reveal\naction is persistently visible and clear appears on hover or focus, place clear\nbefore reveal so the reveal action stays in a fixed position, unless the\nUI library has an established ordering. Adornments MUST preserve the control's\nnormal clear-button visibility policy; a clear action that ordinarily appears\non hover or focus MUST NOT become permanently visible because adornments are\npresent. Native clear, picker, and number stepper controls MUST NOT overlap\nadornment content or each other, and a tooltip MUST NOT cause\nviewport-width oscillation or horizontal scrolling. An adornment MUST NOT cover\neditable text, a picker icon, or another control. Read-only and disabled\nstates preserve informational content and its accessible explanation.\nTooltips MUST use the renderer family's theme semantics, including dark mode,\nand remain legible and operable by keyboard and pointer.",
+      "classification": "normative"
+    },
+    {
+      "line": 3773,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1216,7 +1273,7 @@
       "classification": "normative"
     },
     {
-      "line": 3634,
+      "line": 3797,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1226,7 +1283,7 @@
       "classification": "normative"
     },
     {
-      "line": 3642,
+      "line": 3805,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1236,7 +1293,7 @@
       "classification": "normative"
     },
     {
-      "line": 3810,
+      "line": 3973,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.5 Choice and suggested-string controls",
       "keywords": [
@@ -1246,7 +1303,7 @@
       "classification": "normative"
     },
     {
-      "line": 3834,
+      "line": 3997,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1256,7 +1313,7 @@
       "classification": "normative"
     },
     {
-      "line": 3844,
+      "line": 4007,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1266,7 +1323,7 @@
       "classification": "normative"
     },
     {
-      "line": 3850,
+      "line": 4013,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1276,7 +1333,7 @@
       "classification": "normative"
     },
     {
-      "line": 3854,
+      "line": 4017,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1287,7 +1344,7 @@
       "classification": "normative"
     },
     {
-      "line": 3860,
+      "line": 4023,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1297,7 +1354,7 @@
       "classification": "normative"
     },
     {
-      "line": 3897,
+      "line": 4060,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.7 Array add-item initialization",
       "keywords": [
@@ -1309,7 +1366,7 @@
       "classification": "normative"
     },
     {
-      "line": 3926,
+      "line": 4089,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.9 Array-level errors and item summaries",
       "keywords": [
@@ -1320,7 +1377,7 @@
       "classification": "normative"
     },
     {
-      "line": 3939,
+      "line": 4102,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.9 Array-level errors and item summaries",
       "keywords": [
@@ -1330,7 +1387,7 @@
       "classification": "normative"
     },
     {
-      "line": 3962,
+      "line": 4125,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.10 Matching constraints: `contains`",
       "keywords": [
@@ -1340,7 +1397,7 @@
       "classification": "normative"
     },
     {
-      "line": 4013,
+      "line": 4176,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.11 Tuple control: positional array fields",
       "keywords": [
@@ -1350,7 +1407,7 @@
       "classification": "normative"
     },
     {
-      "line": 4271,
+      "line": 4434,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.11 Tuple control: positional array fields",
       "keywords": [
@@ -1360,7 +1417,7 @@
       "classification": "normative"
     },
     {
-      "line": 4706,
+      "line": 4869,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.14 Cells render through one frame",
       "keywords": [
@@ -1370,7 +1427,7 @@
       "classification": "normative"
     },
     {
-      "line": 5292,
+      "line": 5455,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.17 Selection that writes versus selection that displays",
       "keywords": [
@@ -1381,7 +1438,7 @@
       "classification": "normative"
     },
     {
-      "line": 5317,
+      "line": 5480,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1392,7 +1449,7 @@
       "classification": "normative"
     },
     {
-      "line": 5363,
+      "line": 5526,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1402,7 +1459,7 @@
       "classification": "normative"
     },
     {
-      "line": 5370,
+      "line": 5533,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1413,7 +1470,7 @@
       "classification": "normative"
     },
     {
-      "line": 5384,
+      "line": 5547,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1423,7 +1480,7 @@
       "classification": "normative"
     },
     {
-      "line": 5389,
+      "line": 5552,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1433,7 +1490,7 @@
       "classification": "normative"
     },
     {
-      "line": 5404,
+      "line": 5567,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1443,7 +1500,7 @@
       "classification": "normative"
     },
     {
-      "line": 5450,
+      "line": 5613,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1454,7 +1511,7 @@
       "classification": "normative"
     },
     {
-      "line": 5668,
+      "line": 5831,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1464,7 +1521,7 @@
       "classification": "normative"
     },
     {
-      "line": 5757,
+      "line": 5920,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1476,7 +1533,7 @@
       "classification": "normative"
     },
     {
-      "line": 6031,
+      "line": 6194,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1486,7 +1543,7 @@
       "classification": "normative"
     },
     {
-      "line": 6036,
+      "line": 6199,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1496,7 +1553,7 @@
       "classification": "normative"
     },
     {
-      "line": 6395,
+      "line": 6558,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21 Expandable arrays and list with detail",
       "keywords": [
@@ -1506,7 +1563,7 @@
       "classification": "normative"
     },
     {
-      "line": 6514,
+      "line": 6677,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21 Expandable arrays and list with detail",
       "keywords": [
@@ -1518,7 +1575,7 @@
       "classification": "normative"
     },
     {
-      "line": 6582,
+      "line": 6745,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1528,7 +1585,7 @@
       "classification": "normative"
     },
     {
-      "line": 6631,
+      "line": 6794,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1538,7 +1595,7 @@
       "classification": "normative"
     },
     {
-      "line": 6648,
+      "line": 6811,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1549,7 +1606,7 @@
       "classification": "normative"
     },
     {
-      "line": 6663,
+      "line": 6826,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1561,7 +1618,7 @@
       "classification": "normative"
     },
     {
-      "line": 6702,
+      "line": 6865,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1576,7 +1633,7 @@
       "classification": "normative"
     },
     {
-      "line": 6774,
+      "line": 6937,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.2 Detail dialog geometry and interaction",
       "keywords": [
@@ -1586,7 +1643,7 @@
       "classification": "definition"
     },
     {
-      "line": 6825,
+      "line": 6988,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.3 Scroll regions and renderer styling",
       "keywords": [
@@ -1597,7 +1654,7 @@
       "classification": "normative"
     },
     {
-      "line": 6988,
+      "line": 7151,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.25 Cron control",
       "keywords": [
@@ -1607,7 +1664,7 @@
       "classification": "normative"
     },
     {
-      "line": 7426,
+      "line": 7589,
       "section": "## 19. Honest rendering of invalid and out-of-domain data",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1617,7 +1674,7 @@
       "classification": "normative"
     },
     {
-      "line": 7437,
+      "line": 7600,
       "section": "## 19. Honest rendering of invalid and out-of-domain data",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1627,7 +1684,7 @@
       "classification": "normative"
     },
     {
-      "line": 7453,
+      "line": 7616,
       "section": "## 20. Optional editor and tooling capability catalogues",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1637,7 +1694,7 @@
       "classification": "normative"
     },
     {
-      "line": 7501,
+      "line": 7664,
       "section": "## 21. Diagnostics",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1647,7 +1704,7 @@
       "classification": "normative"
     },
     {
-      "line": 7530,
+      "line": 7693,
       "section": "## 22. Runtime state",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1657,7 +1714,7 @@
       "classification": "normative"
     },
     {
-      "line": 7534,
+      "line": 7697,
       "section": "## 22. Runtime state",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1667,7 +1724,7 @@
       "classification": "normative"
     },
     {
-      "line": 7548,
+      "line": 7711,
       "section": "## 23. Reserved portable names",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1677,7 +1734,7 @@
       "classification": "normative"
     },
     {
-      "line": 7553,
+      "line": 7716,
       "section": "## 24. Examples requirement",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1687,7 +1744,7 @@
       "classification": "normative"
     },
     {
-      "line": 7555,
+      "line": 7718,
       "section": "## 24. Examples requirement",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1697,7 +1754,7 @@
       "classification": "normative"
     },
     {
-      "line": 7579,
+      "line": 7742,
       "section": "## 25. Conformance suites",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1707,7 +1764,7 @@
       "classification": "normative"
     },
     {
-      "line": 7592,
+      "line": 7755,
       "section": "## 25. Conformance suites",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1717,7 +1774,7 @@
       "classification": "normative"
     },
     {
-      "line": 7597,
+      "line": 7760,
       "section": "## 26. Normative requirements summary",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1727,7 +1784,7 @@
       "classification": "definition"
     },
     {
-      "line": 7615,
+      "line": 7778,
       "section": "## 26. Normative requirements summary",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1737,7 +1794,7 @@
       "classification": "definition"
     },
     {
-      "line": 7820,
+      "line": 7983,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1747,7 +1804,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7829,
+      "line": 7992,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1757,7 +1814,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7839,
+      "line": 8002,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1767,7 +1824,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7864,
+      "line": 8027,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1777,7 +1834,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7874,
+      "line": 8037,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1787,7 +1844,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7891,
+      "line": 8054,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1797,7 +1854,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7900,
+      "line": 8063,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1807,7 +1864,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7928,
+      "line": 8091,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1818,7 +1875,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7948,
+      "line": 8111,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1828,7 +1885,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7953,
+      "line": 8116,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1838,7 +1895,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7963,
+      "line": 8126,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1848,7 +1905,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7970,
+      "line": 8133,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1859,7 +1916,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7991,
+      "line": 8154,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [

@@ -40,6 +40,7 @@ class InputClearableOptionUiTest {
         var readonly by mutableStateOf(false)
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/name",
                     options = mapOf("clearable" to JsonPrimitive(clearable))),
@@ -63,6 +64,7 @@ class InputClearableOptionUiTest {
     private fun numeric(cupertino: Boolean) = runComposeUiTest {
         var clearable by mutableStateOf(false)
         setContent {
+            TestTouchInputMode()
             JsonForms(data = initial, schema = schema,
                 uischema = ControlElement("#/properties/age",
                     options = mapOf("clearable" to JsonPrimitive(clearable))),

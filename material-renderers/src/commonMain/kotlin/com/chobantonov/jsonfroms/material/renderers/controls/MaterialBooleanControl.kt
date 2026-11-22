@@ -58,6 +58,7 @@ fun MaterialBooleanControl(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "boolean")
 
     val appliedOptions = controlProps.config + controlProps.uischema.options
     val showUnfocusedDescription = strictControlBooleanOption(appliedOptions, "showUnfocusedDescription") == true

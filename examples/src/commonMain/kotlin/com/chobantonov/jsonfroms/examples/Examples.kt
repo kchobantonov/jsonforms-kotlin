@@ -46,7 +46,7 @@ internal fun builtInFeatureGroup(name: String): ExampleFeatureGroup = when (name
     "list-with-detail-primitive-string" -> ExampleFeatureGroup.Collections
 
     "boolean-controls", "choice-controls", "color-control", "cron-control", "file-control",
-    "mixed-control", "null-control", "numeric-controls", "object-control",
+    "input-adornments", "mixed-control", "null-control", "numeric-controls", "object-control",
     "password-control", "string-controls", "temporal-controls", "control-options",
     "dates", "enum", "multi-enum", "multi-enum-with-label-and-desc", "numbers",
     "object", "rootObject", "radio-group", "string", "text", "login",

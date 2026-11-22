@@ -69,6 +69,7 @@ fun CupertinoPasswordControl(props: ComposeJsonFormsRendererProps, compact: Bool
         }
     }
     if (otpCount != null) {
+        if (controlProps.visible) com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "otp")
         val colors = LocalCupertinoColors.current
         OtpPasswordInput(controlProps, current, otpCount, passwordVisible,
             textColor = colors.label, mutedColor = colors.secondaryLabel,

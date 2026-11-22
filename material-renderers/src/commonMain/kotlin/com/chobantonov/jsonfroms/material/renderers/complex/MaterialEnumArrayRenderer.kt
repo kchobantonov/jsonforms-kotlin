@@ -88,6 +88,7 @@ fun MaterialEnumArrayRenderer(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "enum-array")
 
     val selectedValues = (controlProps.data as? JsonArray).orEmpty()
     val i18n = props.state.jsonforms.i18n

@@ -57,6 +57,7 @@ internal fun CupertinoBooleanControl(
     val bindings = cupertinoControlBindings(props, "CupertinoBooleanControl")
     val control = bindings.controlProps
     if (!control.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "boolean")
     val colors = LocalCupertinoColors.current
     val booleanState = booleanControlState(props.state.jsonforms.core.data, control.path)
     val appliedOptions = control.config + control.uischema.options

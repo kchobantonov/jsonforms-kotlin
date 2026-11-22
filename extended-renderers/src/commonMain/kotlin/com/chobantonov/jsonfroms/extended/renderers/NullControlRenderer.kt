@@ -86,6 +86,7 @@ internal fun NullControl(
         ),
     )
     if (!stateProps.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "null")
 
     val checked = JsonPath.get(props.state.jsonforms.core.data, stateProps.path) == JsonNull
     val enabled = stateProps.enabled && !stateProps.readonly

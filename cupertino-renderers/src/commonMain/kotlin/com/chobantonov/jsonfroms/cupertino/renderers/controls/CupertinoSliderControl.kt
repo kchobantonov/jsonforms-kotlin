@@ -65,6 +65,7 @@ fun CupertinoSliderControl(props: ComposeJsonFormsRendererProps, compact: Boolea
     val bindings = cupertinoControlBindings(props, "CupertinoSliderControl")
     val control = bindings.controlProps
     if (!control.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "slider")
     val colors = LocalCupertinoColors.current
     val options = control.config + control.uischema.options
     val showUnfocusedDescription = strictControlBooleanOption(options, "showUnfocusedDescription") == true

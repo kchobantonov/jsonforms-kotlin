@@ -199,17 +199,16 @@ class ExtendedRenderersTest {
     }
 
     @Test
-    fun namedSlotContentsOverrideInheritedOnlyWhenUnambiguous() {
+    fun namedSlotContentsOverrideInheritedAndLaterChildrenWin() {
         val inherited = LabelElement("Inherited", name = "heading")
         val earlier = LabelElement("Earlier", name = "heading")
         val latest = LabelElement("Latest", name = "heading")
         val unnamed = LabelElement("Unnamed")
         val unique = mergeNamedSlots(mapOf("heading" to inherited), listOf(earlier, unnamed))
-        assertSame(earlier, unique.slots["heading"])
-        assertEquals(emptySet(), unique.duplicateNames)
-        val ambiguous = mergeNamedSlots(mapOf("heading" to inherited), listOf(earlier, unnamed, latest))
-        assertNull(ambiguous.slots["heading"])
-        assertEquals(setOf("heading"), ambiguous.duplicateNames)
+        assertSame(earlier, unique["heading"])
+        val replaced = mergeNamedSlots(mapOf("heading" to inherited), listOf(earlier, unnamed, latest))
+        assertSame(latest, replaced["heading"])
+        assertEquals(setOf("heading"), replaced.keys)
     }
 
     @Test
@@ -225,6 +224,11 @@ class ExtendedRenderersTest {
         assertEquals(320f, imageDimensionPixels(JsonPrimitive("320px")))
         assertNull(imageDimensionPixels(JsonPrimitive("50%")))
         assertNull(imageDimensionPixels(JsonPrimitive(-1)))
+        assertEquals(1f, imageWidthFraction(JsonPrimitive("100%")))
+        assertEquals(0.5f, imageWidthFraction(JsonPrimitive("50%")))
+        assertNull(imageWidthFraction(JsonPrimitive("101%")))
+        assertNull(imageWidthFraction(JsonPrimitive("0%")))
+        assertNull(imageWidthFraction(JsonPrimitive("50px")))
     }
 
     private fun schema(type: String, format: String? = null) = JsonSchema(

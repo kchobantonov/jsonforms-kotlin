@@ -7,12 +7,12 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
@@ -37,13 +37,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
+import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
 import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.compose.LocalHandledDependencyErrors
+import com.chobantonov.jsonfroms.compose.LocalGroupHeaderLabelText
 import com.chobantonov.jsonfroms.compose.ReportLayoutDiagnostics
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporter
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporterConfigKey
 import com.chobantonov.jsonfroms.core.i18n.defaultErrorTranslator
 import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
+import com.chobantonov.jsonfroms.core.i18n.deriveLabelForUISchemaElement
 import com.chobantonov.jsonfroms.core.i18n.getCombinedErrorMessage
 import com.chobantonov.jsonfroms.core.i18n.translateGroupValidationIndicator
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfLayout
@@ -53,12 +56,15 @@ import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfRenderer
 import com.chobantonov.jsonfroms.core.mappers.mapStateToLayoutProps
 import com.chobantonov.jsonfroms.core.mappers.resolveGroupExpansionOptions
 import com.chobantonov.jsonfroms.core.models.GroupElement
+import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.store.getData
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.testers.withIncreasedRank
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.CupertinoDropdownChevron
+import com.chobantonov.jsonfroms.cupertino.renderers.CupertinoPlainTooltip
+import com.chobantonov.jsonfroms.cupertino.renderers.additional.LocalCupertinoGroupSupportingLabel
 import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
 import com.slapps.cupertino.CupertinoButton
 import com.slapps.cupertino.CupertinoButtonDefaults
@@ -82,6 +88,7 @@ internal fun CupertinoGroupLayout(
                 uischema = props.uischema,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -96,7 +103,13 @@ internal fun CupertinoGroupLayout(
         expansion.diagnostic?.let { reporter?.report(it.copy(details = it.details + ("path" to props.path))) }
     }
     var expanded by remember(props.path) { mutableStateOf(!expansion.collapsed) }
-    LaunchedEffect(expansion.collapsed) { expanded = !expansion.collapsed }
+    var previousCollapsed by remember(props.path) { mutableStateOf(expansion.collapsed) }
+    LaunchedEffect(expansion.collapsed) {
+        if (previousCollapsed != expansion.collapsed) {
+            previousCollapsed = expansion.collapsed
+            expanded = !expansion.collapsed
+        }
+    }
     val i18n = props.state.jsonforms.i18n
     val title = layoutProps.label?.takeIf { it.isNotBlank() }
         ?: translateGroupRendererText(i18n, "group.label", "Group")
@@ -122,22 +135,71 @@ internal fun CupertinoGroupLayout(
     } else null
     val errorLabel = translateGroupValidationIndicator(i18n, errorCount)
     val colors = LocalCupertinoColors.current
-    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+    val hasRegions = layout.cover != null || layout.header.isNotEmpty() || layout.footer.isNotEmpty()
+    val headingLabels = layout.header.filterIsInstance<LabelElement>()
+    val headingOther = layout.header.filterNot { it is LabelElement }
+    val firstHeaderLabel = headingLabels.firstOrNull()
+    val firstHeaderLabelIndex = layout.header.indexOfFirst { it is LabelElement }
+    val renderedHeaderName = remember(firstHeaderLabel, props.path) { mutableStateOf<String?>(null) }
+    val publishHeaderName = remember(renderedHeaderName) {
+        { text: String? -> renderedHeaderName.value = text }
+    }
+    val accessibleName = renderedHeaderName.value?.takeIf(String::isNotBlank)
+        ?: firstHeaderLabel
+        ?.let { deriveLabelForUISchemaElement(it, i18n.translate ?: defaultTranslator) }
+        ?.takeIf(String::isNotBlank) ?: title
+
+    @Composable fun disclosureButton(modifier: Modifier) {
+        CupertinoButton(
+            onClick = { expanded = !expanded },
+            colors = CupertinoButtonDefaults.plainButtonColors(),
+            modifier = modifier.semantics {
+                contentDescription = accessibleName
+                stateDescription = stateText
+                if (hasErrors) error(errorLabel)
+            },
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                if (hasRegions && layout.header.isNotEmpty() && headingLabels.isNotEmpty()) {
+                    FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        headingLabels.forEachIndexed { index, child ->
+                            CompositionLocalProvider(
+                                LocalCupertinoGroupSupportingLabel provides (index == 1),
+                                LocalGroupHeaderLabelText provides
+                                    (if (index == 0) publishHeaderName else null),
+                            ) {
+                                JsonFormsDispatchRenderer(props.copy(uischema = child,
+                                    enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                            }
+                        }
+                    }
+                } else CupertinoText(if (layout.header.isEmpty()) title else
+                    translateGroupRendererText(i18n, "group.label", "Group"), Modifier.weight(1f))
+                CupertinoDropdownChevron(expanded, colors.secondaryLabel)
+            }
+        }
+    }
+    val cardModifier = if (hasRegions) Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+        .background(colors.tertiaryBackground) else Modifier
+    Column(verticalArrangement = Arrangement.spacedBy(if (hasRegions) 0.dp else 7.dp),
+        modifier = cardModifier.then(if (expansion.collapsible) Modifier else Modifier.semantics {
+            contentDescription = accessibleName
+        })) {
+        if (hasRegions) layout.cover?.let { cover ->
+            JsonFormsDispatchRenderer(props.copy(uischema = cover, enabled = layoutProps.enabled,
+                readonly = layoutProps.readonly, id = null))
+        }
         if (expansion.collapsible) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                CupertinoButton(
-                    onClick = { expanded = !expanded },
-                    colors = CupertinoButtonDefaults.plainButtonColors(),
-                    modifier = Modifier.weight(1f).semantics {
-                        stateDescription = stateText
-                        if (hasErrors) error(errorLabel)
-                    },
-                ) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        CupertinoText(title, Modifier.weight(1f))
-                        CupertinoDropdownChevron(expanded, colors.secondaryLabel)
+                if (hasRegions && headingOther.isNotEmpty()) {
+                    FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        disclosureButton(Modifier)
+                        headingOther.forEach { child ->
+                            JsonFormsDispatchRenderer(props.copy(uischema = child,
+                                enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                        }
                     }
-                }
+                } else disclosureButton(Modifier.weight(1f))
                 if (hasErrors) CupertinoText(
                     errorCount?.toString() ?: "●",
                     modifier = Modifier.padding(end = 8.dp)
@@ -146,6 +208,20 @@ internal fun CupertinoGroupLayout(
                 )
                 if (containsData) DataIndicatorDot(
                     dataLabel, colors.accent, Modifier.padding(end = 16.dp))
+            }
+        } else if (hasRegions && layout.header.isNotEmpty()) {
+            FlowRow(Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                layout.header.forEachIndexed { index, child ->
+                    CompositionLocalProvider(
+                        LocalCupertinoGroupSupportingLabel provides (index == 1 && child is LabelElement),
+                        LocalGroupHeaderLabelText provides
+                            (if (index == firstHeaderLabelIndex) publishHeaderName else null),
+                    ) {
+                        JsonFormsDispatchRenderer(props.copy(uischema = child,
+                            enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                    }
+                }
             }
         } else if (!layoutProps.label.isNullOrBlank()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -171,8 +247,8 @@ internal fun CupertinoGroupLayout(
         )
         if (!expansion.collapsible || expanded) {
             Box(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                    .background(colors.tertiaryBackground).padding(16.dp),
+                Modifier.fillMaxWidth().then(if (hasRegions) Modifier else Modifier.clip(RoundedCornerShape(12.dp))
+                    .background(colors.tertiaryBackground)).padding(16.dp),
             ) {
                 Column {
                     if (missingDependencyMessage.isNotBlank()) CupertinoText(
@@ -183,13 +259,24 @@ internal fun CupertinoGroupLayout(
                     CompositionLocalProvider(LocalHandledDependencyErrors provides
                         (handledDependencies + missingDependencyErrors)) {
                         CupertinoLayoutRenderer(
-                            props.copy(enabled = layoutProps.enabled),
+                            props.copy(enabled = layoutProps.enabled, readonly = layoutProps.readonly),
                             layout.elements,
                             LayoutDirection.Column,
                             reportDiagnostics = false,
                         )
                     }
                     footer?.invoke()
+                }
+            }
+            if (hasRegions && layout.footer.isNotEmpty()) {
+                Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                    .background(colors.controlBorder).padding(top = 1.dp))
+                FlowRow(Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    layout.footer.forEach { child ->
+                        JsonFormsDispatchRenderer(props.copy(uischema = child,
+                            enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                    }
                 }
             }
         }
@@ -206,7 +293,7 @@ private fun DataIndicatorDot(label: String, color: Color, modifier: Modifier = M
     }
     TooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(label) } },
+        tooltip = { CupertinoPlainTooltip(label) },
         state = tooltip,
         modifier = modifier,
     ) {

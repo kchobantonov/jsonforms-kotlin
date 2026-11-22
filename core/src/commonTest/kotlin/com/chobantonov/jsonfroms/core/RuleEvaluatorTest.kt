@@ -20,6 +20,32 @@ import kotlinx.serialization.json.put
 
 class RuleEvaluatorTest {
     @Test
+    fun nestedRuleScopesUseTheCurrentRenderingDataPath() {
+        val data = buildJsonObject {
+            put("locked", false)
+            put("person", buildJsonObject { put("locked", true) })
+            put("other", buildJsonObject { put("locked", false) })
+        }
+        val validator = StubJsonSchemaValidator { _, candidate ->
+            if (candidate == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not true"))
+        }
+        val schemaRule = ControlElement("#/properties/name", rule = Rule(
+            RuleEffect.DISABLE, SchemaBasedCondition("#/properties/locked",
+                buildJsonSchema { put("const", true) }, failWhenUndefined = true),
+        ))
+        assertFalse(RuleEvaluator.isEnabled(schemaRule, data, validator, path = "person"))
+        assertTrue(RuleEvaluator.isEnabled(schemaRule, data, validator, path = "other"))
+        assertTrue(RuleEvaluator.isEnabled(schemaRule, data, validator))
+        assertTrue(RuleEvaluator.isEnabled(schemaRule, data, validator, path = "missing"))
+
+        val directPointerRule = schemaRule.copy(rule = Rule(RuleEffect.DISABLE,
+            SchemaBasedCondition("#/locked", buildJsonSchema { put("const", true) },
+                failWhenUndefined = true)))
+        assertTrue(RuleEvaluator.isEnabled(directPointerRule, data, validator, path = "person"))
+
+    }
+
+    @Test
     fun enableRuleOnlyAffectsEnablement() {
         val validator = StubJsonSchemaValidator { _, data ->
             if (data == JsonPrimitive(true)) emptyList() else listOf(ErrorObject(message = "not true"))

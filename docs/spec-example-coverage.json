@@ -1,7 +1,7 @@
 {
-  "specCommit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
-  "sourceCatalogCount": 49,
-  "importedCount": 46,
+  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
+  "sourceCatalogCount": 50,
+  "importedCount": 47,
   "rule": "Every source ID must have an explicit state; imports alone are unverified, and partial renderer evidence does not establish cross-platform conformance.",
   "examples": [
     {
@@ -145,8 +145,14 @@
     {
       "id": "group-layout",
       "title": "Group layout",
-      "fixture": "imported-unverified",
-      "reason": "Imported JSON is not renderer conformance evidence"
+      "fixture": "imported-partial",
+      "reason": "The updated card-region fixture is imported. Paired Material/Cupertino mounted tests cover region dispatch, collapse, authored interactive headings, cover ImageView alt text under the fixture URL policy and footer Button action on JVM, JS browser, Wasm browser and iOS simulator; the full fixture and Android runtime remain unverified"
+    },
+    {
+      "id": "input-adornments",
+      "title": "Input adornments",
+      "fixture": "imported-partial",
+      "reason": "The authored fixture is imported and mounts in full in paired Material/Cupertino cases on JVM, JS browser, Wasm browser and iOS simulator. Focused cases cover text, number, choice, date/time, password, duration, cron and color adornments, picker/reveal actions and live English/Bulgarian translation. Full-fixture editing, unsupported-variant diagnostics, RTL/narrow layouts and Android runtime remain unverified"
     },
     {
       "id": "job-application",

@@ -47,6 +47,7 @@ class ControlLocaleUiTest {
         var preferScoped by mutableStateOf(false)
         var data by mutableStateOf(Json.parseToJsonElement("""{"count":1,"ratio":2}"""))
         setContent {
+            TestTouchInputMode()
             JsonForms(
                 data = data,
                 schema = schema, uischema = ui,
@@ -91,6 +92,7 @@ class ControlLocaleUiTest {
         var locale by mutableStateOf("en-US")
         var data by mutableStateOf(Json.parseToJsonElement(if (oneOf) """{"choice":"yes"}""" else """{"choice":"red"}"""))
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = choiceSchema,
                 uischema = ControlElement(scope = "#/properties/choice"),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,

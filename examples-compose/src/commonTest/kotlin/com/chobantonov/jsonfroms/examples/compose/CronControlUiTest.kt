@@ -153,6 +153,7 @@ class CronControlUiTest {
         var locale by mutableStateOf("en")
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/schedule"), readonly = readonly,
                 i18n = JsonFormsI18nState(locale = locale),

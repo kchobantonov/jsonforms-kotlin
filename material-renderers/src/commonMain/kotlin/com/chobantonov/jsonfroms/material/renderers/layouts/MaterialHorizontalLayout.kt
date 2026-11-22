@@ -37,6 +37,7 @@ fun MaterialHorizontalLayout(
                 uischema = layout,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -48,7 +49,7 @@ fun MaterialHorizontalLayout(
         val direction = horizontalLayoutDirection(layout, maxWidth)
         MaterialDependencyLayoutFeedback(props, layout.elements) {
             MaterialLayoutRenderer(
-                props = props.copy(enabled = layoutProps.enabled),
+                props = props.copy(enabled = layoutProps.enabled, readonly = layoutProps.readonly),
                 elements = layout.elements,
                 direction = direction,
             )

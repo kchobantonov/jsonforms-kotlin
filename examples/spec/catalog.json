@@ -1,5 +1,5 @@
 {
-  "commit": "7c354f4f03417c37d91080fcbd169561bce66cd6",
+  "commit": "4d368072be7d3d94bba30227c9d57108d2c50029",
   "examples": [
     {
       "id": "additional-errors",
@@ -88,6 +88,10 @@
     {
       "id": "group-layout",
       "title": "Group layout"
+    },
+    {
+      "id": "input-adornments",
+      "title": "Input adornments"
     },
     {
       "id": "job-application",

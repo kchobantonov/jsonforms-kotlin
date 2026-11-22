@@ -20,6 +20,7 @@ val CupertinoVerticalLayout = ComposeJsonFormsRenderer { props ->
                 uischema = layout,
                 schema = props.schema,
                 enabled = props.enabled,
+                readonly = props.readonly,
                 path = props.path,
                 renderers = props.renderers,
                 cells = props.cells,
@@ -28,7 +29,8 @@ val CupertinoVerticalLayout = ComposeJsonFormsRenderer { props ->
     )
     if (!layoutProps.visible) return@ComposeJsonFormsRenderer
     CupertinoDependencyLayoutFeedback(props, layout.elements) {
-        CupertinoLayoutRenderer(props.copy(enabled = layoutProps.enabled), layout.elements, LayoutDirection.Column)
+        CupertinoLayoutRenderer(props.copy(enabled = layoutProps.enabled, readonly = layoutProps.readonly),
+            layout.elements, LayoutDirection.Column)
     }
 }
 

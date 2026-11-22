@@ -16,12 +16,17 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.Rule
+import com.chobantonov.jsonfroms.core.models.RuleEffect
+import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
+import com.chobantonov.jsonfroms.core.models.buildJsonSchema
 import com.chobantonov.jsonfroms.core.store.CombinedValidityStatus
 import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,6 +41,47 @@ class AdditionalPropertiesRestrictionUiTest {
     @Test fun cupertinoRenamePreservesCountAndClosesOnHostChange() = renameAtBoundary(true)
     @Test fun materialAddRepairsMinimumAndLocalFalseAllowsMaximumViolation() = addAcrossCountBounds(false)
     @Test fun cupertinoAddRepairsMinimumAndLocalFalseAllowsMaximumViolation() = addAcrossCountBounds(true)
+    @Test fun materialDisableRuleCancelsPropertyDrafts() = disableRuleCancelsDrafts(false)
+    @Test fun cupertinoDisableRuleCancelsPropertyDrafts() = disableRuleCancelsDrafts(true)
+
+    private fun disableRuleCancelsDrafts(cupertino: Boolean) = runComposeUiTest {
+        val ruleSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","properties":{"locked":{"type":"boolean"}},
+              "additionalProperties":{"type":"string"}}"""
+        ).jsonObject)
+        val control = ControlElement("#", rule = Rule(
+            effect = RuleEffect.DISABLE,
+            condition = SchemaBasedCondition(scope = "#/properties/locked",
+                schema = buildJsonSchema { put("const", true) }, failWhenUndefined = true),
+        ))
+        val initial = Json.parseToJsonElement("""{"locked":false,"extra":"value"}""")
+        var data by mutableStateOf(initial)
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = ruleSchema, uischema = control,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; writes++ })
+        }
+        onNodeWithContentDescription("Rename button").performClick()
+        onAllNodes(hasSetTextAction() and hasText("extra")).onFirst().performTextReplacement("renamed")
+        runOnIdle { data = Json.parseToJsonElement("""{"locked":true,"extra":"value"}""") }
+        onNodeWithText("New property name").assertDoesNotExist()
+        onNodeWithContentDescription("Save button").assertDoesNotExist()
+        runOnIdle { data = initial }
+        onNodeWithContentDescription("Rename button").performClick()
+        onAllNodes(hasSetTextAction() and hasText("extra")).onFirst().performTextReplacement("renamed")
+        onNodeWithContentDescription("Save button").performClick()
+        assertEquals(Json.parseToJsonElement("""{"locked":false,"renamed":"value"}"""), data)
+        assertEquals(1, writes)
+
+        onAllNodes(hasSetTextAction() and hasText("")).onFirst().performTextReplacement("stale")
+        runOnIdle { data = Json.parseToJsonElement("""{"locked":true,"renamed":"value"}""") }
+        onNodeWithText("Property name").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"locked":false,"renamed":"value"}""") }
+        onAllNodes(hasSetTextAction() and hasText("")).onFirst().assertExists()
+        onNodeWithContentDescription("Add button").assertIsNotEnabled()
+        assertEquals(1, writes)
+    }
 
     private fun addAcrossCountBounds(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(Json.parseToJsonElement("""{"fixed":"declared"}"""))

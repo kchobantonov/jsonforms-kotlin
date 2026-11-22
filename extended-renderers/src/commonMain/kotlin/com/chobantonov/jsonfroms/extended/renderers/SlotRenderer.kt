@@ -58,22 +58,12 @@ internal fun resolveNamedTemplate(
     }
 }
 
-internal data class NamedSlotMerge(
-    val slots: Map<String, UiSchemaElement>,
-    val duplicateNames: Set<String>,
-)
-
 internal fun mergeNamedSlots(
     inherited: Map<String, UiSchemaElement>,
     supplied: List<UiSchemaElement>,
-): NamedSlotMerge {
+): Map<String, UiSchemaElement> {
     val named = supplied.mapNotNull { child -> child.name?.let { it to child } }
-    val duplicates = named.groupingBy { it.first }.eachCount()
-        .filterValues { it > 1 }.keys
-    return NamedSlotMerge(
-        slots = inherited.filterKeys { it !in duplicates } + named.filter { it.first !in duplicates }.toMap(),
-        duplicateNames = duplicates,
-    )
+    return inherited + named.toMap()
 }
 
 @Composable
@@ -90,13 +80,8 @@ internal fun TemplateContent(props: ComposeJsonFormsRendererProps) {
     val template = resolution.template ?: return
     val resolvedName = name ?: return
     val merged = mergeNamedSlots(context.slots, caller.elements)
-    LaunchedEffect(reporter, merged.duplicateNames, props.path) {
-        merged.duplicateNames.sorted().forEach { duplicate ->
-            reporter?.report(TemplateDiagnostic(TemplateDiagnosticCode.DuplicateName, duplicate, props.path))
-        }
-    }
     val next = TemplateContext(
-        slots = merged.slots,
+        slots = merged,
         activeNames = context.activeNames + resolvedName,
         activeSlots = context.activeSlots,
     )

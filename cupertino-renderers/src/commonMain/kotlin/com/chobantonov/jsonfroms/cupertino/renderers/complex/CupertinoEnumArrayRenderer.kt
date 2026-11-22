@@ -83,6 +83,7 @@ fun CupertinoEnumArrayRenderer(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "enum-array")
 
     val colors = LocalCupertinoColors.current
     val selectedValues = (controlProps.data as? JsonArray).orEmpty()

@@ -184,6 +184,9 @@ internal fun FileControl(
     val multiple = schema.typeValue == com.chobantonov.jsonfroms.core.models.JsonSchemaTypeValue.Single(
         com.chobantonov.jsonfroms.core.models.JsonSchemaType.Array,
     )
+    if (multiple || compact || hasPicker) {
+        com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "file")
+    }
     val pickerSchema = if (multiple) {
         (schema["items"] as? JsonObject)?.let { resolveSchema(JsonSchema(it), null, props.rootSchema) } ?: schema
     } else schema

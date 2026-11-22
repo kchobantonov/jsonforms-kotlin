@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -72,6 +73,7 @@ class ChoiceClearableOptionUiTest {
         var field by mutableStateOf("priority")
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/$field"),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
@@ -99,11 +101,14 @@ class ChoiceClearableOptionUiTest {
                 onChange = { data = it.data; changes++ })
         }
         repeat(2) { index ->
+            onNodeWithText(if (index == 0) "ready" else "Yes")
+                .performMouseInput { moveTo(center) }
+            waitForIdle()
             onNodeWithContentDescription("Clear value")
                 .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
             onNodeWithContentDescription("Clear value").assertIsFocused()
             onNodeWithContentDescription("Clear value").performKeyInput {
-                keyDown(Key.Spacebar); keyUp(Key.Spacebar)
+                keyDown(Key.Enter); keyUp(Key.Enter)
             }
             runOnIdle {
                 assertFalse((if (index == 0) "status" else "channel") in data.jsonObject,
@@ -225,6 +230,7 @@ class ChoiceClearableOptionUiTest {
         var field by mutableStateOf("status")
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/$field"),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
@@ -247,6 +253,7 @@ class ChoiceClearableOptionUiTest {
         var readonly by mutableStateOf(false)
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/status",
                     options = mapOf("clearable" to JsonPrimitive(clearable))),
@@ -272,6 +279,7 @@ class ChoiceClearableOptionUiTest {
         var clearable by mutableStateOf(false)
         var changes = 0
         setContent {
+            TestTouchInputMode()
             JsonForms(data = data, schema = schema,
                 uischema = ControlElement("#/properties/channel",
                     options = mapOf("clearable" to JsonPrimitive(clearable))),

@@ -6,17 +6,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
@@ -28,11 +32,111 @@ import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 
 @OptIn(ExperimentalTestApi::class)
 class ArrayTablePaginationUiTest {
+    @Test fun materialFocusedRowSurvivesHostUpdate() = focusedRowSurvivesHostUpdate(false)
+    @Test fun cupertinoFocusedRowSurvivesHostUpdate() = focusedRowSurvivesHostUpdate(true)
+
+    private fun focusedRowSurvivesHostUpdate(cupertino: Boolean) = runComposeUiTest {
+        val rowSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"array","items":{"type":"string"}}"""
+        ).jsonObject)
+        val original = Json.parseToJsonElement("""["Ada","Grace"]""") as JsonArray
+        var data by mutableStateOf<JsonElement>(original)
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = rowSchema,
+                uischema = ControlElement("#", options = mapOf("table" to JsonPrimitive(true))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onAllNodes(hasSetTextAction()).onFirst()
+            .performSemanticsAction(SemanticsActions.SetSelection) { it(1, 1, false) }
+        runOnIdle { data = JsonArray(listOf(JsonPrimitive("Adele"), original[1])) }
+        onAllNodes(hasSetTextAction()).onFirst().assertIsFocused()
+        assertEquals(1, onAllNodes(hasSetTextAction()).onFirst()
+            .fetchSemanticsNode().config[SemanticsProperties.TextSelectionRange].start)
+        onAllNodes(hasSetTextAction()).onFirst().performTextInput("X")
+        waitForIdle()
+        assertEquals(Json.parseToJsonElement("""["AXdele","Grace"]"""), data)
+        assertEquals(1, changes)
+    }
+
+    @Test fun materialFocusedRowFollowsTableMove() = focusedRowFollowsTableMove(false)
+    @Test fun cupertinoFocusedRowFollowsTableMove() = focusedRowFollowsTableMove(true)
+    @Test fun materialDuplicateRowOccurrenceFollowsTableMove() = focusedRowFollowsTableMove(false, duplicate = true)
+    @Test fun cupertinoDuplicateRowOccurrenceFollowsTableMove() = focusedRowFollowsTableMove(true, duplicate = true)
+
+    private fun focusedRowFollowsTableMove(cupertino: Boolean, duplicate: Boolean = false) = runComposeUiTest {
+        val rowSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"array","items":{"type":"string"}}"""
+        ).jsonObject)
+        val initial = if (duplicate) Json.parseToJsonElement("""["Ada","Ada"]""")
+            else Json.parseToJsonElement("""["Ada","Grace"]""")
+        var data by mutableStateOf<JsonElement>(initial)
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = rowSchema,
+                uischema = ControlElement("#", options = mapOf(
+                    "table" to JsonPrimitive(true), "showSortButtons" to JsonPrimitive(true))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onAllNodes(hasSetTextAction()).onFirst()
+            .performSemanticsAction(SemanticsActions.SetSelection) { it(1, 1, false) }
+        onAllNodes(hasContentDescription("Move down")).onFirst()
+            .performSemanticsAction(SemanticsActions.OnClick)
+        waitForIdle()
+        assertEquals(if (duplicate) initial else Json.parseToJsonElement("""["Grace","Ada"]"""), data)
+        if (duplicate) assertEquals(listOf(false, true), onAllNodes(hasSetTextAction())
+            .fetchSemanticsNodes().map { it.config[SemanticsProperties.Focused] })
+        onAllNodes(hasSetTextAction()).onLast().assertIsFocused()
+        assertEquals(1, onAllNodes(hasSetTextAction()).onLast()
+            .fetchSemanticsNode().config[SemanticsProperties.TextSelectionRange].start)
+        onAllNodes(hasSetTextAction()).onLast().performTextInput("X")
+        waitForIdle()
+        assertEquals(if (duplicate) Json.parseToJsonElement("""["Ada","AXda"]""")
+            else Json.parseToJsonElement("""["Grace","AXda"]"""), data)
+        assertEquals(2, changes)
+    }
+
+    @Test fun materialFocusedRowFollowsHostReorder() = focusedRowFollowsHostReorder(false)
+    @Test fun cupertinoFocusedRowFollowsHostReorder() = focusedRowFollowsHostReorder(true)
+
+    private fun focusedRowFollowsHostReorder(cupertino: Boolean) = runComposeUiTest {
+        val rowSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"array","items":{"type":"string"}}"""
+        ).jsonObject)
+        val original = Json.parseToJsonElement("""["Ada","Grace"]""") as JsonArray
+        var data by mutableStateOf<JsonElement>(original)
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = rowSchema,
+                uischema = ControlElement("#", options = mapOf("table" to JsonPrimitive(true))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onAllNodes(hasSetTextAction()).onFirst().assertIsFocused()
+        onAllNodes(hasSetTextAction()).onFirst()
+            .performSemanticsAction(SemanticsActions.SetSelection) { it(1, 1, false) }
+        runOnIdle { data = JsonArray(listOf(original[1], original[0])) }
+        onAllNodes(hasSetTextAction()).onLast().assertIsFocused()
+        assertEquals(1, onAllNodes(hasSetTextAction()).onLast()
+            .fetchSemanticsNode().config[SemanticsProperties.TextSelectionRange].start)
+        onAllNodes(hasSetTextAction()).onLast().performTextInput("X")
+        waitForIdle()
+        assertEquals(Json.parseToJsonElement("""["Grace","AXda"]"""), data)
+        assertEquals(1, changes)
+    }
+
     @Test fun materialOffPageSchemaErrorAppearsInPager() = offPageSchemaError(false)
     @Test fun cupertinoHostOffPageSchemaErrorAppearsInPager() = offPageSchemaError(true)
 

@@ -70,6 +70,7 @@ fun MaterialSliderControl(
     if (!controlProps.visible) {
         return
     }
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "slider")
 
     val appliedOptions = controlProps.config + controlProps.uischema.options
     val hideRequiredAsterisk = strictControlBooleanOption(appliedOptions, "hideRequiredAsterisk") ?: false

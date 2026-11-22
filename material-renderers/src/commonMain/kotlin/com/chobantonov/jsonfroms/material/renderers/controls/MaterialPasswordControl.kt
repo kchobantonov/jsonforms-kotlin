@@ -84,6 +84,7 @@ fun MaterialPasswordControl(
     }
 
     if (otpCount != null) {
+        if (controlProps.visible) com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "otp")
         val colors = MaterialTheme.colorScheme
         OtpPasswordInput(controlProps, current, otpCount, passwordVisible,
             textColor = colors.onSurface, mutedColor = colors.onSurfaceVariant,

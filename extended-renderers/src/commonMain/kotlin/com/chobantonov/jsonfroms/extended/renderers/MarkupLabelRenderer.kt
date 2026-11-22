@@ -10,6 +10,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.LocalGroupHeaderLabelText
 import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.compose.currentJsonFormsItem
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnostic
@@ -89,7 +92,9 @@ internal fun markupTypographyEnabled(label: LabelElement, config: Map<String, An
 @Composable
 private fun MarkupLabel(props: ComposeJsonFormsRendererProps, cupertino: Boolean) {
     val label = props.uischema as? LabelElement ?: return
-    if (!Runtime.isVisible(label, getData(props.state), getValidator(props.state), props.path, props.config)) return
+    val visible = Runtime.isVisible(label, getData(props.state), getValidator(props.state), props.path, props.config)
+    val headerLabelSink = LocalGroupHeaderLabelText.current
+    if (!visible && headerLabelSink == null) return
     val translator = props.state.jsonforms.i18n.translate ?: defaultTranslator
     val content = deriveLabelForUISchemaElement(label, translator).orEmpty()
     val requested = (label.options["markup"] as? JsonPrimitive)?.takeIf { it.isString }?.content
@@ -111,6 +116,11 @@ private fun MarkupLabel(props: ComposeJsonFormsRendererProps, cupertino: Boolean
             config = jsonSafeConfig(props.config), context = hostContext, item = item)
     } else null
     val resolvedContent = interpolated?.text ?: content
+    if (headerLabelSink != null) {
+        DisposableEffect(headerLabelSink) { onDispose { headerLabelSink(null) } }
+        SideEffect { headerLabelSink(resolvedContent.takeIf(String::isNotBlank)) }
+    }
+    if (!visible) return
     val document = if (markdown) remember(resolvedContent, props.config) {
         parseSafeMarkdown(resolvedContent, resolveUrlPolicy(props.config), markdownProfile(props.config))
     } else null

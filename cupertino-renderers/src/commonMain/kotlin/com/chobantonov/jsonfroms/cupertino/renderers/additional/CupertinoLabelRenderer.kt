@@ -2,6 +2,7 @@ package com.chobantonov.jsonfroms.cupertino.renderers.additional
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.compositionLocalOf
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.core.i18n.defaultTranslator
 import com.chobantonov.jsonfroms.core.i18n.deriveLabelForUISchemaElement
@@ -13,6 +14,9 @@ import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.testers.uiTypeIs
 import com.chobantonov.jsonfroms.core.testers.withIncreasedRank
+import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
+
+internal val LocalCupertinoGroupSupportingLabel = compositionLocalOf { false }
 
 val CupertinoLabelRenderer = ComposeJsonFormsRenderer { props ->
     val label = props.uischema as? LabelElement
@@ -35,7 +39,12 @@ val CupertinoLabelRenderer = ComposeJsonFormsRenderer { props ->
         label,
         props.state.jsonforms.i18n.translate ?: defaultTranslator,
     ).orEmpty()
-    if (text.isNotBlank()) Text(text, style = MaterialTheme.typography.titleLarge)
+    if (text.isNotBlank()) {
+        val supporting = LocalCupertinoGroupSupportingLabel.current
+        if (supporting) Text(text, style = MaterialTheme.typography.bodySmall,
+            color = LocalCupertinoColors.current.secondaryLabel)
+        else Text(text, style = MaterialTheme.typography.titleLarge)
+    }
 }
 
 val cupertinoLabelRendererTester: RankedTester = withIncreasedRank(100, rankWith(1, uiTypeIs("Label")))

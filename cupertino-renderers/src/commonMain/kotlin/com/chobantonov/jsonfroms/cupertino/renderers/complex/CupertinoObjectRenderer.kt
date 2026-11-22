@@ -75,6 +75,7 @@ fun CupertinoObjectRenderer(props: ComposeJsonFormsRendererProps) {
         ),
     )
     if (!detailProps.visible) return
+    com.chobantonov.jsonfroms.compose.ReportUnsupportedInputAdornments(props, "object")
 
     val conditional = if (conditionalFieldsEnabled(control, detailProps.config))
         projectConditionalObjectFields(detailProps.schema, detailProps.rootSchema,
