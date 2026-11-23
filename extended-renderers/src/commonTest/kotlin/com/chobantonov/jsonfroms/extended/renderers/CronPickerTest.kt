@@ -35,4 +35,15 @@ class CronPickerTest {
         assertEquals(listOf("*", "*", "invalid", "*", "*", "*"),
             cronEditedField(initial, CronField.Hour, "invalid"))
     }
+
+    @Test
+    fun pickerFormatsChoiceSetsAndPreservesEquivalentExpressions() {
+        assertEquals("0-2", cronFormatChoices(CronField.Second, listOf(0, 1, 2)))
+        assertEquals("*/15", cronFormatChoices(CronField.Minute, listOf(0, 15, 30, 45)))
+        assertEquals("MON,WED", cronFormatChoices(CronField.DayOfWeek, listOf(1, 3)))
+        assertEquals("*", cronFormatChoices(CronField.Hour, emptyList()))
+        assertEquals((0..6).toList(), cronChoiceValues(CronField.DayOfWeek))
+        assertEquals(true, cronSameExpression("@daily", "0 0 0 * * *"))
+        assertEquals(true, cronSameExpression("0 0/15 * * * *", "0 0,15,30,45 * * * *"))
+    }
 }

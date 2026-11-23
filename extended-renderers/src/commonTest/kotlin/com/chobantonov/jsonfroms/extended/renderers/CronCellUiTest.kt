@@ -12,7 +12,9 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
@@ -54,18 +56,20 @@ class CronCellUiTest {
                 onChange = { data = it.data; writes++ })
         }
         onAllNodesWithContentDescription("Choose schedule").onFirst().performClick()
-        onAllNodesWithText("Hour").onLast().performClick()
-        onAllNodesWithText("*").onFirst().performTextReplacement("15")
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
+        onNodeWithContentDescription("Minutes").performClick()
+        onNodeWithContentDescription("Minutes: 15").performScrollTo().performClick()
         assertEquals(Json.parseToJsonElement("""{
             "rows":[{"schedule":"0 15 * * * *"}]
         }"""), data)
         assertEquals(1, writes)
-        onAllNodesWithText("Hour").onLast().assertExists()
+        onAllNodesWithText("Hourly").onLast().assertExists()
         runOnIdle { readonly = true }
         onAllNodesWithContentDescription("Choose schedule").assertCountEquals(0)
         runOnIdle { readonly = false }
         onAllNodesWithContentDescription("Choose schedule").assertCountEquals(1)
-        onAllNodesWithText("Hour").assertCountEquals(0)
+        onAllNodesWithText("Hourly").assertCountEquals(0)
         assertEquals(1, writes)
     }
 

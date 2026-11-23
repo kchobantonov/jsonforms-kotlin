@@ -142,13 +142,20 @@ class CronFixtureUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodes(hasSetTextAction() and hasText(raw)).onFirst().assertExists()
+        if (raw == "L") onAllNodes(hasSetTextAction() and hasText(raw)).onFirst().assertExists()
+        else onNodeWithContentDescription("Days of week").assertExists()
         onNodeWithText("Apply").performClick()
         waitForIdle()
         assertEquals(0, changes)
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodes(hasSetTextAction() and hasText(raw)).onFirst()
+        if (raw == "L") onAllNodes(hasSetTextAction() and hasText(raw)).onFirst()
             .performTextReplacement(replacement)
+        else {
+            onNodeWithContentDescription("Days of week").performClick()
+            onNodeWithContentDescription("Days of week: TUE").performClick()
+            onNodeWithContentDescription("Days of week: THU").performClick()
+            onNodeWithContentDescription("Days of week").performClick()
+        }
         onNodeWithText("Apply").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive(stored),

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onFirst
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.semantics.SemanticsProperties
 import com.chobantonov.jsonfroms.compose.JsonForms
@@ -56,6 +58,42 @@ class CronControlUiTest {
     @Test fun cupertinoCronInvalidPickerStaysStaged() = invalidPicker(true)
     @Test fun materialCronPeriodSelectionIsAccessible() = accessiblePeriod(false)
     @Test fun cupertinoCronPeriodSelectionIsAccessible() = accessiblePeriod(true)
+    @Test fun materialCronMultiSelectAndReset() = multiSelectAndReset(false)
+    @Test fun cupertinoCronMultiSelectAndReset() = multiSelectAndReset(true)
+
+    private fun multiSelectAndReset(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"schedule":"0 0 9 * * *"}"""))
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/schedule"),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onNodeWithContentDescription("Choose schedule").performClick()
+        onNodeWithContentDescription("Seconds").performClick()
+        onNodeWithContentDescription("Seconds: 1").performClick()
+        onNodeWithContentDescription("Seconds: 2").performClick()
+        onNodeWithContentDescription("Seconds: 3").performClick()
+        onNodeWithContentDescription("Seconds").performClick()
+        onNodeWithContentDescription("Expression").assertTextContains("0-3 0 9 * * *")
+        onAllNodesWithText("Apply").onLast().performClick()
+        waitForIdle()
+        assertEquals(JsonPrimitive("0-3 0 9 * * *"), data.jsonObject["schedule"])
+        onNodeWithContentDescription("Choose schedule").performClick()
+        onNodeWithContentDescription("Every: Seconds").performClick()
+        onAllNodesWithText("Apply").onLast().performClick()
+        waitForIdle()
+        assertEquals(JsonPrimitive("* 0 9 * * *"), data.jsonObject["schedule"])
+        onNodeWithContentDescription("Choose schedule").performClick()
+        onNodeWithContentDescription("Hours").performClick()
+        onNodeWithContentDescription("Hours: 10").performScrollTo().performClick()
+        onNodeWithContentDescription("Hours").performClick()
+        onAllNodesWithText("Apply").onLast().performClick()
+        waitForIdle()
+        assertEquals(JsonPrimitive("0 0 9,10 * * *"), data.jsonObject["schedule"])
+        assertEquals(3, changes)
+    }
 
     private fun accessiblePeriod(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(Json.parseToJsonElement("""{"schedule":"@daily"}"""))
@@ -66,14 +104,16 @@ class CronControlUiTest {
                 onChange = { data = it.data })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        assertEquals(true, onAllNodesWithText("Day").onFirst()
-            .fetchSemanticsNode().config[SemanticsProperties.Selected])
-        assertEquals("Selected period", onAllNodesWithText("Day").onFirst()
+        assertEquals("Selected period", onNodeWithContentDescription("Repeats")
             .fetchSemanticsNode().config[SemanticsProperties.StateDescription])
-        onAllNodesWithText("Hour").onFirst().performClick()
-        assertEquals(true, onAllNodesWithText("Hour").onFirst()
+        onNodeWithContentDescription("Repeats").performClick()
+        assertEquals(true, onAllNodesWithText("Daily").onLast()
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
-        assertEquals(false, onAllNodesWithText("Day").onFirst()
+        onNodeWithText("Hourly").performClick()
+        onNodeWithContentDescription("Repeats").performClick()
+        assertEquals(true, onAllNodesWithText("Hourly").onLast()
+            .fetchSemanticsNode().config[SemanticsProperties.Selected])
+        assertEquals(false, onAllNodesWithText("Daily").onLast()
             .fetchSemanticsNode().config[SemanticsProperties.Selected])
     }
 
@@ -87,8 +127,9 @@ class CronControlUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodesWithText("Hour").onFirst().performClick()
-        onAllNodesWithText("0").onFirst().performTextReplacement("60")
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
+        onNodeWithContentDescription("Expression").performTextReplacement("0 60 * * * *")
         onNodeWithText("Invalid cron expression.").assertExists()
         onNodeWithText("Apply").assertIsNotEnabled()
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
@@ -108,7 +149,8 @@ class CronControlUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodesWithText("Hour").onFirst().performClick()
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
         runOnIdle { data = Json.parseToJsonElement("""{"schedule":"@weekly"}""") }
         waitForIdle()
         onNodeWithText("Apply").assertDoesNotExist()
@@ -135,7 +177,8 @@ class CronControlUiTest {
                 onChange = { data = it.data; changes++ })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodesWithText("Hour").onFirst().performClick()
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
         runOnIdle { data = Json.parseToJsonElement("""{"schedule":"@daily","lock":true}""") }
         waitForIdle()
         onNodeWithText("Apply").assertDoesNotExist()
@@ -170,7 +213,7 @@ class CronControlUiTest {
         runOnIdle { readonly = false }
         onNodeWithContentDescription("Избери график").assertExists()
         onNodeWithContentDescription("Избери график").performClick()
-        assertEquals("Избран период", onAllNodesWithText("Седмица").onFirst()
+        assertEquals("Избран период", onNodeWithContentDescription("Повтаря се")
             .fetchSemanticsNode().config[SemanticsProperties.StateDescription])
         onNodeWithText("Отказ").performClick()
         onAllNodesWithText("@weekly").onLast().performClick()
@@ -195,13 +238,15 @@ class CronControlUiTest {
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
         assertEquals(0, changes)
         onAllNodesWithContentDescription("Choose schedule").onLast().performClick()
-        onAllNodesWithText("Hour").onFirst().performClick()
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
         onAllNodesWithText("Cancel").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("@daily"), data.jsonObject["schedule"])
         assertEquals(0, changes)
         onAllNodesWithContentDescription("Choose schedule").onLast().performClick()
-        onAllNodesWithText("Hour").onFirst().performClick()
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
         onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("0 0 * * * *"), data.jsonObject["schedule"])
@@ -236,8 +281,11 @@ class CronControlUiTest {
                 onChange = { data = it.data })
         }
         onNodeWithContentDescription("Choose schedule").performClick()
-        onAllNodesWithText("Hour").onLast().performClick()
-        onAllNodesWithText("*").onFirst().performTextReplacement("15")
+        onNodeWithContentDescription("Repeats").performClick()
+        onNodeWithText("Hourly").performClick()
+        onNodeWithContentDescription("Minutes").performClick()
+        onNodeWithContentDescription("Minutes: 15").performScrollTo().performClick()
+        onNodeWithContentDescription("Expression").assertTextContains("0 15 * * * *")
         waitForIdle()
         assertEquals(JsonPrimitive("0 15 * * * *"), data.jsonObject["schedule"])
     }

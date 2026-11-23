@@ -53,6 +53,57 @@ class DurationControlUiTest {
     @Test fun cupertinoEditedZeroWeeksUsesCanonicalZero() = editedZeroWeeks(true)
     @Test fun materialUntouchedPickerPreservesImportedWeeks() = untouchedPicker(false)
     @Test fun cupertinoUntouchedPickerPreservesImportedWeeks() = untouchedPicker(true)
+    @Test fun materialPickerAddsAndRemovesVisibleUnits() = addAndRemoveUnits(false)
+    @Test fun cupertinoPickerAddsAndRemovesVisibleUnits() = addAndRemoveUnits(true)
+    @Test fun materialPickerSwitchesToWeeksAndCancels() = switchAndCancel(false)
+    @Test fun cupertinoPickerSwitchesToWeeksAndCancels() = switchAndCancel(true)
+
+    private fun addAndRemoveUnits(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"duration":"PT1H30M"}"""))
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/duration"),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
+        onNodeWithText("Hours").assertExists()
+        onNodeWithText("Minutes").assertExists()
+        onNodeWithText("Years").assertDoesNotExist()
+        onNodeWithContentDescription("Remove Hours").assertExists()
+        onNodeWithContentDescription("Remove Minutes").assertExists()
+        onNodeWithText("Add unit").performClick()
+        onNodeWithText("Years").performClick()
+        onNodeWithText("Years").assertExists()
+        assertEquals(0, changes)
+        onNodeWithContentDescription("Remove Minutes").performClick()
+        onAllNodesWithText("Apply").onLast().performClick()
+        waitForIdle()
+        assertEquals(JsonPrimitive("PT1H"), data.jsonObject["duration"])
+        assertEquals(1, changes)
+    }
+
+    private fun switchAndCancel(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"duration":"PT1H30M"}"""))
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/duration"),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
+        onAllNodesWithText("Weeks").onFirst().performClick()
+        onNodeWithText("Hours").assertDoesNotExist()
+        onNodeWithText("Add unit").assertDoesNotExist()
+        onAllNodesWithText("Cancel").onLast().performClick()
+        assertEquals(JsonPrimitive("PT1H30M"), data.jsonObject["duration"])
+        assertEquals(0, changes)
+        onAllNodesWithContentDescription("Choose duration").onLast().performClick()
+        onNodeWithText("Hours").assertExists()
+        onNodeWithText("Minutes").assertExists()
+    }
 
     private fun untouchedPicker(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(Json.parseToJsonElement("""{"duration":"P000W"}"""))
@@ -66,11 +117,11 @@ class DurationControlUiTest {
         onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("Weeks").onLast().assertExists()
         onAllNodesWithText("Weeks").onFirst().performClick()
-        onAllNodesWithText("OK").onLast().performClick()
+        onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("P000W"), data.jsonObject["duration"])
         assertEquals(0, changes)
-        onNodeWithText("OK").assertDoesNotExist()
+        onNodeWithText("Apply").assertDoesNotExist()
     }
 
     private fun editedZeroWeeks(cupertino: Boolean) = runComposeUiTest {
@@ -86,7 +137,7 @@ class DurationControlUiTest {
         assertEquals(0, changes)
         onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("0").onLast().performTextReplacement("00")
-        onAllNodesWithText("OK").onLast().performClick()
+        onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("P0D"), data.jsonObject["duration"])
         assertEquals(1, changes)
@@ -161,8 +212,8 @@ class DurationControlUiTest {
         onNodeWithText("Years").assertDoesNotExist()
         onAllNodesWithText("0").onLast().assertExists()
         onAllNodesWithText("0").onLast().performTextReplacement("00")
-        onAllNodesWithText("OK").onLast().assertIsEnabled()
-        onAllNodesWithText("OK").onLast().performClick()
+        onAllNodesWithText("Apply").onLast().assertIsEnabled()
+        onAllNodesWithText("Apply").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("P0D"), data.jsonObject["duration"])
         assertEquals(CombinedValidityStatus.Valid, validity)
@@ -243,7 +294,7 @@ class DurationControlUiTest {
         assertEquals(0, changes)
         onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onAllNodesWithText("23").onLast().performTextReplacement("oops")
-        onAllNodesWithText("OK").onLast().assertIsNotEnabled()
+        onAllNodesWithText("Apply").onLast().assertIsNotEnabled()
         waitForIdle()
         assertEquals(CombinedValidityStatus.Pending, validity)
         assertEquals(JsonPrimitive(original), data.jsonObject["duration"])
@@ -259,7 +310,7 @@ class DurationControlUiTest {
             onNodeWithText("Въведете неотрицателно цяло число.").assertDoesNotExist()
         }
         onAllNodesWithText("23").onLast().performTextReplacement("24")
-        onAllNodesWithText("Потвърди").onLast().performClick()
+        onAllNodesWithText("Прилагане").onLast().performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("P24Y51M724DT92H150M3600S"), data.jsonObject["duration"])
         assertEquals(1, changes)
@@ -274,11 +325,11 @@ class DurationControlUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithText("OK").assertDoesNotExist()
+        onNodeWithText("Apply").assertDoesNotExist()
         assertEquals(0, changes)
         onAllNodesWithContentDescription("Choose duration").onLast().performClick()
         onNodeWithText("0").performTextReplacement("90")
-        onNodeWithText("OK").performClick()
+        onNodeWithText("Apply").performClick()
         waitForIdle()
         assertEquals(JsonPrimitive("P90W"), data.jsonObject["duration"])
         assertEquals(1, changes)

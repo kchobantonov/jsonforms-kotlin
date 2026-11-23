@@ -150,6 +150,13 @@ class ExtendedRenderersTest {
     }
 
     @Test
+    fun durationPickerShowsPopulatedUnitsOrHoursByDefault() {
+        assertEquals(listOf(3), shownDurationFields(null))
+        assertEquals(listOf(3), shownDurationFields(parseDuration("P0W")))
+        assertEquals(listOf(2, 4), shownDurationFields(parseDuration("P1DT30M")))
+    }
+
+    @Test
     fun durationSupportsUnboundedComponentsAndWeeksOnly() {
         val large = "P23Y51M724DT92H150M3600S"
         assertEquals(large, formatDuration(parseDuration(large)!!))

@@ -1,16 +1,19 @@
 package com.chobantonov.jsonfroms.extended.renderers
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,10 +23,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberPendingEditOwner
 import com.chobantonov.jsonfroms.core.i18n.translateControlClear
 import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
@@ -44,14 +52,13 @@ import com.chobantonov.jsonfroms.core.testers.or
 import com.chobantonov.jsonfroms.core.testers.rankWith
 import com.chobantonov.jsonfroms.core.util.composeWithUi
 import com.chobantonov.jsonfroms.cupertino.renderers.controls.CupertinoInputControl
+import com.chobantonov.jsonfroms.cupertino.renderers.ActionTooltip as CupertinoActionTooltip
 import com.chobantonov.jsonfroms.material.renderers.controls.MaterialInputControl
-import com.slapps.cupertino.CupertinoAlertDialog
+import com.chobantonov.jsonfroms.material.renderers.ActionTooltip as MaterialActionTooltip
 import com.slapps.cupertino.CupertinoButton
 import com.slapps.cupertino.CupertinoButtonDefaults
 import com.slapps.cupertino.CupertinoText
 import com.slapps.cupertino.ExperimentalCupertinoApi
-import com.slapps.cupertino.cancel
-import com.slapps.cupertino.default
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -108,6 +115,14 @@ private val componentLabels = listOf(
     "duration.days" to "Days", "duration.hours" to "Hours",
     "duration.minutes" to "Minutes", "duration.seconds" to "Seconds",
 )
+private const val DEFAULT_DURATION_FIELD = 3 // Hours
+
+internal fun shownDurationFields(parts: DurationParts?): List<Int> {
+    val values = (parts ?: DurationParts()).components()
+    val populated = values.indices.filter { values[it] > 0L }
+    return populated.ifEmpty { listOf(DEFAULT_DURATION_FIELD) }
+}
+
 private val durationBulgarian = JsonObject(mapOf(
     "duration.years" to JsonPrimitive("Години"),
     "duration.months" to JsonPrimitive("Месеци"),
@@ -116,10 +131,13 @@ private val durationBulgarian = JsonObject(mapOf(
     "duration.minutes" to JsonPrimitive("Минути"),
     "duration.seconds" to JsonPrimitive("Секунди"),
     "duration.weeks" to JsonPrimitive("Седмици"),
-    "duration.components" to JsonPrimitive("Компоненти"),
+    "duration.modeComponents" to JsonPrimitive("От години до секунди"),
+    "duration.modeWeeks" to JsonPrimitive("Седмици"),
+    "duration.addUnit" to JsonPrimitive("Добавяне на единица"),
+    "duration.removeUnit" to JsonPrimitive("Премахване на „{unit}“"),
     "duration.open" to JsonPrimitive("Избери продължителност"),
     "duration.title" to JsonPrimitive("Продължителност"),
-    "duration.ok" to JsonPrimitive("Потвърди"),
+    "duration.ok" to JsonPrimitive("Прилагане"),
     "duration.cancel" to JsonPrimitive("Отказ"),
     "duration.invalid" to JsonPrimitive("Невалидна продължителност."),
     "duration.invalidNumber" to JsonPrimitive("Въведете неотрицателно цяло число."),
@@ -158,8 +176,9 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
             props.dispatch(Actions.update(path = changedPath, updater = { value }))
         },
     )
-    fun label(key: String, fallback: String): String = translateRendererText(
-        i18n.translate, i18n.locale, key, fallback, mapOf("bg" to durationBulgarian))
+    fun label(key: String, fallback: String, values: Map<String, Any?> = emptyMap()): String =
+        translateRendererText(i18n.translate, i18n.locale, key, fallback,
+            mapOf("bg" to durationBulgarian), values)
     val showActions = (control.options["showActions"] as? JsonPrimitive)?.booleanOrNull != false
     var textDraft by remember(path, props.schema, control) { mutableStateOf(current) }
     var observedCurrent by remember(path, props.schema, control) { mutableStateOf(current) }
@@ -173,6 +192,11 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         mutableStateOf((parsed?.weeks ?: 0L).toString())
     }
     var dirty by remember(path, if (!showActions) null else current) { mutableStateOf(false) }
+    var editedInput by remember(path, if (!showActions) null else current) { mutableStateOf(false) }
+    var shownFields by remember(path, if (!showActions) null else current) {
+        mutableStateOf(shownDurationFields(parsed))
+    }
+    var addMenuOpen by remember(path) { mutableStateOf(false) }
     var lastPickerCommit by remember(path) { mutableStateOf<String?>(null) }
     var showPicker by remember(path, if (!showActions) null else current) {
         mutableStateOf(false)
@@ -183,6 +207,9 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         fields = (parsed ?: DurationParts()).components().map(Long::toString)
         weekText = (parsed?.weeks ?: 0L).toString()
         dirty = false
+        editedInput = false
+        shownFields = shownDurationFields(parsed)
+        addMenuOpen = false
     }
     fun dismissPicker() {
         showPicker = false
@@ -207,6 +234,8 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         val values = fields.map { it.toExactComponent() ?: return null }
         return DurationParts(values[0], values[1], values[2], values[3], values[4], values[5])
     }
+    fun equivalent(parts: DurationParts): Boolean = parsed != null &&
+        parsed.components() == parts.components() && (parsed.weeks ?: 0L) == (parts.weeks ?: 0L)
     fun commit(parts: DurationParts) {
         val encoded = formatDuration(parts)
         lastPickerCommit = encoded
@@ -216,12 +245,16 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         fields != (parsed ?: DurationParts()).components().map(Long::toString) ||
         weekText != (parsed?.weeks ?: 0L).toString()
     fun confirmPicker() {
-        if (pickerEdited()) commit(pending() ?: return)
+        if (pickerEdited()) {
+            val selected = pending() ?: return
+            if (editedInput || !equivalent(selected)) commit(selected)
+        }
         showPicker = false
     }
-    fun changed() {
+    fun changed(inputEdit: Boolean = false) {
         dirty = true
-        if (!showActions) pending()?.let(::commit)
+        if (inputEdit) editedInput = true
+        if (!showActions) pending()?.let { if (editedInput || !equivalent(it)) commit(it) }
     }
     LaunchedEffect(textDraft, textDraftDirty, dirty, weeksMode, fields, weekText) {
         setPending((textDraftDirty && textDraft.isNotEmpty() && parseDuration(textDraft) == null) ||
@@ -249,6 +282,7 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
             if (!showPicker) resetPicker()
             showPicker = !showPicker
         }
+        Box {
         if (cupertino) CupertinoInputControl(inputProps, textDraft,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
@@ -271,7 +305,7 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
             @Composable fun numberField(
                 value: String, fieldLabel: String, key: String, onValueChange: (String) -> Unit,
             ) {
-                if (cupertino) Box(Modifier.width(115.dp)) {
+                if (cupertino) Column(Modifier.width(120.dp)) {
                     CupertinoInputControl(
                         props = inputProps.copy(
                             config = inputProps.config - "focus",
@@ -282,85 +316,128 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
                         ),
                         value = value,
                         keyboardType = KeyboardType.Number,
-                        localError = if (value.toExactComponent() == null)
-                            label("duration.invalidNumber", "Enter a non-negative integer.") else null,
+                        compact = true,
                         onChange = onValueChange,
                     )
+                    if (value.toExactComponent() == null)
+                        CupertinoText(label("duration.invalidNumber", "Enter a non-negative integer."))
                 } else OutlinedTextField(value, onValueChange = onValueChange,
-                    label = { Text(fieldLabel) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true, isError = value.toExactComponent() == null,
-                    modifier = Modifier.width(115.dp))
+                    modifier = Modifier.width(120.dp).semantics { contentDescription = fieldLabel })
             }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val componentsClick = {
-                    if (weeksMode) { weeksMode = false; changed() }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    @Composable fun modeButton(weeks: Boolean, text: String) {
+                        val active = weeksMode == weeks
+                        val select = {
+                            if (!active) {
+                                weeksMode = weeks
+                                fields = List(componentLabels.size) { "0" }
+                                weekText = "0"
+                                shownFields = listOf(DEFAULT_DURATION_FIELD)
+                                editedInput = false
+                                changed()
+                            }
+                        }
+                        if (cupertino) CupertinoButton(onClick = select,
+                            colors = if (active) CupertinoButtonDefaults.filledButtonColors()
+                                else CupertinoButtonDefaults.plainButtonColors(),
+                            modifier = Modifier.semantics { selected = active }) {
+                            CupertinoText(text)
+                        } else if (active) Button(onClick = select,
+                            modifier = Modifier.semantics { selected = true }) { Text(text) }
+                        else OutlinedButton(onClick = select,
+                            modifier = Modifier.semantics { selected = false }) { Text(text) }
+                    }
+                    modeButton(false, label("duration.modeComponents", "Years to seconds"))
+                    modeButton(true, label("duration.modeWeeks", "Weeks"))
                 }
-                val weeksClick = {
-                    if (!weeksMode) { weeksMode = true; changed() }
-                }
-                if (cupertino) {
-                    CupertinoButton(onClick = componentsClick,
-                        colors = CupertinoButtonDefaults.plainButtonColors()) {
-                        CupertinoText(label("duration.components", "Components"))
-                    }
-                    CupertinoButton(onClick = weeksClick,
-                        colors = CupertinoButtonDefaults.plainButtonColors()) {
-                        CupertinoText(label("duration.weeks", "Weeks"))
-                    }
-                } else {
-                    OutlinedButton(onClick = componentsClick) {
-                        Text(label("duration.components", "Components"))
-                    }
-                    OutlinedButton(onClick = weeksClick) {
+                if (weeksMode) {
+                    Row(verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        numberField(weekText, label("duration.weeks", "Weeks"), "weeks") {
+                            weekText = it; changed(inputEdit = true)
+                        }
                         Text(label("duration.weeks", "Weeks"))
                     }
-                }
-            }
-            Row(Modifier.widthIn(max = 320.dp).horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (weeksMode) {
-                    numberField(weekText, label("duration.weeks", "Weeks"), "weeks") {
-                        weekText = it; changed()
+                } else {
+                    shownFields.forEach { index ->
+                        val (key, fallback) = componentLabels[index]
+                        val unit = label(key, fallback)
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            numberField(fields[index], unit, key) { next ->
+                                fields = fields.toMutableList().also { it[index] = next }
+                                changed(inputEdit = true)
+                            }
+                            Text(unit, Modifier.weight(1f))
+                            if (shownFields.size > 1) {
+                                val removeText = label("duration.removeUnit", "Remove {unit}",
+                                    mapOf("unit" to unit)).replace("{unit}", unit)
+                                @Composable fun removeButton() {
+                                    IconButton(onClick = {
+                                        shownFields = shownFields - index
+                                        fields = fields.toMutableList().also { it[index] = "0" }
+                                        changed()
+                                    }, modifier = Modifier.semantics { contentDescription = removeText }) {
+                                        Icon(JsonFormsActionIcons.Clear, contentDescription = null)
+                                    }
+                                }
+                                if (cupertino) CupertinoActionTooltip(removeText) { removeButton() }
+                                else MaterialActionTooltip(removeText) { removeButton() }
+                            }
+                        }
                     }
-                } else componentLabels.forEachIndexed { index, (key, fallback) ->
-                    numberField(fields[index], label(key, fallback), key) { next ->
-                        fields = fields.toMutableList().also { it[index] = next }
-                        changed()
+                    if (shownFields.size < componentLabels.size) Box {
+                        OutlinedButton(onClick = { addMenuOpen = true }) {
+                            Text(label("duration.addUnit", "Add unit"))
+                            Text(" ⌄")
+                        }
+                        DropdownMenu(expanded = addMenuOpen,
+                            onDismissRequest = { addMenuOpen = false }) {
+                            componentLabels.indices.filterNot(shownFields::contains).forEach { index ->
+                                val (key, fallback) = componentLabels[index]
+                                DropdownMenuItem(text = { Text(label(key, fallback)) },
+                                    onClick = {
+                                        shownFields = (shownFields + index).sorted()
+                                        addMenuOpen = false
+                                    })
+                            }
+                        }
                     }
                 }
             }
         }
-        if (stateProps.enabled && !stateProps.readonly && !showActions && showPicker) pickerFields()
-        if (stateProps.enabled && !stateProps.readonly && showPicker && showActions) {
-            val okText = (control.options["okLabel"] as? JsonPrimitive)?.contentOrNull
-                ?: label("duration.ok", "OK")
-            val cancelText = (control.options["cancelLabel"] as? JsonPrimitive)?.contentOrNull
-                ?: label("duration.cancel", "Cancel")
-            val title = label("duration.title", "Duration")
-            if (cupertino) CupertinoAlertDialog(
-                onDismissRequest = ::dismissPicker,
-                title = { CupertinoText(title) },
-                message = { pickerFields() },
-                buttons = {
-                    cancel(onClick = ::dismissPicker) { CupertinoText(cancelText) }
-                    default(enabled = !pickerEdited() || pending() != null, onClick = ::confirmPicker) {
-                        CupertinoText(okText)
+        DropdownMenu(expanded = showPicker && stateProps.enabled && !stateProps.readonly,
+            onDismissRequest = ::dismissPicker,
+            modifier = Modifier.width(320.dp)) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                pickerFields()
+                if (showActions) Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End) {
+                    val cancelText = (control.options["cancelLabel"] as? JsonPrimitive)?.contentOrNull
+                        ?: label("duration.cancel", "Cancel")
+                    val applyText = (control.options["okLabel"] as? JsonPrimitive)?.contentOrNull
+                        ?: label("duration.ok", "Apply")
+                    if (cupertino) {
+                        CupertinoButton(onClick = ::dismissPicker,
+                            colors = CupertinoButtonDefaults.plainButtonColors()) {
+                            CupertinoText(cancelText)
+                        }
+                        CupertinoButton(onClick = ::confirmPicker,
+                            enabled = !pickerEdited() || pending() != null,
+                            colors = CupertinoButtonDefaults.filledButtonColors()) {
+                            CupertinoText(applyText)
+                        }
+                    } else {
+                        TextButton(onClick = ::dismissPicker) { Text(cancelText) }
+                        Button(onClick = ::confirmPicker,
+                            enabled = !pickerEdited() || pending() != null) { Text(applyText) }
                     }
-                },
-            ) else AlertDialog(
-                onDismissRequest = ::dismissPicker,
-                title = { Text(title) },
-                text = { pickerFields() },
-                confirmButton = {
-                    TextButton(onClick = ::confirmPicker, enabled = !pickerEdited() || pending() != null) {
-                        Text(okText)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = ::dismissPicker) { Text(cancelText) }
-                },
-            )
+                }
+            }
+        }
         }
     }
 }
