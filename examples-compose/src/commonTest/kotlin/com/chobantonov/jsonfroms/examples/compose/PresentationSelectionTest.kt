@@ -132,7 +132,11 @@ class PresentationSelectionTest {
     @Test fun materialSchemaChangeDiscardsDateDraft() = changedContractDiscardsDateDraft(false, true)
     @Test fun cupertinoSchemaChangeDiscardsDateDraft() = changedContractDiscardsDateDraft(true, true)
 
-    private fun changedContractDiscardsDateDraft(cupertino: Boolean, changeSchema: Boolean) = runComposeUiTest {
+    @Test fun materialMaskChangeDiscardsDateDraft() = changedContractDiscardsDateDraft(false, false, true)
+    @Test fun cupertinoMaskChangeDiscardsDateDraft() = changedContractDiscardsDateDraft(true, false, true)
+
+    private fun changedContractDiscardsDateDraft(cupertino: Boolean, changeSchema: Boolean,
+                                                 changeMask: Boolean = false) = runComposeUiTest {
         var schema by mutableStateOf(buildJsonSchema { put("type", "string") })
         var control by mutableStateOf(ControlElement(
             scope = "#",
@@ -157,13 +161,15 @@ class PresentationSelectionTest {
                     put("type", "string")
                     put("description", "Updated")
                 }
+            } else if (changeMask) {
+                control = control.copy(options = control.options + ("mask" to JsonPrimitive(true)))
             } else {
-                control = control.copy(options = control.options + ("placeholder" to JsonPrimitive("Updated")))
+                control = control.copy(options = control.options + ("dateFormat" to JsonPrimitive("DD.MM.YYYY")))
             }
         }
         waitForIdle()
         assertEquals(CombinedValidityStatus.Valid, validity)
-        onNodeWithText("03/15/2024").assertExists()
+        onNodeWithText(if (changeSchema || changeMask) "03/15/2024" else "15.03.2024").assertExists()
     }
 
     @Test fun materialHostReplacementDiscardsDateDraft() = hostReplacesDateDraft(false)

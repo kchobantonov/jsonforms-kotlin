@@ -1,6 +1,7 @@
 package com.chobantonov.jsonfroms.core.util
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -45,7 +46,8 @@ class StringMask private constructor(
     }
 
     private fun bestMatch(input: String): Match = patterns.map { parse(it, input) }
-        .sortedWith(compareByDescending<Match> { it.raw.length }.thenBy { it.rejected }.thenBy { it.capacity })
+        .sortedWith(compareByDescending<Match> { jsonStringLength(it.raw) }
+            .thenBy { it.rejected }.thenBy { it.capacity })
         .first()
 
     private fun parse(pattern: String, input: String): Match {
@@ -60,14 +62,18 @@ class StringMask private constructor(
                 if (position < input.length && input[position] == part) position++
                 continue
             }
-            while (position < input.length && !accepts(part, input[position])) {
-                position++
+            while (position < input.length) {
+                val candidate = input.codePointText(position)
+                if (accepts(part, candidate)) break
+                position += candidate.length
                 rejected++
             }
             if (position == input.length) break
-            raw.append(input[position++])
+            val accepted = input.codePointText(position)
+            raw.append(accepted)
+            position += accepted.length
         }
-        rejected += input.length - position
+        rejected += jsonStringLength(input.substring(position))
         return Match(pattern, raw.toString(), rejected, pattern.count(::isToken))
     }
 
@@ -79,8 +85,9 @@ class StringMask private constructor(
         for ((index, part) in match.pattern.withIndex()) {
             if (isToken(part)) {
                 if (position == match.raw.length) break
-                result.append(match.raw[position++])
-                offsets[position] = result.length
+                val accepted = match.raw.codePointText(position)
+                result.append(accepted)
+                repeat(accepted.length) { offsets[++position] = result.length }
             } else if (position < match.raw.length || eager && position > 0 &&
                 match.pattern.drop(index + 1).any(::isToken)) {
                 result.append(part)
@@ -90,20 +97,26 @@ class StringMask private constructor(
         return Display(result.toString(), offsets)
     }
 
-    private fun isToken(char: Char) = char == '#' || tokens.containsKey(char)
+    private fun isToken(char: Char) = tokens.containsKey(char)
 
-    private fun accepts(token: Char, char: Char): Boolean = when (token) {
-        '#' -> char in '0'..'9'
-        else -> {
-            val expression = tokens[token] ?: return false
-            if (expression == "\\p{L}") char.isLetter()
-            else runCatching { Regex(expression).matches(char.toString()) }.getOrDefault(false)
-        }
+    private fun accepts(token: Char, codePoint: String): Boolean {
+        val expression = tokens[token] ?: return false
+        return if (expression == "\\p{L}" && codePoint.length == 1) codePoint[0].isLetter()
+        else runCatching { Regex(expression).matches(codePoint) }.getOrDefault(false)
+    }
+
+    private fun String.codePointText(index: Int): String {
+        val first = this[index].code
+        val length = if (first in 0xD800..0xDBFF && index + 1 < this.length &&
+            this[index + 1].code in 0xDC00..0xDFFF) 2 else 1
+        return substring(index, index + length)
     }
 
     private data class Match(val pattern: String, val raw: String, val rejected: Int, val capacity: Int)
 
     companion object {
+        private val defaultTokens = mapOf('#' to "[0-9]", '@' to "[A-Za-z]", '*' to "[A-Za-z0-9]")
+
         fun fromOptions(options: Map<String, kotlinx.serialization.json.JsonElement>): StringMask? {
             val patterns = when (val mask = options["mask"]) {
                 is JsonPrimitive -> listOfNotNull(mask.contentOrNull?.takeIf { mask.isString && it.isNotEmpty() })
@@ -111,10 +124,31 @@ class StringMask private constructor(
                 else -> emptyList()
             }
             if (patterns.isEmpty()) return null
-            val tokens = (options["tokens"] as? JsonObject).orEmpty().mapNotNull { (key, value) ->
-                val expression = (value as? JsonPrimitive)?.takeIf(JsonPrimitive::isString)?.contentOrNull
-                if (key.length == 1 && !expression.isNullOrEmpty()) key[0] to expression else null
-            }.toMap()
+            val tokens = defaultTokens.toMutableMap()
+            val replace = (options["tokensReplace"] as? JsonPrimitive)?.booleanOrNull != false
+            (options["tokens"] as? JsonObject).orEmpty().forEach { (key, value) ->
+                if (key.length != 1) return@forEach
+                val token = key[0]
+                val removesToken = when (value) {
+                    JsonNull -> true
+                    is JsonPrimitive -> if (value.isString) value.content.isEmpty()
+                        else value.booleanOrNull == false || value.content.toDoubleOrNull() == 0.0
+                    else -> false
+                }
+                if (removesToken) {
+                    if (replace) tokens.remove(token)
+                    return@forEach
+                }
+                val expression = when (value) {
+                    is JsonPrimitive -> value.takeIf(JsonPrimitive::isString)?.contentOrNull
+                    is JsonObject -> (value["pattern"] as? JsonPrimitive)
+                        ?.takeIf(JsonPrimitive::isString)?.contentOrNull
+                    else -> null
+                }
+                if (!expression.isNullOrEmpty() && runCatching { Regex(expression) }.isSuccess) {
+                    tokens[token] = expression
+                }
+            }
             return StringMask(
                 patterns,
                 tokens,

@@ -50,4 +50,48 @@ class StringMaskTest {
         assertNull(StringMask.fromOptions(Json.parseToJsonElement("""{"mask":false}""").jsonObject))
         assertNull(StringMask.fromOptions(emptyMap()))
     }
+
+    @Test fun supplementaryCharacterOccupiesOneCustomToken() {
+        val mask = mask("""{"mask":"X-X","tokens":{"X":"[\\s\\S]+"}}""")
+        assertEquals("😀B", mask.edit("😀-B"))
+        assertEquals("😀B", mask.raw("😀-B"))
+        assertEquals("😀-B", mask.display("😀B"))
+        assertEquals("😀-B", mask.visualize("😀B").text)
+        assertEquals(listOf(0, 2, 3, 4), mask.visualize("😀B").rawOffsets)
+
+        val masked = mask("""{"mask":"X-X","tokens":{"X":"[\\s\\S]+"},"returnMaskedValue":true}""")
+        assertEquals("😀-B", masked.edit("😀B"))
+    }
+
+    @Test fun defaultAsciiTokensAndObjectPatterns() {
+        val defaults = mask("""{"mask":"@*-#"}""")
+        assertEquals("Ab-4", defaults.display("Ab4"))
+        assertEquals("Ab4", defaults.edit("Ab-4"))
+        assertEquals("A1-4", defaults.display("A14"))
+        assertEquals("", mask("""{"mask":"@"}""").edit("7"))
+        assertEquals("", mask("""{"mask":"@"}""").edit("é"))
+        assertEquals("1", mask("""{"mask":"*"}""").edit("1"))
+
+        val objectToken = mask("""{"mask":"D-##","tokens":{"D":{"pattern":"[A-C]"}}}""")
+        assertEquals("B07", objectToken.edit("B-07"))
+        assertEquals("B-07", objectToken.display("B07"))
+    }
+
+    @Test fun tokenRemovalRespectsTokensReplace() {
+        val removed = mask("""{"mask":"#","tokens":{"#":false}}""")
+        assertEquals("", removed.edit("7"))
+        val restored = mask("""{"mask":"#","tokens":{"#":false},"tokensReplace":false}""")
+        assertEquals("7", restored.edit("7"))
+        val override = mask("""{"mask":"#","tokens":{"#":"[A-Z]"},"tokensReplace":false}""")
+        assertEquals("A", override.edit("A"))
+        assertEquals("", override.edit("7"))
+    }
+
+    @Test fun invalidTokenSpecificationsKeepTheExistingDefault() {
+        assertEquals("7", mask("""{"mask":"#","tokens":{"#":"["}}""").edit("7"))
+        assertEquals("7", mask("""{"mask":"#","tokens":{"#":{"pattern":42}}}""").edit("7"))
+        assertEquals("7", mask("""{"mask":"#","tokens":{"#":true}}""").edit("7"))
+        assertEquals("", mask("""{"mask":"#","tokens":{"#":null}}""").edit("7"))
+        assertEquals("", mask("""{"mask":"#","tokens":{"#":0}}""").edit("7"))
+    }
 }

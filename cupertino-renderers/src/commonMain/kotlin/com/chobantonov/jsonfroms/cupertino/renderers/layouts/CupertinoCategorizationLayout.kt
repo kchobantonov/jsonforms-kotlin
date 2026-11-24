@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
@@ -82,7 +83,9 @@ internal fun CupertinoCategorizationContent(
             val boundScopes = rememberCategoryBoundScopes(category)
             val status = categoryValidationStatus(category, props.config, props.path, boundScopes)
             val dataStatus = categoryDataPresenceStatus(category, props.config, props.path, data, boundScopes)
-            val baseModifier = if (vertical) Modifier.fillMaxWidth() else Modifier
+            val baseModifier = (if (vertical) Modifier.fillMaxWidth() else Modifier).semantics {
+                this.selected = index == selected
+            }
             CupertinoButton(
                 onClick = { selection.select(index) },
                 colors = if (index == selected) CupertinoButtonDefaults.filledButtonColors()

@@ -33,6 +33,42 @@ import kotlinx.serialization.json.put
 
 @OptIn(ExperimentalTestApi::class)
 class LayoutVisibilityUiTest {
+    @Test fun materialHiddenAncestorSuppressesVisibleChild() = hiddenAncestorSuppressesChild(false)
+    @Test fun cupertinoHiddenAncestorSuppressesVisibleChild() = hiddenAncestorSuppressesChild(true)
+
+    private fun hiddenAncestorSuppressesChild(cupertino: Boolean) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","properties":{"outer":{"type":"boolean"},"inner":{"type":"boolean"},"value":{"type":"string"}}}"""
+        ).jsonObject)
+        fun showFlag(property: String) = Rule(
+            effect = RuleEffect.SHOW,
+            condition = SchemaBasedCondition(
+                scope = "#/properties/$property",
+                schema = buildJsonSchema { put("const", true) },
+                failWhenUndefined = true,
+            ),
+        )
+        val ui = VerticalLayout(elements = listOf(
+            VerticalLayout(
+                rule = showFlag("outer"),
+                elements = listOf(ControlElement("#/properties/value", rule = showFlag("inner"))),
+            ),
+        ))
+        var data by mutableStateOf(Json.parseToJsonElement("""{"outer":false,"inner":true,"value":"kept"}"""))
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { changes++ })
+        }
+        assertEquals(0, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        runOnIdle { data = Json.parseToJsonElement("""{"outer":true,"inner":true,"value":"kept"}""") }
+        assertEquals(1, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        runOnIdle { data = Json.parseToJsonElement("""{"outer":true,"inner":false,"value":"kept"}""") }
+        assertEquals(0, onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+        assertEquals(0, changes)
+    }
+
     @Test fun materialEmptyStructuralChildDoesNotAddColumnGap() = emptyStructuralColumnGap(false)
     @Test fun cupertinoEmptyStructuralChildDoesNotAddColumnGap() = emptyStructuralColumnGap(true)
 

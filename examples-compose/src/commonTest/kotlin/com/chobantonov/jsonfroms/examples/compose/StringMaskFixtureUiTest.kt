@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
+import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.CategorizationElement
 import com.chobantonov.jsonfroms.core.models.Layout
 import com.chobantonov.jsonfroms.core.models.UiSchemaElement
@@ -26,6 +27,7 @@ import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,6 +48,59 @@ class StringMaskFixtureUiTest {
     @Test fun cupertinoFormattedMultiCharacterInsert() = formattedMultiCharacterInsert(true)
     @Test fun materialArrowCrossesMaskSeparator() = arrowCrossesMaskSeparator(false)
     @Test fun cupertinoArrowCrossesMaskSeparator() = arrowCrossesMaskSeparator(true)
+    @Test fun materialSupplementaryCharacterUsesOneMaskSlot() = supplementaryCharacter(false)
+    @Test fun cupertinoSupplementaryCharacterUsesOneMaskSlot() = supplementaryCharacter(true)
+    @Test fun materialDefaultAndObjectMaskTokens() = defaultAndObjectTokens(false)
+    @Test fun cupertinoDefaultAndObjectMaskTokens() = defaultAndObjectTokens(true)
+
+    private fun defaultAndObjectTokens(cupertino: Boolean) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement("""{
+            "type":"object","properties":{"value":{"type":"string"}}
+        }""").jsonObject)
+        var data by mutableStateOf(Json.parseToJsonElement("{}"))
+        var options by mutableStateOf(Json.parseToJsonElement("""{"mask":"@*-#"}""").jsonObject)
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/value", options = options),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data })
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performTextReplacement("A1-4")
+        assertEquals("A14", (data.jsonObject["value"] as JsonPrimitive).content)
+        onAllNodes(hasSetTextAction() and hasText("A1-4", substring = true)).onFirst().assertExists()
+
+        runOnIdle {
+            options = Json.parseToJsonElement("""{
+                "mask":"D-##","tokens":{"D":{"pattern":"[A-C]"}}
+            }""").jsonObject
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performTextReplacement("B-07")
+        assertEquals("B07", (data.jsonObject["value"] as JsonPrimitive).content)
+        onAllNodes(hasSetTextAction() and hasText("B-07", substring = true)).onFirst().assertExists()
+    }
+
+    private fun supplementaryCharacter(cupertino: Boolean) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement("""{
+            "type":"object","properties":{"value":{"type":"string","maxLength":2}}
+        }""").jsonObject)
+        var data by mutableStateOf(Json.parseToJsonElement("{}"))
+        var changes = 0
+        val options = Json.parseToJsonElement("""{
+            "mask":"X-X","tokens":{"X":"[\\s\\S]+"},"restrict":true
+        }""").jsonObject
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/value", options = options),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performTextReplacement("😀-B")
+        assertEquals("😀B", (data.jsonObject["value"] as JsonPrimitive).content)
+        onAllNodes(hasSetTextAction() and hasText("😀-B", substring = true)).onFirst().assertExists()
+        onAllNodes(hasSetTextAction()).onFirst().performTextReplacement("😀-BC")
+        assertEquals("😀B", (data.jsonObject["value"] as JsonPrimitive).content)
+        assertEquals(1, changes)
+    }
 
     private fun control(root: UiSchemaElement?, property: String): ControlElement =
         root?.let { controlOrNull(it, property) } ?: error("Missing imported Control: $property")

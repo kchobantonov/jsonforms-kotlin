@@ -94,9 +94,10 @@ fun CupertinoDateControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
         params = mapOf("bound" to violation.bound),
     ) }
     val displayed = parsed?.let { formatTemporal(it, displayFormat) } ?: committed
-    var draft by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(displayed) }
-    var observed by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(committed) }
-    var showPicker by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat, dateMode) { mutableStateOf(false) }
+    val editOptions = props.uischema.options - "placeholder"
+    var draft by remember(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { mutableStateOf(displayed) }
+    var observed by remember(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { mutableStateOf(committed) }
+    var showPicker by remember(bindings.stateProps.path, editOptions, displayFormat, saveFormat, dateMode) { mutableStateOf(false) }
     val parsedDraft = draft.takeIf(String::isNotEmpty)?.let { parseDateValue(it, listOf(displayFormat)) }
     val localError = when {
         draft.isEmpty() -> null
@@ -105,7 +106,7 @@ fun CupertinoDateControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
     }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     val setPending = rememberPendingEditOwner("temporal:date:${bindings.stateProps.path}:${props.id}")
-    LaunchedEffect(props.uischema, displayFormat, saveFormat) { setPending(false) }
+    LaunchedEffect(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { setPending(false) }
 
     LaunchedEffect(committed, displayed, props.state.jsonforms.core.data) {
         if (committed != observed) {

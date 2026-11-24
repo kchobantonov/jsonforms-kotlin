@@ -17,6 +17,12 @@ fun isVerticalCategorization(categorization: CategorizationElement): Boolean =
         ?.takeUnless { it.isString }?.content == "true"
 
 private data class CategoryPositionKey(val originalIndex: Int)
+private class CategoryIdentityKey(val category: CategoryElement) {
+    override fun equals(other: Any?): Boolean =
+        other is CategoryIdentityKey && category === other.category
+
+    override fun hashCode(): Int = 0
+}
 
 /** Unique names survive reordering; unnamed Categories follow their authored position. */
 fun categorySelectionKey(
@@ -29,6 +35,7 @@ fun categorySelectionKey(
             .filter { it.name == name }
         if (sameName.size == 1) return name
         if (sameName.count { it == category } == 1) return category
+        if (sameName.count { it === category } == 1) return CategoryIdentityKey(category)
     }
     return CategoryPositionKey(categoryOriginalIndex(categorization, category))
 }

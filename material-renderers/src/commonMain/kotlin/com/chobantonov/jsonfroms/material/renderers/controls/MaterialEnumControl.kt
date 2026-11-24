@@ -151,6 +151,8 @@ fun MaterialEnumControl(
     val hideAsterisk = strictControlBooleanOption(stateProps.config + stateProps.uischema.options,
         "hideRequiredAsterisk") ?: false
     val label = if (compact) "" else computeLabel(stateProps.label, stateProps.required, hideAsterisk)
+    val placeholder = stateProps.uischema.options.stringOption("placeholder")
+        ?.takeIf { !stateProps.dataProvided }
     val committedText = selectedOption?.label ?:
         if (unknownStatus != null && stateProps.data == JsonNull) "null"
         else stateProps.data.toMaterialInputString()
@@ -216,7 +218,8 @@ fun MaterialEnumControl(
         !compact &&
         it.isNotBlank() && (selectorFocused || showUnfocusedDescription)
     }
-    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription).joinToString(". ")
+    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription,
+        placeholder?.takeIf { query.isEmpty() && it.isNotBlank() }).joinToString(". ")
     val accessibleError = listOfNotNull(unknownStatus, effectiveError.takeIf(String::isNotBlank))
         .distinct().joinToString(". ")
     val supportingText: (@Composable () -> Unit)? = if (unknownStatus != null ||
@@ -338,6 +341,7 @@ fun MaterialEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     prefix = prefixContent,
                     suffix = suffixContent,
                     trailingIcon = trailingContent,
@@ -350,6 +354,7 @@ fun MaterialEnumControl(
                     isError = accessibleError.isNotBlank(),
                     label = if (label.isNotBlank()) {{ Text(label) }} else null,
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     trailingIcon = trailingContent,
                 )
             }
@@ -371,6 +376,7 @@ fun MaterialEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     prefix = prefixContent,
                     suffix = suffixContent,
                     trailingIcon = trailingContent,
@@ -383,6 +389,7 @@ fun MaterialEnumControl(
                     isError = accessibleError.isNotBlank(),
                     label = if (label.isNotBlank()) {{ Text(label) }} else null,
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     trailingIcon = trailingContent,
                 )
             }

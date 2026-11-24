@@ -146,6 +146,16 @@ class LayoutSizingTest {
         assertEquals(12f, resolveColumnSpacerHeight(weighted))
     }
 
+    @Test fun spacerAcceptsUnitSuffixedNonnegativeDimensions() {
+        val dp = SpacerElement(size = JsonPrimitive("24dp"))
+        val px = SpacerElement(size = JsonPrimitive("48px"))
+        assertEquals(LayoutWidthMode.Fixed(24f), resolveLayoutItemSizing(dp, null).mode)
+        assertEquals(24f, resolveColumnSpacerHeight(dp))
+        assertEquals(LayoutWidthMode.Fixed(48f), resolveLayoutItemSizing(px, null).mode)
+        assertEquals(48f, resolveColumnSpacerHeight(px))
+        assertEquals(32f, resolveSpacerSize(SpacerElement(size = JsonPrimitive("-1dp"))))
+    }
+
     @Test fun verticalControlHeightUsesOnlyPortableLayoutHint() {
         val fixed = ControlElement(scope = "#", options = mapOf(
             "columns" to JsonPrimitive(4),

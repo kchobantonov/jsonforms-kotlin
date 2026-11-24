@@ -693,7 +693,7 @@
         "compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/compose/StringMaskVisualTransformationTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/StringMaskFixtureUiTest.kt"
       ],
-      "next": "The 14-case mounted Material/Cupertino fixture suite passes on JVM, JS browser, Wasm browser and iOS simulator. It covers character-by-character booking and prefixed phone entry, Backspace, mid-string selection edits, Left/Right navigation across a literal separator, and one multi-character formatted insertion for raw and masked storage in each family. Shared visual transformation maps raw caret offsets; pure tests cover separators, phone prefix and invalid import identity. Multi-character test insertion is not an operating-system clipboard shortcut; verify actual clipboard paste, accessibility and physical-device interaction."
+      "next": "The 16-case mounted Material/Cupertino fixture suite passes on JVM, JS browser, Wasm browser and iOS simulator. It covers character-by-character booking and prefixed phone entry, Backspace, mid-string selection edits, Left/Right navigation across a literal separator, one multi-character formatted insertion for raw and masked storage in each family, and a supplementary Unicode character occupying one custom-token slot under maxLength: 2. Shared visual transformation maps raw UTF-16 caret offsets; pure tests cover separators, phone prefix, invalid import identity and supplementary-character token boundaries. Multi-character test insertion is not an operating-system clipboard shortcut; verify actual clipboard paste, accessibility and physical-device IME interaction."
     },
     {
       "id": "S5-04",
@@ -1953,9 +1953,10 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "core UiSchemaJsonTest and LayoutSizingTest parse/default size; LayoutSpacerUiTest mounts both families without a data scope and verifies standalone fallback/invalid-size warning on JVM"
+        "core UiSchemaJsonTest and LayoutSizingTest parse/default size; LayoutSpacerUiTest mounts both families without a data scope and verifies standalone fallback/invalid-size warning on JVM",
+        "LayoutSizingTest verifies positive dp/px sizes and negative-size fallback; paired Material/Cupertino LayoutSpacerUiTest cases measure 24dp and 48px on row/column axes with no writes on JVM, JS browser, Wasm browser and iOS simulator"
       ],
-      "next": "Verify positive and unit-suffixed size values, plus non-JVM interaction."
+      "next": "Verify physical-device behavior and inspect platform accessibility trees."
     },
     {
       "id": "S7.4-02",
@@ -1966,9 +1967,10 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "LayoutSpacerUiTest verifies 48-unit row width, 48-unit column height and 32-unit standalone fallback in both families on JVM"
+        "LayoutSpacerUiTest verifies 48-unit row width, 48-unit column height and 32-unit standalone fallback in both families on JVM",
+        "Paired Material/Cupertino row and column cases measure the same unit-suffixed Spacer on JVM, JS browser, Wasm browser and iOS simulator; both axes preserve form data"
       ],
-      "next": "Verify positive gaps, explicit layout height and non-JVM geometry."
+      "next": "Verify explicit layout height, positive gaps on non-JVM targets and physical-device geometry."
     },
     {
       "id": "S7.4-03",
@@ -2633,7 +2635,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/CategorySelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CategorySelectionUiTest.kt"
       ],
-      "next": "The 40-case mounted Material/Cupertino Category selection suite passes on JVM, JS browser, Wasm browser and iOS simulator. A live rule-hidden initial target diagnoses once and falls back; it does not retake selection when shown. Same-path replacement uses its own authored initial target, and unnamed categories retain authored-position selection through label edits. Test duplicate-name behavior after live schema replacement and physical-device interaction."
+      "next": "The 56-case mounted Material/Cupertino Category selection suite passes on JVM, JS browser, Wasm browser and arm64 iOS simulator. Live rule-hidden and duplicate initial targets diagnose once and fall back. A distinct but structurally identical duplicate keeps selected identity through an observable reorder; Cupertino navigation exposes selected semantics. Verify Android device interaction and direct accessibility output."
     },
     {
       "id": "S8.7-01",
@@ -2649,7 +2651,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/RendererTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/LayoutVisibilityUiTest.kt"
       ],
-      "next": "Function-rule path/config now reaches control, category and mounted layout visibility on JVM; test hidden ancestor suppression, Group/Category child-only rules and non-JVM interaction."
+      "next": "Mounted Material/Cupertino tests cover hidden-ancestor suppression, child-only rules, category navigation and regional Group presentation on JVM, JS browser, Wasm browser and arm64 iOS simulator. Verify Android device interaction and direct accessibility output."
     },
     {
       "id": "S8.7-02",
@@ -2660,9 +2662,11 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/VisibleEmptyContainerUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/VisibleEmptyContainerUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CategorySelectionUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/GroupRegionsAndAdornmentsUiTest.kt"
       ],
-      "next": "Exercise empty visible Group and Category on device/browser targets and cover nested category variants."
+      "next": "Empty, child-hidden and nested visible categories and regional Groups pass on JVM, JS browser, Wasm browser and arm64 iOS simulator; cover Android device behavior and direct accessibility output."
     },
     {
       "id": "S8.7-03",
@@ -2676,7 +2680,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/CategorySelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CategorySelectionUiTest.kt"
       ],
-      "next": "Test category removal/reorder, visible empty category, and non-JVM execution."
+      "next": "Visible empty-category selection, category removal and reordering, and nested empty tabs/steps pass on JVM, JS browser, Wasm browser and arm64 iOS simulator; cover Android device behavior and direct accessibility output."
     },
     {
       "id": "S8.8-01",
@@ -2690,7 +2694,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/AccordionOptionsTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/AccordionUiTest.kt"
       ],
-      "next": "Explicit variant outranks generic in mounted Material/Cupertino forms; test unbound empty-data rendering on native targets."
+      "next": "Explicit variant outranks generic; Material/Cupertino accordions with unbound Label content render and switch panels with empty data and an empty schema on JVM, JS browser, Wasm browser and arm64 iOS simulator. Verify Android device behavior and direct accessibility output."
     },
     {
       "id": "S8.8-02",
@@ -2718,7 +2722,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/AccordionOptionsTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/AccordionUiTest.kt"
       ],
-      "next": "The 32-case mounted Material/Cupertino accordion suite passes on JVM, JS browser, Wasm browser and iOS simulator. Named selection survives category reordering and addition; active removal and all-hidden recovery fall back predictably. Verify direct accessibility and physical-device interaction."
+      "next": "The 36-case mounted Material/Cupertino accordion suite passes on JVM, JS browser, Wasm browser and arm64 iOS simulator. Named selection, including structurally identical duplicate Categories, survives an observable reorder; active removal and all-hidden recovery fall back predictably. Verify direct accessibility and physical-device interaction."
     },
     {
       "id": "S8.8-04",
@@ -3749,6 +3753,24 @@
         "docs/spec-requirement-ledger.json"
       ],
       "next": "The §15.8 matrix inventories arrays, tuple tails, checkbox groups, multi-selects/chips, additional properties, text, numeric, temporal and file paths with explicit handler and target gaps. Expand to every renderer catalog entry and verify remaining stale callback, keyboard, native picker and browser/device paths before claiming full compliance."
+    },
+    {
+      "id": "S18.28-placeholder-01",
+      "sourceLine": 7248,
+      "sourceAnchor": "The string placeholder supplies",
+      "statement": "A string placeholder is presentation only, explicit empty suppresses the fallback, and a date/time hint update leaves the active draft, parsing, focus, value and validation unchanged.",
+      "strength": "normative",
+      "applicability": "portable controls",
+      "status": "partial",
+      "evidence": [
+        "material-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/material/renderers/controls/TemporalFormatsTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalFormatHintUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PresentationSelectionTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/NativePlaceholderUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TextPlaceholderUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/SelectPlaceholderUiTest.kt"
+      ],
+      "next": "Six Material/Cupertino date, time and date-time cases preserve an invalid focused draft and Pending validity through a placeholder-only update on JVM, iOS simulator, JS browser and Wasm browser. Format and mask changes reset incompatible drafts on all four targets. Paired native fallback cases on those targets verify authored, explicit-empty and invalid-placeholder behavior without data writes. Paired ordinary-text cases preserve focus, caret and data through a static placeholder update on JVM. Eight enum, oneOf and searchable-selector cases pass on JVM, iOS simulator, JS browser and Wasm browser, covering live hint updates, explicit empty and invalid hints, and stored empty choices. Verify other hint-bearing controls and non-JVM ordinary-text focus/caret behavior; generic $dynamic overlays are experimental in the pinned spec."
     },
     {
       "id": "S18.28-01",
@@ -5658,9 +5680,11 @@
       "status": "partial",
       "evidence": [
         "core/src/commonMain/kotlin/com/chobantonov/jsonfroms/core/util/RestrictedStringEdit.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/StringRestrictionUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/StringRestrictionUiTest.kt",
+        "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/util/StringMaskTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/StringMaskFixtureUiTest.kt"
       ],
-      "next": "Stored string length uses Unicode code points in the shared restricted edit helper. Composition-based IME interaction remains unverified on Android, iOS and desktop; verify it before claiming this clause."
+      "next": "Stored string length uses Unicode code points in the shared restricted edit helper. A custom-token mask now parses complete supplementary characters and keeps UTF-16 display offsets; pure cases pass on JVM and Wasm browser, and paired mounted cases pass on JVM, JS browser, Wasm browser and iOS simulator with maxLength: 2. Composition-based IME interaction remains unverified on Android, iOS and desktop; verify it before claiming this clause."
     },
     {
       "id": "S18.3a-01",

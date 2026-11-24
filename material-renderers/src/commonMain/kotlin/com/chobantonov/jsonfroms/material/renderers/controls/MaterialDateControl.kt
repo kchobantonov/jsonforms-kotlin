@@ -73,9 +73,10 @@ fun MaterialDateControl(props: ComposeJsonFormsRendererProps, compact: Boolean =
         params = mapOf("bound" to violation.bound),
     ) }
     val displayValue = committedTemporal?.let { formatTemporal(it, displayFormat) } ?: committedValue
-    var draftValue by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(displayValue) }
-    var observedCommittedValue by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(committedValue) }
-    var showPicker by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat, dateMode) { mutableStateOf(false) }
+    val editOptions = props.uischema.options - "placeholder"
+    var draftValue by remember(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { mutableStateOf(displayValue) }
+    var observedCommittedValue by remember(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { mutableStateOf(committedValue) }
+    var showPicker by remember(bindings.stateProps.path, editOptions, displayFormat, saveFormat, dateMode) { mutableStateOf(false) }
     val maskInput = options.booleanOption("mask") != false
     val parsedDraft = draftValue.takeIf(String::isNotEmpty)
         ?.let { parseDateValue(it, listOf(displayFormat)) }
@@ -86,7 +87,7 @@ fun MaterialDateControl(props: ComposeJsonFormsRendererProps, compact: Boolean =
     }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     val setPending = rememberPendingEditOwner("temporal:date:${bindings.stateProps.path}:${props.id}")
-    LaunchedEffect(props.uischema, displayFormat, saveFormat) { setPending(false) }
+    LaunchedEffect(bindings.stateProps.path, props.schema, editOptions, displayFormat, saveFormat) { setPending(false) }
     LaunchedEffect(committedValue, displayValue, props.state.jsonforms.core.data) {
         if (committedValue != observedCommittedValue) {
             draftValue = displayValue

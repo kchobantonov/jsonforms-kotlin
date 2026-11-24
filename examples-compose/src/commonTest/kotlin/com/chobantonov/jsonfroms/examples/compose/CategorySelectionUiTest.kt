@@ -5,6 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
@@ -28,6 +34,7 @@ import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
@@ -79,6 +86,18 @@ class CategorySelectionUiTest {
     @Test fun cupertinoTabsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(true, false)
     @Test fun materialStepsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(false, true)
     @Test fun cupertinoStepsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(true, true)
+    @Test fun materialNestedTabsKeepVisibleEmptyCategories() = nestedVisibleEmptyCategories(false, false)
+    @Test fun cupertinoNestedTabsKeepVisibleEmptyCategories() = nestedVisibleEmptyCategories(true, false)
+    @Test fun materialNestedStepsKeepVisibleEmptyCategories() = nestedVisibleEmptyCategories(false, true)
+    @Test fun cupertinoNestedStepsKeepVisibleEmptyCategories() = nestedVisibleEmptyCategories(true, true)
+    @Test fun materialTabsDiagnoseDuplicateNamesAfterReplacement() = duplicateAfterReplacement(false, false)
+    @Test fun cupertinoTabsDiagnoseDuplicateNamesAfterReplacement() = duplicateAfterReplacement(true, false)
+    @Test fun materialStepsDiagnoseDuplicateNamesAfterReplacement() = duplicateAfterReplacement(false, true)
+    @Test fun cupertinoStepsDiagnoseDuplicateNamesAfterReplacement() = duplicateAfterReplacement(true, true)
+    @Test fun materialTabsKeepIdenticalDuplicateIdentityThroughReorder() = identicalDuplicateReorder(false, false)
+    @Test fun cupertinoTabsKeepIdenticalDuplicateIdentityThroughReorder() = identicalDuplicateReorder(true, false)
+    @Test fun materialStepsKeepIdenticalDuplicateIdentityThroughReorder() = identicalDuplicateReorder(false, true)
+    @Test fun cupertinoStepsKeepIdenticalDuplicateIdentityThroughReorder() = identicalDuplicateReorder(true, true)
 
     private val schema = JsonSchema(Json.parseToJsonElement(
         """{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"},"show":{"type":"boolean"}}}"""
@@ -117,6 +136,116 @@ class CategorySelectionUiTest {
         onNodeWithText("Empty section").performTouchInput { click() }
         onNodeWithText("B").assertDoesNotExist()
         onNodeWithText("Optional section").assertExists()
+        assertEquals(0, writes)
+    }
+
+    private fun nestedVisibleEmptyCategories(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val nested = CategorizationElement(
+            options = if (stepper) mapOf("variant" to JsonPrimitive("stepper")) else emptyMap(),
+            elements = listOf(
+                CategoryElement(label = "Inner empty", name = "inner-empty", elements = emptyList()),
+                CategoryElement(label = "Inner optional", name = "inner-optional", elements = listOf(
+                    ControlElement(scope = "#/properties/b", rule = secondRule),
+                )),
+            ),
+        )
+        val layout = CategorizationElement(elements = listOf(
+            CategoryElement(label = "Container", name = "container", elements = listOf(nested)),
+            CategoryElement(label = "Other", name = "other", elements = listOf(
+                ControlElement(scope = "#/properties/a"),
+            )),
+        ))
+        var data by mutableStateOf(Json.parseToJsonElement("""{"show":false}"""))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("Container").assertExists()
+        onNodeWithText("Inner empty").assertExists()
+        onNodeWithText("Inner optional").performTouchInput { click() }
+        onNodeWithText("B").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true}""") }
+        onNodeWithText("B").assertExists()
+        onNodeWithText("Other").performTouchInput { click() }
+        onNodeWithText("A").assertExists()
+        onNodeWithText("B").assertDoesNotExist()
+        assertEquals(0, writes)
+    }
+
+    private fun duplicateAfterReplacement(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val diagnostics = mutableListOf<UiDiagnostic>()
+        val original = ui(stepper, initial = "first")
+        val duplicate = CategorizationElement(
+            options = original.options + ("initial" to JsonPrimitive("same")),
+            elements = listOf(
+                CategoryElement(label = "New first", name = "same",
+                    elements = listOf(ControlElement(scope = "#/properties/a"))),
+                CategoryElement(label = "New second", name = "same",
+                    elements = listOf(ControlElement(scope = "#/properties/b"))),
+            ),
+        )
+        var layout by mutableStateOf(original)
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{"show":true}"""), schema = schema,
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                config = mapOf(UiDiagnosticReporterConfigKey to UiDiagnosticReporter { diagnostics += it }),
+                onChange = { writes++ })
+        }
+        onNodeWithText("Second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        runOnIdle { layout = duplicate }
+        onNodeWithText("New first").assertExists()
+        onNodeWithText("A").assertExists()
+        onNodeWithText("B").assertDoesNotExist()
+        waitForIdle()
+        assertEquals(listOf("categorization.duplicateName"), diagnostics.map { it.code })
+        onNodeWithText("New second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        runOnIdle { layout = duplicate.copy(elements = duplicate.elements.reversed()) }
+        onNodeWithText("B").assertExists()
+        assertEquals(1, diagnostics.size)
+        assertEquals(0, writes)
+    }
+
+    private fun identicalDuplicateReorder(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val first = CategoryElement(label = "Same", name = "duplicate",
+            elements = listOf(ControlElement(scope = "#/properties/a")))
+        val second = first.copy()
+        val original = CategorizationElement(
+            options = if (stepper) mapOf("variant" to JsonPrimitive("stepper")) else emptyMap(),
+            elements = listOf(first, second),
+        )
+        var layout by mutableStateOf(original)
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""), schema = schema,
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        val headers = onAllNodes(hasClickAction() and hasText("Same"))
+        fun selectedCenter() = headers.fetchSemanticsNodes()
+            .single { it.config.getOrNull(SemanticsProperties.Selected) == true }
+            .boundsInRoot.center
+        val initialCenter = selectedCenter()
+        if (headers.fetchSemanticsNodes().first().config.getOrNull(SemanticsProperties.Selected) == true) {
+            headers.onLast().performTouchInput { click() }
+        } else {
+            headers.onFirst().performTouchInput { click() }
+        }
+        val selectedCenterBeforeReorder = selectedCenter()
+        assertNotEquals(initialCenter, selectedCenterBeforeReorder)
+        runOnIdle {
+            layout = original.copy(
+                options = original.options + ("vertical" to JsonPrimitive(false)),
+                elements = listOf(second, first),
+            )
+        }
+        assertNotEquals(selectedCenterBeforeReorder, selectedCenter())
         assertEquals(0, writes)
     }
 

@@ -12,6 +12,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.CalendarLocale
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -44,6 +47,23 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
+import kotlinx.datetime.LocalDate
+
+/** Compose's desktop month formatter uses the Julian calendar before 1582, while its grid is Gregorian. */
+private class ProlepticDatePickerFormatter : DatePickerFormatter {
+    private val delegate = DatePickerDefaults.dateFormatter()
+
+    override fun formatMonthYear(monthMillis: Long?, locale: CalendarLocale): String? {
+        if (monthMillis == null) return null
+        val date = pickerMillisToDate(monthMillis)
+        if (date.year > 1582) return delegate.formatMonthYear(monthMillis, locale)
+        val reference = LocalDate(2000, date.month.ordinal + 1, 1).toPickerMillis()
+        return delegate.formatMonthYear(reference, locale)?.replace("2000", date.year.toString())
+    }
+
+    override fun formatDate(dateMillis: Long?, locale: CalendarLocale, forContentDescription: Boolean): String? =
+        delegate.formatDate(dateMillis, locale, forContentDescription)
+}
 
 @Composable
 internal fun TemporalPickerIcon(
@@ -88,6 +108,7 @@ internal fun MaterialDatePickerDialog(
         val state = rememberDatePickerState(
             initialSelectedDateMillis = initialDateMillis,
             initialDisplayedMonthMillis = initialDateMillis,
+            yearRange = 1..9999,
             selectableDates = object : SelectableDates {
                 override fun isSelectableDate(utcTimeMillis: Long): Boolean =
                     currentSelectable.value(utcTimeMillis)
@@ -118,7 +139,7 @@ internal fun MaterialDatePickerDialog(
             dismissButton = { if (showDismissAction) TextButton(onClick = onDismiss) { Text(cancelLabel) } },
         ) {
             Column {
-                DatePicker(state = state)
+                DatePicker(state = state, dateFormatter = remember { ProlepticDatePickerFormatter() })
                 if (showRangeFeedback && invalidSelectionMessage != null) {
                     Text(invalidSelectionMessage, Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                 }

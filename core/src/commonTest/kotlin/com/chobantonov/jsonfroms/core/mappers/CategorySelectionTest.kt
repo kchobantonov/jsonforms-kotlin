@@ -79,6 +79,16 @@ class CategorySelectionTest {
         assertEquals("duplicate", result.diagnostic?.details?.get("name"))
     }
 
+    @Test fun structurallyIdenticalDuplicateNamesKeepIdentityThroughReorder() {
+        val left = CategoryElement(label = "Same", name = "duplicate")
+        val right = left.copy()
+        val original = CategorizationElement(elements = listOf(left, right))
+        val reordered = original.copy(elements = listOf(right, left))
+        kotlin.test.assertNotEquals(categorySelectionKey(original, left), categorySelectionKey(original, right))
+        assertEquals(categorySelectionKey(original, left), categorySelectionKey(reordered, left))
+        assertEquals(categorySelectionKey(original, right), categorySelectionKey(reordered, right))
+    }
+
     @Test fun namedInitialSelectsDirectVisibleCategory() {
         val root = CategorizationElement(
             options = mapOf("initial" to JsonPrimitive("second")),

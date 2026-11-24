@@ -6,10 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
@@ -27,6 +29,7 @@ import com.chobantonov.jsonfroms.core.models.CategorizationElement
 import com.chobantonov.jsonfroms.core.models.CategoryElement
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.models.Rule
 import com.chobantonov.jsonfroms.core.models.RuleEffect
 import com.chobantonov.jsonfroms.core.models.SchemaBasedCondition
@@ -37,6 +40,7 @@ import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
@@ -44,6 +48,10 @@ import kotlinx.serialization.json.put
 
 @OptIn(ExperimentalTestApi::class)
 class AccordionUiTest {
+    @Test fun materialUnboundAccordionRendersWithEmptyData() = unboundEmptyData(false)
+    @Test fun cupertinoUnboundAccordionRendersWithEmptyData() = unboundEmptyData(true)
+    @Test fun materialIdenticalDuplicateKeepsOpenIdentityThroughReorder() = identicalDuplicateReorder(false)
+    @Test fun cupertinoIdenticalDuplicateKeepsOpenIdentityThroughReorder() = identicalDuplicateReorder(true)
     @Test fun materialSingleOpenAndExplicitCloseSurvivesUpdates() = scenario(false)
     @Test fun cupertinoSingleOpenAndExplicitCloseSurvivesUpdates() = scenario(true)
     @Test fun materialHiddenOpenFallsBack() = hidden(false)
@@ -88,6 +96,70 @@ class AccordionUiTest {
             failWhenUndefined = true,
         ),
     )
+
+    private fun unboundEmptyData(cupertino: Boolean) = runComposeUiTest {
+        val layout = CategorizationElement(
+            options = mapOf("variant" to JsonPrimitive("accordion")),
+            elements = listOf(
+                CategoryElement(label = "Introduction", elements = listOf(LabelElement("Welcome"))),
+                CategoryElement(label = "Details", elements = listOf(LabelElement("More information"))),
+            ),
+        )
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""),
+                schema = JsonSchema(Json.parseToJsonElement("""{}""").jsonObject),
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("Welcome").assertExists()
+        onNodeWithText("More information").assertDoesNotExist()
+        onNodeWithText("Details").performTouchInput { click() }
+        onNodeWithText("Welcome").assertDoesNotExist()
+        onNodeWithText("More information").assertExists()
+        assertEquals(0, writes)
+    }
+
+    private fun identicalDuplicateReorder(cupertino: Boolean) = runComposeUiTest {
+        val first = CategoryElement(label = "Same", name = "duplicate",
+            elements = listOf(LabelElement("Content")))
+        val second = first.copy()
+        val original = CategorizationElement(
+            options = mapOf("variant" to JsonPrimitive("accordion")),
+            elements = listOf(first, second),
+        )
+        var layout by mutableStateOf(original)
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""), schema = schema,
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        val headers = onAllNodes(hasClickAction() and hasText("Same"))
+        fun openCenter() = headers.fetchSemanticsNodes()
+            .single { it.config.getOrNull(SemanticsProperties.StateDescription) == "Expanded" }
+            .boundsInRoot.center
+        val initialCenter = openCenter()
+        if (headers.fetchSemanticsNodes().first().config
+                .getOrNull(SemanticsProperties.StateDescription) == "Expanded") {
+            headers.onLast().performClick()
+        } else {
+            headers.onFirst().performClick()
+        }
+        val beforeReorder = openCenter()
+        assertNotEquals(initialCenter, beforeReorder)
+        runOnIdle {
+            layout = original.copy(
+                options = original.options + ("vertical" to JsonPrimitive(false)),
+                elements = listOf(second, first),
+            )
+        }
+        assertNotEquals(beforeReorder, openCenter())
+        assertEquals(0, writes)
+    }
+
     private fun ui(initial: Boolean = true, rule: Boolean = false) = CategorizationElement(
         options = mapOf("variant" to JsonPrimitive("accordion")) +
             (if (initial) mapOf("initial" to JsonPrimitive("second")) else emptyMap()),

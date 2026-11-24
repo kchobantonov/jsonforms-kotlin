@@ -26,8 +26,8 @@ fun MaterialNativeControl(
     )
     val controlProps = bindings.controlProps
     val appliedOptions = controlProps.config + controlProps.uischema.options
-    val fieldType = (appliedOptions["format"] as? String) ?: controlProps.schema.format
-    val placeholder = fieldType ?: controlProps.schema.format
+    val fieldType = appliedOptions.stringOption("format") ?: controlProps.schema.format
+    val placeholder = controlProps.uischema.options.stringOption("placeholder") ?: fieldType
     val preserveEmptyValue = LocalPreserveEmptyValue.current
 
     MaterialInputControl(

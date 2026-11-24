@@ -9,6 +9,13 @@ import kotlinx.datetime.TimeZone
 import kotlinx.serialization.json.JsonPrimitive
 
 class TemporalFormatsTest {
+    @Test fun stringOptionsRequireJsonStrings() {
+        assertEquals("Hint", mapOf("placeholder" to JsonPrimitive("Hint")).stringOption("placeholder"))
+        assertEquals(null, mapOf("placeholder" to JsonPrimitive(42)).stringOption("placeholder"))
+        assertEquals(null, mapOf("placeholder" to JsonPrimitive(false)).stringOption("placeholder"))
+        assertEquals(null, mapOf("placeholder" to JsonPrimitive("")).stringOption("missing"))
+    }
+
     @Test
     fun formatsJsonSchemaDateForDisplay() {
         val value = assertNotNull(parseDateValue("2026-08-16", listOf(DEFAULT_DATE_SAVE_FORMAT)))

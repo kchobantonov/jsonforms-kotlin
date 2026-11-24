@@ -80,6 +80,7 @@ import com.chobantonov.jsonfroms.core.store.Dispatch
 import com.chobantonov.jsonfroms.core.testers.RankedTester
 import com.chobantonov.jsonfroms.core.testers.withIncreasedRank
 import com.chobantonov.jsonfroms.material.renderers.controls.materialEnumControlTester
+import com.chobantonov.jsonfroms.material.renderers.controls.stringOption
 import com.chobantonov.jsonfroms.core.util.JsonPath
 import com.chobantonov.jsonfroms.core.util.resolveInputAdornments
 import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
@@ -156,6 +157,7 @@ internal fun CupertinoSelectControl(
         "hideRequiredAsterisk") ?: false
     val requiredState = translateControlRequired(useJsonForms().state.jsonforms.i18n)
         .takeIf { stateProps.required }
+    val placeholder = stateProps.uischema.options.stringOption("placeholder")
     var expanded by remember(stateProps.path) { mutableStateOf(false) }
     var touched by remember(stateProps.path) { mutableStateOf(false) }
     var selectorFocused by remember(stateProps.path) { mutableStateOf(false) }
@@ -185,12 +187,15 @@ internal fun CupertinoSelectControl(
         !compact &&
         it.isNotBlank() && (selectorFocused || showUnfocusedDescription)
     }
-    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription).joinToString(". ")
+    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription,
+        placeholder?.takeIf { !hasValue && it.isNotBlank() }).joinToString(". ")
     val accessibleError = listOfNotNull(unknownStatus, visibleError.takeIf(String::isNotBlank))
         .distinct().joinToString(". ")
-    val displayedValue = selected?.label ?:
+    val storedDisplay = selected?.label ?:
         if (unknownStatus != null && stateProps.data == JsonNull) "null"
         else stateProps.data.toCupertinoInputString()
+    val displayedValue = if (!hasValue && storedDisplay.isEmpty()) placeholder.orEmpty()
+        else storedDisplay
     val borderColor = if (accessibleError.isNotBlank()) colors.destructive else colors.controlBorder
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -234,7 +239,7 @@ internal fun CupertinoSelectControl(
                 Text(
                     displayedValue,
                     modifier = Modifier.weight(1f),
-                    color = if (enabled) colors.label else colors.secondaryLabel,
+                    color = if (storedDisplay.isEmpty() || !enabled) colors.secondaryLabel else colors.label,
                 )
                 if (showClear) {
                     ActionTooltip(clearLabel) {
@@ -309,6 +314,8 @@ private fun CupertinoSearchableSelectControl(
     val committedText = selected?.label ?:
         if (unknownStatus != null && stateProps.data == JsonNull) "null"
         else stateProps.data.toCupertinoInputString()
+    val placeholder = stateProps.uischema.options.stringOption("placeholder")
+        ?.takeIf { !stateProps.dataProvided }
     var query by remember(stateProps.path) { mutableStateOf(committedText) }
     var observedData by remember(stateProps.path) { mutableStateOf(stateProps.data) }
     var observedText by remember(stateProps.path) { mutableStateOf(committedText) }
@@ -364,6 +371,7 @@ private fun CupertinoSearchableSelectControl(
             compact = compact,
             inputModifier = if (compact) Modifier.testTag("cupertino-enum-cell") else Modifier,
             clearLabel = clearLabel,
+            placeholder = placeholder,
         ) { value ->
             query = value
             expanded = value.isNotBlank() && stateProps.options.any {

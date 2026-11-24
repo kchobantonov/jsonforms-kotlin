@@ -142,6 +142,8 @@ fun MaterialOneOfEnumControl(
     val hideAsterisk = strictControlBooleanOption(stateProps.config + stateProps.uischema.options,
         "hideRequiredAsterisk") ?: false
     val label = if (compact) "" else computeLabel(stateProps.label, stateProps.required, hideAsterisk)
+    val placeholder = stateProps.uischema.options.stringOption("placeholder")
+        ?.takeIf { !stateProps.dataProvided }
     val committedText = selectedOption?.label ?:
         if (unknownStatus != null && stateProps.data == JsonNull) "null"
         else stateProps.data.toMaterialInputString()
@@ -217,7 +219,8 @@ fun MaterialOneOfEnumControl(
         !compact &&
         it.isNotBlank() && (selectorFocused || showUnfocusedDescription)
     }
-    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription).joinToString(". ")
+    val accessibleState = listOfNotNull(requiredState, unknownStatus, visibleDescription,
+        placeholder?.takeIf { query.isEmpty() && it.isNotBlank() }).joinToString(". ")
     val accessibleError = listOfNotNull(unknownStatus, effectiveError.takeIf(String::isNotBlank))
         .distinct().joinToString(". ")
     val supportingText: (@Composable () -> Unit)? = if (unknownStatus != null ||
@@ -292,6 +295,7 @@ fun MaterialOneOfEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     prefix = startAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
                         { MaterialAdornments(items) }
                     },
@@ -339,6 +343,7 @@ fun MaterialOneOfEnumControl(
                         null
                     },
                     supportingText = supportingText,
+                    placeholder = placeholder?.takeIf(String::isNotBlank)?.let { hint -> { Text(hint) } },
                     prefix = startAdornments.takeIf(List<InputAdornment>::isNotEmpty)?.let { items ->
                         { MaterialAdornments(items) }
                     },

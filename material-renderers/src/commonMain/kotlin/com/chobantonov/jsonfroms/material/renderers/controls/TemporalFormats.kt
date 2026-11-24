@@ -37,7 +37,7 @@ data class TemporalValue(
 
 fun Map<String, Any?>.stringOption(name: String): String? = when (val value = this[name]) {
     is String -> value
-    is JsonPrimitive -> value.contentOrNull
+    is JsonPrimitive -> value.takeIf(JsonPrimitive::isString)?.contentOrNull
     else -> null
 }
 

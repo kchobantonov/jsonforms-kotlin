@@ -101,6 +101,44 @@ class LayoutSpacerUiTest {
 
     @Test fun cupertinoColumnSpacerUsesHeight() = column(true)
 
+    @Test fun materialRowSpacerAcceptsUnitSuffixedSize() = unitSuffixed(false, horizontal = true)
+
+    @Test fun cupertinoRowSpacerAcceptsUnitSuffixedSize() = unitSuffixed(true, horizontal = true)
+
+    @Test fun materialColumnSpacerAcceptsUnitSuffixedSize() = unitSuffixed(false, horizontal = false)
+
+    @Test fun cupertinoColumnSpacerAcceptsUnitSuffixedSize() = unitSuffixed(true, horizontal = false)
+
+    private fun unitSuffixed(cupertino: Boolean, horizontal: Boolean) = runComposeUiTest {
+        fun layout(size: JsonPrimitive) = if (horizontal) HorizontalLayout(
+            options = mapOf("gap" to JsonPrimitive(0)),
+            elements = listOf(fixed("first"), SpacerElement(size = size), fixed("last")),
+        ) else VerticalLayout(
+            options = mapOf("gap" to JsonPrimitive(0)),
+            elements = listOf(fixed("first"), SpacerElement(size = size), fixed("last")),
+        )
+        var ui by mutableStateOf(layout(JsonPrimitive(0)))
+        var changes = 0
+        setContent {
+            Box(Modifier.width(400.dp)) {
+                JsonForms(data = data, schema = schema, uischema = ui,
+                    renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                    onChange = { changes++ })
+            }
+        }
+        fun secondPosition(): Float {
+            val fields = onAllNodes(hasSetTextAction()).fetchSemanticsNodes()
+            assertEquals(2, fields.size)
+            return if (horizontal) fields[1].boundsInRoot.left else fields[1].boundsInRoot.top
+        }
+        val zero = secondPosition()
+        runOnIdle { ui = layout(JsonPrimitive("24dp")) }
+        assertTrue(abs((secondPosition() - zero) - 24f) < 3f)
+        runOnIdle { ui = layout(JsonPrimitive("48px")) }
+        assertTrue(abs((secondPosition() - zero) - 48f) < 3f)
+        assertEquals(0, changes)
+    }
+
     @Test fun materialColumnSpacerHonorsMaximumHeight() = boundedSpacer(false)
 
     @Test fun cupertinoColumnSpacerHonorsMaximumHeight() = boundedSpacer(true)
