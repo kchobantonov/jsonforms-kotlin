@@ -3,15 +3,22 @@ package com.chobantonov.jsonfroms.examples.compose
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
@@ -25,6 +32,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -39,6 +47,61 @@ class SliderConformanceUiTest {
     @Test fun cupertinoSliderUsesZeroBasedMultiples() = multiples(true)
     @Test fun materialMissingSliderKeepsDefaultProvisionalAndClears() = missingAndClear(false)
     @Test fun cupertinoMissingSliderKeepsDefaultProvisionalAndClears() = missingAndClear(true)
+    @Test fun materialSliderUsesGlobalClearable() = globalClearable(false)
+    @Test fun cupertinoSliderUsesGlobalClearable() = globalClearable(true)
+    @Test fun materialSliderClearFollowsHoverAndTouchSelection() = clearVisibility(false)
+    @Test fun cupertinoSliderClearFollowsHoverAndTouchSelection() = clearVisibility(true)
+
+    private fun clearVisibility(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf<JsonElement>(Json.parseToJsonElement("""{"value":4}"""))
+        var changes = 0
+        var inputMode: InputModeManager? = null
+        setContent {
+            inputMode = LocalInputModeManager.current
+            JsonForms(data = data, schema = schema, uischema = control,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        runOnIdle { inputMode!!.requestInputMode(InputMode.Touch) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        val slider = onAllNodes(hasProgress).onFirst()
+        slider.performMouseInput { moveTo(Offset(-100f, -100f)); moveTo(center) }
+        onNodeWithContentDescription("Clear value").assertExists()
+        slider.performMouseInput { moveTo(Offset(-100f, -100f)) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { assertEquals(0, changes) }
+        slider.performTouchInput { click() }
+        onNodeWithContentDescription("Clear value").assertExists()
+        onNodeWithContentDescription("Clear value")
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
+        runOnIdle {
+            assertFalse("value" in data.jsonObject)
+            assertTrue(changes >= 1)
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+    }
+
+    private fun globalClearable(cupertino: Boolean) = runComposeUiTest {
+        val data = Json.parseToJsonElement("""{"value":4}""")
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/value", options = mapOf(
+                    "slider" to JsonPrimitive(true), "clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = true }
+        onAllNodes(hasProgress).onFirst().performMouseInput { moveTo(center) }
+        onNodeWithContentDescription("Clear value").assertExists()
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onNodeWithContentDescription("Clear value").assertExists()
+    }
     @Test fun materialInvalidSliderShowsActualValue() = invalidIncoming(false)
     @Test fun cupertinoInvalidSliderShowsActualValue() = invalidIncoming(true)
     @Test fun materialInvalidNullSliderHasAccessibleError() = invalidNull(false)

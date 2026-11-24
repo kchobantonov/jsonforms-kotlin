@@ -42,6 +42,10 @@ class StringMaskFixtureUiTest {
     @Test fun cupertinoPlainAndMultiline() = plainAndMultiline(true)
     @Test fun materialIncrementalMaskTyping() = incrementalMaskTyping(false)
     @Test fun cupertinoIncrementalMaskTyping() = incrementalMaskTyping(true)
+    @Test fun materialFormattedMultiCharacterInsert() = formattedMultiCharacterInsert(false)
+    @Test fun cupertinoFormattedMultiCharacterInsert() = formattedMultiCharacterInsert(true)
+    @Test fun materialArrowCrossesMaskSeparator() = arrowCrossesMaskSeparator(false)
+    @Test fun cupertinoArrowCrossesMaskSeparator() = arrowCrossesMaskSeparator(true)
 
     private fun control(root: UiSchemaElement?, property: String): ControlElement =
         root?.let { controlOrNull(it, property) } ?: error("Missing imported Control: $property")
@@ -209,5 +213,60 @@ class StringMaskFixtureUiTest {
             keyUp(Key.Backspace)
         }
         assertEquals("48291", (data.jsonObject["bookingReference"] as JsonPrimitive).content)
+    }
+
+    private fun formattedMultiCharacterInsert(cupertino: Boolean) = runComposeUiTest {
+        val example = getBuiltInExamples().first { it.name == "spec-string-controls" }
+        var data by mutableStateOf(example.data)
+        var selected by mutableStateOf(control(example.uischema, "bookingReference"))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = example.schema,
+                uischema = selected,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; writes++ })
+        }
+        val field = onAllNodes(hasSetTextAction()).onFirst()
+        field.performTextReplacement("")
+        field.performTextInput("731-204")
+        assertEquals("731204", (data.jsonObject["bookingReference"] as JsonPrimitive).content)
+        onAllNodes(hasSetTextAction() and hasText("731-204", substring = true))
+            .onFirst().assertExists()
+
+        runOnIdle { selected = control(example.uischema, "contactPhone") }
+        val phone = onAllNodes(hasSetTextAction()).onFirst()
+        phone.performTextReplacement("")
+        phone.performTextInput("+1 (415) 555-0123")
+        assertEquals("+1 (415) 555-0123",
+            (data.jsonObject["contactPhone"] as JsonPrimitive).content)
+        assertEquals(4, writes)
+    }
+
+    private fun arrowCrossesMaskSeparator(cupertino: Boolean) = runComposeUiTest {
+        val example = getBuiltInExamples().first { it.name == "spec-string-controls" }
+        var data by mutableStateOf(example.data)
+        setContent {
+            JsonForms(data = data, schema = example.schema,
+                uischema = control(example.uischema, "bookingReference"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data })
+        }
+        val field = onAllNodes(hasSetTextAction()).onFirst()
+        field.performClick()
+        field.performSemanticsAction(SemanticsActions.SetSelection) { it(4, 4, false) }
+        field.performKeyInput {
+            keyDown(Key.DirectionLeft)
+            keyUp(Key.DirectionLeft)
+        }
+        field.performTextInput("7")
+        assertEquals("487291", (data.jsonObject["bookingReference"] as JsonPrimitive).content)
+        field.performTextReplacement("48291")
+        field.performSemanticsAction(SemanticsActions.SetSelection) { it(2, 2, false) }
+        field.performKeyInput {
+            keyDown(Key.DirectionRight)
+            keyUp(Key.DirectionRight)
+        }
+        field.performTextInput("7")
+        assertEquals("482791", (data.jsonObject["bookingReference"] as JsonPrimitive).content)
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -19,6 +20,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -160,10 +162,16 @@ class TypedChoiceValueUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
+        onNodeWithContentDescription("x").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
         runOnIdle { data = Json.parseToJsonElement("""{"choice":"x","locked":true}""") }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { data = Json.parseToJsonElement("""{"choice":"x","locked":false}""") }
+        onNodeWithContentDescription("x").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         waitForIdle()
         assertFalse("choice" in data.jsonObject)
@@ -188,6 +196,9 @@ class TypedChoiceValueUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { clearable = true }
+        onNodeWithContentDescription("x").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
         runOnIdle { readonly = true }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
@@ -198,6 +209,9 @@ class TypedChoiceValueUiTest {
         assertEquals(1, changes)
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { data = Json.parseToJsonElement("""{"choice":"y"}""") }
+        onNodeWithContentDescription("y").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
         assertEquals(1, changes)
     }
@@ -216,10 +230,16 @@ class TypedChoiceValueUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
+        onNodeWithContentDescription("x").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("first" in data.jsonObject)
             field = "second"
+        }
+        onNodeWithContentDescription("y").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
         }
         onNodeWithContentDescription("Clear value").performClick()
         waitForIdle()
@@ -250,6 +270,9 @@ class TypedChoiceValueUiTest {
         }
         val radios = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
         onAllNodes(radios)[0].assertIsSelected()
+        onAllNodes(radios)[0].performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
         assertEquals(0, changes)
         runOnIdle { locale = "bg" }
@@ -530,6 +553,7 @@ class TypedChoiceValueUiTest {
         }
         assertEquals(Json.parseToJsonElement("null"), data.jsonObject["choice"])
         onNodeWithText("Null choice").assertExists()
+        onNodeWithText("Null choice").performMouseInput { moveTo(center) }
         onNodeWithContentDescription("Clear value").performClick()
         waitForIdle()
         assertFalse("choice" in data.jsonObject)

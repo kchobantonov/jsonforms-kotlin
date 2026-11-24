@@ -53,7 +53,7 @@ import com.slapps.cupertino.CupertinoText
 val markupLabelTester: RankedTester = { ui, _, _ ->
     val label = ui as? LabelElement
     val markup = label?.options?.get("markup")
-    val interpolate = (label?.options?.get("interpolate") as? JsonPrimitive)?.booleanOrNull == true
+    val interpolate = booleanValue(label?.options?.get("interpolate")) == true
     if (interpolate || (markup != null && (markup as? JsonPrimitive)?.content != "plain")) 2 else -1
 }
 
@@ -69,7 +69,7 @@ private fun member(value: Any?, key: String): Any? = when (value) {
 
 private fun booleanValue(value: Any?): Boolean? = when (value) {
     is Boolean -> value
-    is JsonPrimitive -> value.booleanOrNull
+    is JsonPrimitive -> value.takeUnless { it.isString }?.booleanOrNull
     else -> null
 }
 
@@ -98,7 +98,7 @@ private fun MarkupLabel(props: ComposeJsonFormsRendererProps, cupertino: Boolean
     val translator = props.state.jsonforms.i18n.translate ?: defaultTranslator
     val content = deriveLabelForUISchemaElement(label, translator).orEmpty()
     val requested = (label.options["markup"] as? JsonPrimitive)?.takeIf { it.isString }?.content
-    val interpolates = (label.options["interpolate"] as? JsonPrimitive)?.booleanOrNull == true
+    val interpolates = booleanValue(label.options["interpolate"]) == true
     val diagnostic = when {
         label.options.containsKey("markup") && requested != "markdown" && requested != "plain" -> "markup.unsupported"
         requested == "markdown" && !markdownEnabled(props.config) -> "markup.markdownDisabled"

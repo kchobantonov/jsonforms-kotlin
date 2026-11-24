@@ -64,7 +64,8 @@ fun CupertinoTimeControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
     val displayFormat = options.stringOption("timeFormat") ?: DEFAULT_TIME_DISPLAY_FORMAT
     val saveFormat = temporalSaveFormatForControl(control.schema.format,
         options.stringOption("timeSaveFormat"), DEFAULT_TIME_SAVE_FORMAT,
-        bindings.stateProps.path, props.config)
+        bindings.stateProps.path, props.config, props.state.jsonforms.i18n,
+        bindings.stateProps.i18nKeyPrefix, displayFormat)
     val timeViews = resolveTimeViews(options["views"], displayFormat)
     val prefix = bindings.stateProps.i18nKeyPrefix
     val values = mapOf<String, Any?>("label" to bindings.stateProps.label, "format" to displayFormat)
@@ -91,9 +92,9 @@ fun CupertinoTimeControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
         params = mapOf("bound" to violation.bound),
     ) }
     val displayed = parsed?.let { formatTemporal(it, displayFormat) } ?: committed
-    var draft by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(displayed) }
-    var observed by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(committed) }
-    var showPicker by remember(bindings.stateProps.path, props.uischema) { mutableStateOf(false) }
+    var draft by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(displayed) }
+    var observed by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(committed) }
+    var showPicker by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf(false) }
     val parsedDraft = draft.takeIf(String::isNotEmpty)?.let { parseTimeValue(it, listOf(displayFormat)) }
     val localError = when {
         draft.isEmpty() -> null
@@ -102,7 +103,7 @@ fun CupertinoTimeControl(props: ComposeJsonFormsRendererProps, compact: Boolean 
     }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     val setPending = rememberPendingEditOwner("temporal:time:${bindings.stateProps.path}:${props.id}")
-    LaunchedEffect(props.uischema) { setPending(false) }
+    LaunchedEffect(props.uischema, displayFormat, saveFormat) { setPending(false) }
 
     LaunchedEffect(committed, displayed, props.state.jsonforms.core.data) {
         if (committed != observed) {

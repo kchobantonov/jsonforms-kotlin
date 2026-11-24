@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -17,8 +18,16 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.SemanticsActions
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
@@ -50,8 +59,87 @@ class OtpPasswordUiTest {
     @Test fun cupertinoOtpKeepsActionsInNarrowReadonlyField() = narrowReadonly(true)
     @Test fun materialOtpShowsImportedOverflowUntilRecovery() = importedOverflow(false)
     @Test fun cupertinoOtpShowsImportedOverflowUntilRecovery() = importedOverflow(true)
+    @Test fun materialOtpUsesGlobalClearable() = globalClearable(false)
+    @Test fun cupertinoOtpUsesGlobalClearable() = globalClearable(true)
+    @Test fun materialOtpClearFollowsHoverAndFocus() = clearVisibility(false)
+    @Test fun cupertinoOtpClearFollowsHoverAndFocus() = clearVisibility(true)
+    @Test fun materialOtpMultiCharacterInsertPreservesLeadingZeros() = multiCharacterInsert(false)
+    @Test fun cupertinoOtpMultiCharacterInsertPreservesLeadingZeros() = multiCharacterInsert(true)
     @Test fun materialTablePasswordCellKeepsOrdinaryMask() = tableCell(false)
     @Test fun cupertinoTablePasswordCellKeepsOrdinaryMask() = tableCell(true)
+
+    private fun multiCharacterInsert(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"code":"01"}"""))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = boundedSchema,
+                uischema = ControlElement("#/properties/code", options = mapOf(
+                    "variant" to JsonPrimitive("otp"))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; writes++ })
+        }
+        val field = onNodeWithTag("otp-password-field")
+        field.performTextReplacement("")
+        field.performTextInput("0007")
+        assertEquals(JsonPrimitive("0007"), data.jsonObject["code"])
+        assertEquals(2, writes)
+    }
+
+    private fun clearVisibility(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"code":"1234"}"""))
+        var writes = 0
+        var inputMode: InputModeManager? = null
+        setContent {
+            inputMode = LocalInputModeManager.current
+            JsonForms(data = data, schema = boundedSchema,
+                uischema = ControlElement("#/properties/code", options = mapOf(
+                    "variant" to JsonPrimitive("otp"))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; writes++ })
+        }
+        runOnIdle { inputMode!!.requestInputMode(InputMode.Keyboard) }
+        onNodeWithContentDescription("Show password").assertExists()
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onNodeWithTag("otp-password-field").performMouseInput { moveTo(center) }
+        onNodeWithContentDescription("Clear value").assertExists()
+        onRoot().performMouseInput { moveTo(Offset(-10f, -10f)) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onNodeWithTag("otp-password-field")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        val clear = onNodeWithContentDescription("Clear value")
+        clear.assertExists()
+        clear.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        clear.assertIsFocused()
+        clear.performKeyInput { keyDown(Key.Enter); keyUp(Key.Enter) }
+        runOnIdle {
+            assertEquals(Json.parseToJsonElement("{}"), data)
+            assertEquals(1, writes)
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onNodeWithContentDescription("Show password").assertExists()
+    }
+
+    private fun globalClearable(cupertino: Boolean) = runComposeUiTest {
+        val data = Json.parseToJsonElement("""{"code":"1234"}""")
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        setContent {
+            JsonForms(data = data, schema = boundedSchema,
+                uischema = ControlElement("#/properties/code", options = mapOf(
+                    "variant" to JsonPrimitive("otp"), "clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithTag("otp-password-field")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = true }
+        onNodeWithContentDescription("Clear value").assertExists()
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onNodeWithContentDescription("Clear value").assertExists()
+    }
 
     private fun tableCell(cupertino: Boolean) = runComposeUiTest {
         val schema = JsonSchema(Json.parseToJsonElement("""{
@@ -116,6 +204,8 @@ class OtpPasswordUiTest {
         val revealRight = onNodeWithContentDescription("Show password")
             .fetchSemanticsNode().boundsInRoot.right
         assertTrue(revealRight <= fieldRight + 1f)
+        onNodeWithTag("otp-password-field")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
         onNodeWithContentDescription("Clear value").assertExists()
         runOnIdle { readonly = true }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()

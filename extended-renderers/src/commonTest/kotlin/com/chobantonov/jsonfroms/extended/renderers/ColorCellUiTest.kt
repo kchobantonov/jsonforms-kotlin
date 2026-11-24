@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -138,7 +139,7 @@ class ColorCellUiTest {
         }"""), data)
         assertEquals(1, writes)
         onAllNodesWithContentDescription("Choose color").onFirst().performClick()
-        onAllNodesWithContentDescription("Close").onFirst().performClick()
+        onNodeWithText("Close").performClick()
         assertEquals(1, writes)
         runOnIdle { locale = "bg-BG" }
         onAllNodesWithContentDescription("Избери цвят").assertCountEquals(2)

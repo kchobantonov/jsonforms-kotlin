@@ -102,8 +102,8 @@ internal fun CupertinoGroupLayout(
     LaunchedEffect(reporter, expansion.diagnostic) {
         expansion.diagnostic?.let { reporter?.report(it.copy(details = it.details + ("path" to props.path))) }
     }
-    var expanded by remember(props.path) { mutableStateOf(!expansion.collapsed) }
-    var previousCollapsed by remember(props.path) { mutableStateOf(expansion.collapsed) }
+    var expanded by remember(props.path, layout) { mutableStateOf(!expansion.collapsed) }
+    var previousCollapsed by remember(props.path, layout) { mutableStateOf(expansion.collapsed) }
     LaunchedEffect(expansion.collapsed) {
         if (previousCollapsed != expansion.collapsed) {
             previousCollapsed = expansion.collapsed
@@ -140,6 +140,8 @@ internal fun CupertinoGroupLayout(
     val headingOther = layout.header.filterNot { it is LabelElement }
     val firstHeaderLabel = headingLabels.firstOrNull()
     val firstHeaderLabelIndex = layout.header.indexOfFirst { it is LabelElement }
+    val secondHeaderLabelIndex = layout.header.withIndex()
+        .filter { it.value is LabelElement }.getOrNull(1)?.index
     val renderedHeaderName = remember(firstHeaderLabel, props.path) { mutableStateOf<String?>(null) }
     val publishHeaderName = remember(renderedHeaderName) {
         { text: String? -> renderedHeaderName.value = text }
@@ -210,18 +212,27 @@ internal fun CupertinoGroupLayout(
                     dataLabel, colors.accent, Modifier.padding(end = 16.dp))
             }
         } else if (hasRegions && layout.header.isNotEmpty()) {
-            FlowRow(Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                layout.header.forEachIndexed { index, child ->
-                    CompositionLocalProvider(
-                        LocalCupertinoGroupSupportingLabel provides (index == 1 && child is LabelElement),
-                        LocalGroupHeaderLabelText provides
-                            (if (index == firstHeaderLabelIndex) publishHeaderName else null),
-                    ) {
-                        JsonFormsDispatchRenderer(props.copy(uischema = child,
-                            enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    layout.header.forEachIndexed { index, child ->
+                        CompositionLocalProvider(
+                            LocalCupertinoGroupSupportingLabel provides (index == secondHeaderLabelIndex),
+                            LocalGroupHeaderLabelText provides
+                                (if (index == firstHeaderLabelIndex) publishHeaderName else null),
+                        ) {
+                            JsonFormsDispatchRenderer(props.copy(uischema = child,
+                                enabled = layoutProps.enabled, readonly = layoutProps.readonly, id = null))
+                        }
                     }
                 }
+                if (hasErrors) CupertinoText(
+                    errorCount?.toString() ?: "●",
+                    modifier = Modifier.padding(start = 8.dp)
+                        .clearAndSetSemantics { contentDescription = errorLabel },
+                    color = colors.destructive,
+                )
+                if (containsData) DataIndicatorDot(
+                    dataLabel, colors.accent, Modifier.padding(start = 8.dp))
             }
         } else if (!layoutProps.label.isNullOrBlank()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

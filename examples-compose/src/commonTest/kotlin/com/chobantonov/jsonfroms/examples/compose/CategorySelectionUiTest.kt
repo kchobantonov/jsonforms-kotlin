@@ -59,6 +59,26 @@ class CategorySelectionUiTest {
     @Test fun cupertinoTabsFallBackAfterRemoval() = removed(true, false)
     @Test fun materialStepsFallBackAfterRemoval() = removed(false, true)
     @Test fun cupertinoStepsFallBackAfterRemoval() = removed(true, true)
+    @Test fun materialTabsUseNewCategorySetInitial() = schemaReplacement(false, false)
+    @Test fun cupertinoTabsUseNewCategorySetInitial() = schemaReplacement(true, false)
+    @Test fun materialStepsUseNewCategorySetInitial() = schemaReplacement(false, true)
+    @Test fun cupertinoStepsUseNewCategorySetInitial() = schemaReplacement(true, true)
+    @Test fun materialTabsKeepSelectionWhenCategoryAdded() = categoryAddition(false, false)
+    @Test fun cupertinoTabsKeepSelectionWhenCategoryAdded() = categoryAddition(true, false)
+    @Test fun materialStepsKeepSelectionWhenCategoryAdded() = categoryAddition(false, true)
+    @Test fun cupertinoStepsKeepSelectionWhenCategoryAdded() = categoryAddition(true, true)
+    @Test fun materialTabsKeepUnnamedSelectionThroughLabelEdit() = unnamedLabelEdit(false, false)
+    @Test fun cupertinoTabsKeepUnnamedSelectionThroughLabelEdit() = unnamedLabelEdit(true, false)
+    @Test fun materialStepsKeepUnnamedSelectionThroughLabelEdit() = unnamedLabelEdit(false, true)
+    @Test fun cupertinoStepsKeepUnnamedSelectionThroughLabelEdit() = unnamedLabelEdit(true, true)
+    @Test fun materialTabsFallBackWhenInitialHiddenAtMount() = hiddenInitialAtMount(false, false)
+    @Test fun cupertinoTabsFallBackWhenInitialHiddenAtMount() = hiddenInitialAtMount(true, false)
+    @Test fun materialStepsFallBackWhenInitialHiddenAtMount() = hiddenInitialAtMount(false, true)
+    @Test fun cupertinoStepsFallBackWhenInitialHiddenAtMount() = hiddenInitialAtMount(true, true)
+    @Test fun materialTabsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(false, false)
+    @Test fun cupertinoTabsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(true, false)
+    @Test fun materialStepsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(false, true)
+    @Test fun cupertinoStepsKeepVisibleCategoriesWithHiddenChildren() = visibleEmptyCategories(true, true)
 
     private val schema = JsonSchema(Json.parseToJsonElement(
         """{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"},"show":{"type":"boolean"}}}"""
@@ -71,6 +91,34 @@ class CategorySelectionUiTest {
             failWhenUndefined = true,
         ),
     )
+
+    private fun visibleEmptyCategories(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val layout = CategorizationElement(
+            options = if (stepper) mapOf("variant" to JsonPrimitive("stepper")) else emptyMap(),
+            elements = listOf(
+                CategoryElement(label = "Empty section", name = "empty", elements = emptyList()),
+                CategoryElement(label = "Optional section", name = "optional",
+                    elements = listOf(ControlElement(scope = "#/properties/b", rule = secondRule))),
+            ),
+        )
+        var data by mutableStateOf(Json.parseToJsonElement("""{"show":false}"""))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("Empty section").assertExists()
+        onNodeWithText("Optional section").assertExists()
+        onNodeWithText("Optional section").performTouchInput { click() }
+        onNodeWithText("B").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true}""") }
+        onNodeWithText("B").assertExists()
+        onNodeWithText("Empty section").performTouchInput { click() }
+        onNodeWithText("B").assertDoesNotExist()
+        onNodeWithText("Optional section").assertExists()
+        assertEquals(0, writes)
+    }
 
     private fun ui(stepper: Boolean, initial: String, showNavButtons: Boolean = false) = CategorizationElement(
         options = mapOf("initial" to JsonPrimitive(initial)) +
@@ -187,6 +235,105 @@ class CategorySelectionUiTest {
         runOnIdle { layout = original }
         onNodeWithText("A").assertExists()
         onNodeWithText("B").assertDoesNotExist()
+    }
+
+    private fun schemaReplacement(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        var layout by mutableStateOf(ui(stepper, initial = "first"))
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{"show":true}"""), schema = schema,
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("A").assertExists()
+        onNodeWithText("Second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        val replacement = CategorizationElement(
+            options = layout.options + ("initial" to JsonPrimitive("fourth")),
+            elements = listOf(
+                CategoryElement(label = "Third", name = "third",
+                    elements = listOf(ControlElement(scope = "#/properties/a"))),
+                CategoryElement(label = "Fourth", name = "fourth",
+                    elements = listOf(ControlElement(scope = "#/properties/b"))),
+            ),
+        )
+        runOnIdle { layout = replacement }
+        onNodeWithText("Fourth").assertExists()
+        onNodeWithText("B").assertExists()
+        onNodeWithText("A").assertDoesNotExist()
+        assertEquals(0, writes)
+    }
+
+    private fun categoryAddition(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val original = ui(stepper, initial = "first")
+        var layout by mutableStateOf(original)
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{"show":true}"""), schema = schema,
+                uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithText("Second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        val extra = CategoryElement(label = "Third", name = "third",
+            elements = listOf(ControlElement(scope = "#/properties/a")))
+        runOnIdle { layout = original.copy(elements = original.elements + extra) }
+        onNodeWithText("B").assertExists()
+        onNodeWithText("A").assertDoesNotExist()
+    }
+
+    private fun unnamedLabelEdit(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val original = CategorizationElement(
+            options = if (stepper) mapOf("variant" to JsonPrimitive("stepper")) else emptyMap(),
+            elements = listOf(
+                CategoryElement(label = "First", elements = listOf(ControlElement(scope = "#/properties/a"))),
+                CategoryElement(label = "Second", elements = listOf(ControlElement(scope = "#/properties/b"))),
+            ),
+        )
+        var layout by mutableStateOf(original)
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("{}"), schema = schema, uischema = layout,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("Second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        runOnIdle {
+            layout = original.copy(elements = original.elements.mapIndexed { index, element ->
+                (element as CategoryElement).copy(label = if (index == 0) "Draft" else "Review")
+            })
+        }
+        onNodeWithText("Review").assertExists()
+        onNodeWithText("B").assertExists()
+        onNodeWithText("A").assertDoesNotExist()
+        assertEquals(0, writes)
+    }
+
+    private fun hiddenInitialAtMount(cupertino: Boolean, stepper: Boolean) = runComposeUiTest {
+        val diagnostics = mutableListOf<UiDiagnostic>()
+        var data by mutableStateOf(Json.parseToJsonElement("""{"show":false}"""))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = ui(stepper, initial = "second"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                config = mapOf(UiDiagnosticReporterConfigKey to UiDiagnosticReporter { diagnostics += it }),
+                onChange = { writes++ })
+        }
+        onNodeWithText("First").assertExists()
+        onNodeWithText("Second").assertDoesNotExist()
+        onNodeWithText("A").assertExists()
+        waitForIdle()
+        assertEquals(listOf("categorization.initialNotFound"), diagnostics.map { it.code })
+        assertEquals("second", diagnostics.single().details["initial"])
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true}""") }
+        onNodeWithText("Second").assertExists()
+        onNodeWithText("A").assertExists()
+        onNodeWithText("B").assertDoesNotExist()
+        onNodeWithText("Second").performTouchInput { click() }
+        onNodeWithText("B").assertExists()
+        assertEquals(1, diagnostics.size)
+        assertEquals(0, writes)
     }
 
     private fun missingInitial(cupertino: Boolean) = runComposeUiTest {

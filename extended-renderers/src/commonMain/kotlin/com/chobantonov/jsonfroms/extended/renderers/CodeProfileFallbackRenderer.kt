@@ -44,11 +44,14 @@ private fun CodeProfileFallback(
     val control = props.uischema as? ControlElement ?: return
     if (!Runtime.isVisible(control, getData(props.state), getValidator(props.state), props.path, props.config)) return
     val reporter = props.config[UiDiagnosticReporterConfigKey] as? UiDiagnosticReporter
-    LaunchedEffect(reporter, control, props.path) {
+    val message = translateRendererText(props.state.jsonforms.i18n.translate,
+        props.state.jsonforms.i18n.locale, CodeUnavailableCode, CodeUnavailableText,
+        codeProfileLocaleBundles)
+    LaunchedEffect(reporter, control, props.path, message) {
         reporter?.report(UiDiagnostic(
             code = CodeUnavailableCode,
             severity = UiDiagnosticSeverity.Warning,
-            message = CodeUnavailableText,
+            message = message,
             details = mapOf("path" to props.path, "format" to "code"),
         ))
     }
@@ -57,9 +60,7 @@ private fun CodeProfileFallback(
         ?.takeIf { it.tester(control, props.schema, context) >= 0 }
     Column {
         BasicText(
-            text = translateRendererText(props.state.jsonforms.i18n.translate,
-                props.state.jsonforms.i18n.locale, CodeUnavailableCode, CodeUnavailableText,
-                codeProfileLocaleBundles),
+            text = message,
             modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
         )
         native?.renderer?.Render(props)

@@ -48,6 +48,7 @@ import com.chobantonov.jsonfroms.material.renderers.controls.resolveTimeViews
 import com.chobantonov.jsonfroms.material.renderers.controls.resolveDateViewMode
 import com.chobantonov.jsonfroms.material.renderers.controls.stringOption
 import com.chobantonov.jsonfroms.material.renderers.controls.temporalRangeViolation
+import com.chobantonov.jsonfroms.material.renderers.controls.temporalDateHasSelectableMinute
 import com.chobantonov.jsonfroms.material.renderers.controls.temporalSaveFormatForControl
 import com.chobantonov.jsonfroms.material.renderers.controls.toPickerMillis
 import kotlinx.serialization.json.JsonPrimitive
@@ -68,7 +69,8 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
     val displayFormat = options.stringOption("dateTimeFormat") ?: DEFAULT_DATE_TIME_DISPLAY_FORMAT
     val saveFormat = temporalSaveFormatForControl(control.schema.format,
         options.stringOption("dateTimeSaveFormat"), DEFAULT_DATE_TIME_SAVE_FORMAT,
-        bindings.stateProps.path, props.config)
+        bindings.stateProps.path, props.config, props.state.jsonforms.i18n,
+        bindings.stateProps.i18nKeyPrefix, displayFormat)
     val timeViews = resolveTimeViews(options["views"], displayFormat)
     val dateMode = resolveDateViewMode(options["views"], displayFormat)
     val showActions = options.booleanOption("showActions") == true
@@ -80,7 +82,6 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
     val pickerAriaLabel = text("chooseDateTimeAriaLabel", "Choose date and time")
     val invalidDateTimeText = text("invalidDateTime", "Invalid date and time. Expected $displayFormat.")
     val pickerRangeText = text("dateTime.outOfRange", "Select a date and time within the allowed range.")
-    val titleText = text("selectDateTime", "Select date and time")
     val selectTimeText = text("selectTime", "Select time")
     val selectDateText = text("selectDate", "Select date")
     val nextText = text("next", "Next")
@@ -103,11 +104,11 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
         params = mapOf("bound" to violation.bound),
     ) }
     val displayed = parsed?.let { formatTemporal(it, displayFormat) } ?: committed
-    var draft by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(displayed) }
-    var observed by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(committed) }
-    var showPicker by remember(bindings.stateProps.path, props.uischema) { mutableStateOf(false) }
-    var showTimeStep by remember(bindings.stateProps.path, props.uischema) { mutableStateOf(false) }
-    var pendingValue by remember(bindings.stateProps.path, props.uischema) { mutableStateOf<TemporalValue?>(null) }
+    var draft by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(displayed) }
+    var observed by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(committed) }
+    var showPicker by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf(false) }
+    var showTimeStep by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf(false) }
+    var pendingValue by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf<TemporalValue?>(null) }
     val parsedDraft = draft.takeIf(String::isNotEmpty)?.let { parseDateTimeValue(it, listOf(displayFormat)) }
     val localError = when {
         draft.isEmpty() -> null
@@ -116,12 +117,15 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
     }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     val setPending = rememberPendingEditOwner("temporal:date-time:${bindings.stateProps.path}:${props.id}")
-    LaunchedEffect(props.uischema) { setPending(false) }
+    LaunchedEffect(props.uischema, displayFormat, saveFormat) { setPending(false) }
 
     LaunchedEffect(committed, displayed, props.state.jsonforms.core.data) {
         if (committed != observed) {
             draft = displayed
             observed = committed
+            showPicker = false
+            showTimeStep = false
+            pendingValue = null
             setPending(false)
         } else if (draft != displayed && parseDateTimeValue(draft, listOf(displayFormat)) == null) {
             setPending(true)
@@ -202,11 +206,21 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
                 showPicker = false
                 showTimeStep = true
             },
-        ) else if (timeViews != null) CupertinoDatePickerDialog(
+        ) else CupertinoDatePickerDialog(
             initialDateMillis = initial.date.toPickerMillis(),
             titleLabel = selectDateText,
             cancelLabel = cancelText,
             okLabel = nextText,
+            invalidSelectionMessage = pickerRangeText,
+            isSelectableDate = { millis ->
+                !restrict || timeViews != null || pickerMillisToDate(millis).let { date ->
+                    temporalDateHasSelectableMinute(
+                        TemporalValue(date.year, date.month.ordinal + 1, date.day),
+                        control.schema, controller.state.jsonforms.core.data,
+                        bindings.stateProps.path, initial.second,
+                    )
+                }
+            },
             showDismissAction = showActions,
             commitOnSelection = !showActions,
             onSelectionChange = { millis ->
@@ -221,42 +235,14 @@ fun CupertinoDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Bool
             onDismiss = { showPicker = false },
             onConfirm = { millis ->
                 val date = pickerMillisToDate(millis)
+                if (restrict && timeViews == null && !temporalDateHasSelectableMinute(
+                        TemporalValue(date.year, date.month.ordinal + 1, date.day),
+                        control.schema, controller.state.jsonforms.core.data,
+                        bindings.stateProps.path, initial.second,
+                    )) return@CupertinoDatePickerDialog
                 pendingValue = initial.copy(year = date.year, month = date.month.ordinal + 1, day = date.day)
                 showPicker = false
                 showTimeStep = true
-            },
-        ) else CupertinoDateTimePickerDialog(
-            initialDateMillis = initial.date.toPickerMillis(),
-            initialHour = initial.hour,
-            initialMinute = initial.minute,
-            is24Hour = options.booleanOption("ampm") != true,
-            titleLabel = titleText,
-            cancelLabel = cancelText,
-            okLabel = okText,
-            invalidSelectionMessage = pickerRangeText,
-            showActions = showActions,
-            onSelectionChange = { millis, hour, minute ->
-                if (!showActions) {
-                    val date = pickerMillisToDate(millis)
-                    val selected = initial.copy(year = date.year, month = date.month.ordinal + 1,
-                        day = date.day, hour = hour, minute = minute, second = initial.second)
-                    if (!restrict || rangeError(selected) == null) commit(selected)
-                }
-            },
-            onDismiss = { showPicker = false },
-            onConfirm = { millis, hour, minute ->
-                val date = pickerMillisToDate(millis)
-                val selected = initial.copy(year = date.year, month = date.month.ordinal + 1,
-                    day = date.day, hour = hour, minute = minute, second = initial.second)
-                if (restrict && rangeError(selected) != null) return@CupertinoDateTimePickerDialog
-                commit(selected)
-                showPicker = false
-            },
-            canConfirm = { millis, hour, minute ->
-                !restrict || pickerMillisToDate(millis).let { date ->
-                    rangeError(initial.copy(year = date.year, month = date.month.ordinal + 1,
-                        day = date.day, hour = hour, minute = minute, second = initial.second)) == null
-                }
             },
         )
     }

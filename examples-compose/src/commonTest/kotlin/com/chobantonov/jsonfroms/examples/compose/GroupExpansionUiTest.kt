@@ -5,11 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.input.key.Key
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnostic
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporter
@@ -62,6 +70,95 @@ class GroupExpansionUiTest {
     @Test fun materialUnrelatedHostUpdatesPreserveLocalExpansion() = unrelatedHostUpdates(false)
 
     @Test fun cupertinoUnrelatedHostUpdatesPreserveLocalExpansion() = unrelatedHostUpdates(true)
+
+    @Test fun materialDifferentGroupAtSamePathStartsExpanded() = differentGroupAtSamePath(false)
+    @Test fun cupertinoDifferentGroupAtSamePathStartsExpanded() = differentGroupAtSamePath(true)
+    @Test fun materialCardKeepsExpansionAcrossConfigSources() = cardConfigSources(false)
+    @Test fun cupertinoCardKeepsExpansionAcrossConfigSources() = cardConfigSources(true)
+    @Test fun materialCardDisclosureSupportsKeyboard() = cardKeyboardDisclosure(false)
+    @Test fun cupertinoCardDisclosureSupportsKeyboard() = cardKeyboardDisclosure(true)
+
+    private fun cardKeyboardDisclosure(cupertino: Boolean) = runComposeUiTest {
+        val ui = Json.parseToJsonElement("""{
+          "type":"Group","label":"Unused label",
+          "options":{"collapsible":true},
+          "cover":{"type":"Label","text":"Cover"},
+          "header":[{"type":"Label","text":"Card heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/note"}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject.toUiSchemaElement()
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        val heading = onAllNodes(hasClickAction() and hasText("Card heading")).onFirst()
+        onNodeWithText("Footer").assertExists()
+        heading.performSemanticsAction(SemanticsActions.RequestFocus)
+        heading.assertIsFocused()
+        heading.performKeyInput { keyDown(Key.Enter); keyUp(Key.Enter) }
+        onNodeWithText("Cover").assertExists()
+        onNodeWithText("Footer").assertDoesNotExist()
+        heading.performKeyInput { keyDown(Key.Spacebar); keyUp(Key.Spacebar) }
+        onNodeWithText("Footer").assertExists()
+        assertEquals(0, writes)
+    }
+
+    private fun cardConfigSources(cupertino: Boolean) = runComposeUiTest {
+        val ui = Json.parseToJsonElement("""{
+          "type":"Group","label":"Unused label",
+          "options":{"collapsible":true},
+          "cover":{"type":"Label","text":"Cover"},
+          "header":[{"type":"Label","text":"Card heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/note"}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject.toUiSchemaElement()
+        var defaults by mutableStateOf<Any>(mapOf("collapsed" to false))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                config = mapOf("jsonformsExtended" to defaults),
+                onChange = { writes++ })
+        }
+        fun fields() = onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size
+        assertEquals(1, fields())
+        onNodeWithText("Card heading").performClick()
+        assertEquals(0, fields())
+        onNodeWithText("Cover").assertExists()
+        onNodeWithText("Footer").assertDoesNotExist()
+        runOnIdle { defaults = Json.parseToJsonElement("""{"collapsed":false}""").jsonObject }
+        assertEquals(0, fields())
+        runOnIdle { defaults = Json.parseToJsonElement("""{"collapsed":true}""").jsonObject }
+        assertEquals(0, fields())
+        runOnIdle { defaults = mapOf("collapsed" to false) }
+        assertEquals(1, fields())
+        onNodeWithText("Footer").assertExists()
+        assertEquals(0, writes)
+    }
+
+    private fun differentGroupAtSamePath(cupertino: Boolean) = runComposeUiTest {
+        val first = GroupElement(label = "First details",
+            options = mapOf("collapsible" to JsonPrimitive(true)),
+            elements = listOf(ControlElement(scope = "#/properties/note")))
+        val second = first.copy(label = "Second details")
+        var ui by mutableStateOf(first)
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = schema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        fun fields() = onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size
+        assertEquals(1, fields())
+        onNodeWithText("First details").performClick()
+        assertEquals(0, fields())
+        runOnIdle { ui = second }
+        onNodeWithText("Second details").assertExists()
+        assertEquals(1, fields())
+        assertEquals(0, writes)
+    }
 
     private fun unrelatedHostUpdates(cupertino: Boolean) = runComposeUiTest {
         var current by mutableStateOf(data)

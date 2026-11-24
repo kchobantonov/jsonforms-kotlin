@@ -598,6 +598,47 @@ class LabelInterpolationUiTest {
     @Test fun materialCellDialogUsesRowDraftItem() = cellDraftItem(materialExtendedRenderers)
     @Test fun cupertinoCellDialogUsesRowDraftItem() = cellDraftItem(cupertinoExtendedRenderers)
 
+    @Test fun materialTableSummaryUsesFullRowExpression() = tableSummaryExpression(materialExtendedRenderers)
+    @Test fun cupertinoTableSummaryUsesFullRowExpression() = tableSummaryExpression(cupertinoExtendedRenderers)
+
+    private fun tableSummaryExpression(
+        renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>,
+    ) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","properties":{"rows":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"contact":{"type":"object","properties":{"city":{"type":"string"}}}}}}}}"""
+        ).jsonObject)
+        val options = mapOf(
+            "table" to JsonPrimitive(true),
+            "columnDefs" to Json.parseToJsonElement(
+                """[{"field":"contact"},{"field":"fullName","scope":"#","headerName":"Full Name"}]"""),
+            "cells" to Json.parseToJsonElement("""{
+              "contact":{"summary":{"type":"Label","text":"{who} ({locale})",
+                "options":{"interpolate":true,"textParams":{"who":"{item.name + ' in ' + item.contact.city}"}}}},
+              "fullName":{"summary":{"type":"Label","text":"{who}",
+                "options":{"interpolate":true,"textParams":{"who":"{item.name + ' from ' + item.contact.city}"}}}}
+            }"""),
+        )
+        val data = mutableStateOf<JsonElement>(Json.parseToJsonElement(
+            """{"rows":[{"name":"Ada","contact":{"city":"Boston"}}]}"""))
+        val locale = mutableStateOf("en")
+        setContent {
+            JsonForms(data = data.value, schema = schema,
+                uischema = ControlElement("#/properties/rows", options = options),
+                renderers = renderers,
+                config = mapOf("jsonformsExtended" to mapOf("dynamicValues" to mapOf("enabled" to true))),
+                i18n = JsonFormsI18nState(locale = locale.value))
+        }
+        onNodeWithText("Ada in Boston (en)").assertExists()
+        onNodeWithText("Ada from Boston").assertExists()
+        runOnIdle {
+            data.value = Json.parseToJsonElement("""{"rows":[{"name":"Grace","contact":{"city":"Arlington"}}]}""")
+            locale.value = "bg"
+        }
+        onNodeWithText("Grace in Arlington (bg)").assertExists()
+        onNodeWithText("Grace from Arlington").assertExists()
+        onNodeWithText("Ada in Boston (en)").assertDoesNotExist()
+    }
+
     private fun cellDraftItem(renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>) = runComposeUiTest {
         val schema = JsonSchema(kotlinx.serialization.json.Json.parseToJsonElement(
             """{"type":"object","properties":{"rows":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"contact":{"type":"object","properties":{"city":{"type":"string"}}}}}}}}"""

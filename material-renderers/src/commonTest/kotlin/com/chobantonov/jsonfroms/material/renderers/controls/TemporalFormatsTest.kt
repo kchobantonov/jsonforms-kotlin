@@ -42,6 +42,22 @@ class TemporalFormatsTest {
     }
 
     @Test
+    fun dateTimeRoundTripsWhenTheHostOffsetChanges() {
+        val before = FixedOffsetTimeZone(UtcOffset(hours = -5))
+        val after = FixedOffsetTimeZone(UtcOffset(hours = -4))
+        val imported = assertNotNull(parseDateTimeValue(
+            "2026-03-07T15:30:00Z", listOf(DEFAULT_DATE_TIME_SAVE_FORMAT), before,
+        ))
+        assertEquals(TemporalValue(2026, 3, 7, 10, 30), imported)
+
+        val nextDate = imported.copy(day = 8)
+        assertEquals("2026-03-08T14:30:00Z", formatTemporal(nextDate, DEFAULT_DATE_TIME_SAVE_FORMAT, after))
+        assertEquals(nextDate, parseDateTimeValue(
+            "2026-03-08T14:30:00Z", listOf(DEFAULT_DATE_TIME_SAVE_FORMAT), after,
+        ))
+    }
+
+    @Test
     fun supportsUiSchemaDisplayAndSaveFormats() {
         val value = assertNotNull(parseDateTimeValue("1999/12/11 10:05 am", listOf("YYYY/MM/DD h:mm a")))
 
@@ -82,5 +98,27 @@ class TemporalFormatsTest {
         assertEquals(value, parseDateTimeValue(encoded, listOf(format), TimeZone.UTC))
         assertEquals(true, isAllowedTemporalInput(encoded, format))
         assertEquals(false, isAllowedTemporalInput("2025/10/14 [at] 09:30:37[Z]", format))
+    }
+
+    @Test fun customDateTimeOffsetTokenUsesSelectedWallTimeOffset() {
+        val zone = FixedOffsetTimeZone(UtcOffset(hours = -4))
+        val value = TemporalValue(2026, 8, 16, 19, 31)
+        val format = "YYYY/MM/DD HH:mm:ss Z"
+        val encoded = "2026/08/16 19:31:00 -04:00"
+        assertEquals(encoded, formatTemporal(value, format, zone))
+        assertEquals(value, parseDateTimeValue(encoded, listOf(format), zone))
+        assertEquals(TemporalValue(2026, 8, 16, 13, 31), parseDateTimeValue(
+            "2026/08/16 19:31:00 +02:00", listOf(format), zone,
+        ))
+        assertEquals(true, isAllowedTemporalInput(encoded, format))
+    }
+
+    @Test fun customTimeOffsetTokenKeepsUtcNormalizedTime() {
+        val hostZone = FixedOffsetTimeZone(UtcOffset(hours = -4))
+        val format = "HH:mm:ss Z"
+        val imported = assertNotNull(parseTimeValue("20:30:00 +02:00", listOf(format)))
+        assertEquals(TemporalValue(hour = 18, minute = 30), imported)
+        assertEquals("18:30:00 +00:00", formatTemporal(imported, format, hostZone))
+        assertEquals(imported, parseTimeValue("18:30:00 +00:00", listOf(format)))
     }
 }

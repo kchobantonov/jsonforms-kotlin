@@ -34,7 +34,7 @@ fun splitCron(expression: String): List<String>? {
     return expanded.split(Regex("\\s+")).takeIf { it.size == CronField.entries.size }
 }
 
-private fun valueOf(token: String, field: CronField): Int? {
+private fun rawValueOf(token: String, field: CronField): Int? {
     val name = token.uppercase()
     val named = when (field) {
         CronField.Month -> months.indexOf(name).takeIf { it >= 0 }?.plus(1)
@@ -43,8 +43,10 @@ private fun valueOf(token: String, field: CronField): Int? {
     }
     val value = named ?: token.takeIf { it.matches(Regex("[0-9]+")) }?.toIntOrNull()
     return value?.takeIf { it in field.minimum..field.maximum }
-        ?.let { if (field == CronField.DayOfWeek && it == 7) 0 else it }
 }
+
+private fun valueOf(token: String, field: CronField): Int? =
+    rawValueOf(token, field)?.let { if (field == CronField.DayOfWeek && it == 7) 0 else it }
 
 private fun positiveStep(text: String, field: CronField): Int? {
     if (text.isEmpty() || text.any { it !in '0'..'9' } || text.all { it == '0' }) return null
@@ -66,9 +68,10 @@ private fun parsePart(part: String, field: CronField): Set<Int>? {
     } else {
         val bounds = base.split('-')
         if (bounds.size !in 1..2) return null
-        from = valueOf(bounds[0], field) ?: return null
+        from = (if (bounds.size == 2) rawValueOf(bounds[0], field)
+            else valueOf(bounds[0], field)) ?: return null
         to = when {
-            bounds.size == 2 -> valueOf(bounds[1], field) ?: return null
+            bounds.size == 2 -> rawValueOf(bounds[1], field) ?: return null
             sections.size == 2 -> field.maximum
             else -> from
         }

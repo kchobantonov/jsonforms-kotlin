@@ -13,8 +13,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.*
@@ -75,6 +83,8 @@ fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {
     val interactive = controlProps.enabled && !controlProps.readonly
     val openText = ActionText(text("openTooltip", "Open"), text("openAriaLabel", "Open details"))
     val clearLabel = translateControlClear(props.state.jsonforms.i18n)
+    val typeClearable = resolvedControlBooleanOption(control.options, props.config, "clearable") != false
+    val typeSelectionKey = "${controlProps.path}.__mixed_type"
     val searchLabel = text("searchTree", "Search tree…", scoped = false)
     val clearSearchLabel = text("clearSearch", "Clear search", scoped = false)
     val expandLabel = text("expand", "Expand", scoped = false)
@@ -142,7 +152,7 @@ fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {
             var showPrimitives by remember(controlProps.path) { mutableStateOf(false) }
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                    MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                     Spacer(Modifier.weight(1f))
                     if (expansion.collapsible) {
                         ActionTooltip(if (isExpanded) collapseLabel else expandLabel) {
@@ -183,7 +193,7 @@ fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {
             Row(
                 Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp), Alignment.Bottom,
             ) {
-                MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                 ActionTooltip(openText.tooltip) {
                     IconButton(onClick = { navigation.select(controlProps.path) }) {
                         Icon(JsonFormsActionIcons.ChevronRight, contentDescription = openText.ariaLabel)
@@ -195,7 +205,7 @@ fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (navigation.rootPath != controlProps.path) {
                     MaterialTypeSelector(
-                        types, selected, prompt, controlProps.label, interactive,
+                        types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey,
                         modifier = Modifier.width(180.dp), onSelect = updateType,
                         onClear = clearType, clearLabel = clearLabel, i18n = i18n,
                     )
@@ -207,7 +217,7 @@ fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {
             Row(
                 Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp), Alignment.Bottom,
             ) {
-                MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                MaterialTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                 Box(Modifier.weight(1f)) {
                     MaterialMixedValue(props, control, controlProps, selected)
                 }
@@ -239,11 +249,27 @@ private data class PendingMixedTypeChange(
 @Composable
 private fun MaterialTypeSelector(
     types: List<JsonSchemaType>, selected: JsonSchemaType?, prompt: String, label: String,
-    interactive: Boolean, modifier: Modifier = Modifier.width(180.dp), onSelect: (JsonSchemaType) -> Unit,
+    interactive: Boolean, clearable: Boolean, selectionKey: String,
+    modifier: Modifier = Modifier.width(180.dp), onSelect: (JsonSchemaType) -> Unit,
     onClear: () -> Unit, clearLabel: String, i18n: JsonFormsI18nState,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded && interactive, { expanded = it && interactive }, modifier) {
+    val clearAffordance = rememberClearAffordanceState(selectionKey)
+    val canClear = interactive && clearable && selected != null
+    var hovered by remember { mutableStateOf(false) }
+    var focused by remember { mutableStateOf(false) }
+    fun clearVisible(): Boolean = clearAffordance.isVisible() || hovered || focused
+    ExposedDropdownMenuBox(expanded && interactive, {
+        expanded = it && interactive
+        if (expanded) clearAffordance.selectField()
+    }, modifier.onFocusChanged { focused = it.hasFocus }.pointerInput(selectionKey) {
+        awaitPointerEventScope {
+            while (true) when (awaitPointerEvent().type) {
+                PointerEventType.Enter -> hovered = true
+                PointerEventType.Exit -> hovered = false
+            }
+        }
+    }) {
         OutlinedTextField(
             value = selected?.let { translateMixedTypeName(i18n, it) } ?: prompt, onValueChange = {},
             modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, interactive),
@@ -251,10 +277,21 @@ private fun MaterialTypeSelector(
             label = { Text(label.ifBlank { translateMixedRendererText(i18n, null, "type", "Type") }) },
             trailingIcon = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (selected != null) {
-                        ActionTooltip(clearLabel) { IconButton(onClick = onClear, enabled = interactive, modifier = Modifier.size(32.dp)) {
-                            Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
-                        } }
+                    if (canClear) {
+                        ActionTooltip(clearLabel) {
+                            IconButton(
+                                onClick = { if (clearVisible()) onClear() },
+                                modifier = clearAffordance.clearModifier(32.dp)
+                                    .graphicsLayer { alpha = if (clearVisible()) 1f else 0f }
+                                    .focusProperties { canFocus = clearVisible() }
+                                    .clearAndSetSemantics {
+                                        if (clearVisible()) {
+                                            contentDescription = clearLabel
+                                            onClick { onClear(); true }
+                                        }
+                                    },
+                            ) { Icon(JsonFormsActionIcons.Clear, null, modifier = Modifier.size(16.dp)) }
+                        }
                     }
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded)
                 }

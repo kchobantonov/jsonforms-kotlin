@@ -535,14 +535,17 @@ fun JsonForms(
         )
     }
 
-    JsonFormsStateProvider(
-        initState = initState,
-        middleware = middleware,
-        onChange = onChange,
-        onValidityChange = onValidityChange,
-        context = context,
-    ) {
-        JsonFormsDispatchRenderer()
+    val clearSelection = remember { ClearAffordanceSelection() }
+    CompositionLocalProvider(LocalClearAffordanceSelection provides clearSelection) {
+        JsonFormsStateProvider(
+            initState = initState,
+            middleware = middleware,
+            onChange = onChange,
+            onValidityChange = onValidityChange,
+            context = context,
+        ) {
+            JsonFormsDispatchRenderer()
+        }
     }
 }
 

@@ -7,7 +7,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -34,7 +33,7 @@ class OneOfClearVisibilityJvmTest {
                 schema = schema, uischema = ControlElement("#/properties/choice"),
                 renderers = materialRenderers)
         }
-        val clear = onNodeWithTag("oneof-selector-clear")
+        val clear = onNodeWithTag("oneof-selector-clear-slot", useUnmergedTree = true)
         val hidden = clear.captureToImage().toPixelMap()
         onNodeWithText("Email contact").performMouseInput { moveTo(center) }
         waitForIdle()
@@ -48,7 +47,7 @@ class OneOfClearVisibilityJvmTest {
         assertTrue((0 until overButton.width).any { x ->
             (0 until overButton.height).any { y -> hidden[x, y] != overButton[x, y] }
         })
-        onRoot().performMouseInput { moveTo(Offset(-10f, -10f)) }
+        clear.performMouseInput { moveTo(Offset(-100f, -100f)) }
         waitForIdle()
         val afterExit = clear.captureToImage().toPixelMap()
         assertTrue((0 until afterExit.width).all { x ->

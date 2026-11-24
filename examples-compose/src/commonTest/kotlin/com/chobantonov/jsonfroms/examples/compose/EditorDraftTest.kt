@@ -197,8 +197,10 @@ class EditorDraftTest {
         assertEquals("/name", issues[0].path)
         assertEquals(DemoErrorSource.Host, issues[1].source)
         assertEquals("/name", issues[1].path)
-        assertEquals("Schema /name: ${issues[0].message}", demoValidationIssueLabel(issues[0], false))
-        assertEquals("Хост /name: Rejected by host", demoValidationIssueLabel(issues[1], true))
+        assertEquals("Schema /name: ${issues[0].message}",
+            demoValidationIssueLabel(issues[0], DemoLocale.English))
+        assertEquals("Хост /name: Rejected by host",
+            demoValidationIssueLabel(issues[1], DemoLocale.Bulgarian))
         assertEquals(issues.size, demoValidationErrorCount(constrained, ValidationMode.ValidateAndShow))
     }
 

@@ -21,6 +21,8 @@ import com.chobantonov.jsonfroms.core.models.VerticalLayout
 import com.chobantonov.jsonfroms.core.store.JsonFormsRendererRegistryEntry
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.examples.getBuiltInExamples
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,6 +31,40 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class MarkupLabelUiTest {
+    @Test fun materialQuotedInterpolateDoesNotEnableTemplates() = quotedInterpolate(materialExtendedRenderers)
+    @Test fun cupertinoQuotedInterpolateDoesNotEnableTemplates() = quotedInterpolate(cupertinoExtendedRenderers)
+
+    private fun quotedInterpolate(renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>) = runComposeUiTest {
+        setContent {
+            JsonForms(
+                data = Json.parseToJsonElement("""{"name":"Ada"}"""),
+                schema = com.chobantonov.jsonfroms.core.models.JsonSchema(),
+                uischema = LabelElement("Hello {name}", options = mapOf(
+                    "markup" to JsonPrimitive("markdown"),
+                    "interpolate" to JsonPrimitive("true"),
+                    "textParams" to JsonObject(mapOf("name" to JsonPrimitive("{data.name}"))),
+                )),
+                renderers = renderers,
+                config = mapOf("jsonformsExtended" to mapOf("dynamicValues" to mapOf("enabled" to true))),
+            )
+        }
+        onNodeWithText("Hello {name}").assertExists()
+        onAllNodesWithText("Hello Ada").assertCountEquals(0)
+    }
+
+    @Test fun quotedBooleanConfigurationKeepsDocumentedDefaults() {
+        val label = LabelElement("Text", options = mapOf("typography" to JsonPrimitive("false")))
+        val markdownConfig = mapOf("jsonformsExtended" to mapOf(
+            "markup" to mapOf("markdown" to mapOf("enabled" to JsonPrimitive("false"))),
+        ))
+        val interpolationConfig = mapOf("jsonformsExtended" to mapOf(
+            "dynamicValues" to mapOf("enabled" to JsonPrimitive("true")),
+        ))
+        assertTrue(markdownEnabled(markdownConfig))
+        assertEquals(false, interpolationDataEnabled(interpolationConfig))
+        assertTrue(markupTypographyEnabled(label, emptyMap()))
+    }
+
     @Test fun materialUnknownProfileFallsBackToBasicGrammar() = unknownProfile(materialExtendedRenderers)
     @Test fun cupertinoUnknownProfileFallsBackToBasicGrammar() = unknownProfile(cupertinoExtendedRenderers)
 

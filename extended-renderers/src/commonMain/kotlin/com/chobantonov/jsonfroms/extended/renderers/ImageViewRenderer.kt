@@ -87,7 +87,7 @@ private fun ImageView(props: ComposeJsonFormsRendererProps, cupertino: Boolean) 
         props.state.jsonforms.i18n.translate, props.state.jsonforms.i18n.locale,
         requireNotNull(resolution.diagnostic).code, it, presentationLocaleBundles,
     ) }
-    LaunchedEffect(reporter, resolution.diagnostic, props.path) {
+    LaunchedEffect(reporter, resolution.diagnostic, props.path, diagnosticMessage) {
         resolution.diagnostic?.let { diagnostic ->
             reporter?.report(UiDiagnostic(
                 code = diagnostic.code,
@@ -100,7 +100,7 @@ private fun ImageView(props: ComposeJsonFormsRendererProps, cupertino: Boolean) 
     val missingAltMessage = translateRendererText(props.state.jsonforms.i18n.translate,
         props.state.jsonforms.i18n.locale, "image.missingAlt", "Image alternative text is missing",
         presentationLocaleBundles)
-    LaunchedEffect(reporter, element.alt, props.path) {
+    LaunchedEffect(reporter, element.alt, props.path, missingAltMessage) {
         if (element.alt == null) reporter?.report(UiDiagnostic(
             code = "image.missingAlt",
             severity = UiDiagnosticSeverity.Warning,
@@ -120,7 +120,7 @@ private fun ImageView(props: ComposeJsonFormsRendererProps, cupertino: Boolean) 
     val loadFailedMessage = translateRendererText(props.state.jsonforms.i18n.translate,
         props.state.jsonforms.i18n.locale, "image.loadFailed", "Image source could not be loaded",
         presentationLocaleBundles)
-    LaunchedEffect(reporter, loadFailed, url, props.path, retryAttempt) {
+    LaunchedEffect(reporter, loadFailed, url, props.path, retryAttempt, loadFailedMessage) {
         if (loadFailed) reporter?.report(UiDiagnostic(
             code = "image.loadFailed",
             severity = UiDiagnosticSeverity.Error,

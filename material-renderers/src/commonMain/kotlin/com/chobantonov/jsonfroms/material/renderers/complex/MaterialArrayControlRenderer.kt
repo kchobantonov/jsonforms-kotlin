@@ -294,13 +294,16 @@ fun MaterialArrayControlRenderer(
     var addBranchExpanded by remember(stateProps.path, stateProps.schema) { mutableStateOf(false) }
     var addBranchSnapshot by remember(stateProps.path, stateProps.schema) { mutableStateOf<JsonArray?>(null) }
     val reporter = stateProps.config[UiDiagnosticReporterConfigKey] as? UiDiagnosticReporter
+    val agGridMessage = if (agGridRequested) translateRendererText(props.state.jsonforms.i18n.translate,
+        props.state.jsonforms.i18n.locale, "array.agGridFallback",
+        "AG Grid is unavailable here; showing an array table.", arrayRendererLocaleBundles) else ""
     var reportedAgGrid by remember(stateProps.path, agGridRequested) { mutableStateOf(false) }
     LaunchedEffect(reporter, stateProps.path, agGridRequested) {
         if (agGridRequested && !reportedAgGrid && reporter != null) {
             reporter.report(UiDiagnostic(
             code = "variant.unsupported",
             severity = UiDiagnosticSeverity.Warning,
-            message = "AG Grid is unavailable in this renderer; using the portable array table.",
+            message = agGridMessage,
             details = mapOf("variant" to "ag-grid", "path" to stateProps.path),
             ))
             reportedAgGrid = true
@@ -601,9 +604,7 @@ fun MaterialArrayControlRenderer(
                 ) {
                     if (agGridRequested) {
                         Text(
-                            text = translateRendererText(translator, props.state.jsonforms.i18n.locale,
-                                "array.agGridFallback", "AG Grid is unavailable here; showing an array table.",
-                                arrayRendererLocaleBundles),
+                            text = agGridMessage,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -836,7 +837,16 @@ fun MaterialArrayControlRenderer(
                                     val labelSummary = cellOptions?.summary as? LabelElement
                                     val interpolated = (labelSummary?.options?.get("interpolate") as? JsonPrimitive)
                                         ?.booleanOrNull == true
-                                    val resolvedLabel = if (labelSummary != null && interpolated)
+                                    val labelRendererHandlesInterpolation = if (labelSummary != null && interpolated) {
+                                        val context = TesterContext(rootSchema = props.rootSchema, config = props.config)
+                                        props.renderers.map { entry ->
+                                            entry to entry.tester(labelSummary, cellSchema, context)
+                                        }.filter { (_, rank) -> rank >= 0 }
+                                            .maxByOrNull { (_, rank) -> rank }
+                                            ?.first?.handlesLabelInterpolation == true
+                                    } else false
+                                    val resolvedLabel = if (labelSummary != null && interpolated &&
+                                        !labelRendererHandlesInterpolation)
                                         resolveTableLabelSummary(
                                             deriveLabelForUISchemaElement(labelSummary,
                                                 translator ?: defaultTranslator).orEmpty(),
@@ -877,14 +887,17 @@ fun MaterialArrayControlRenderer(
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         Box(Modifier.weight(1f).clipToBounds()) {
-                                            if (labelSummary != null && (!interpolated || resolvedLabel != null)) {
-                                                JsonFormsDispatchRenderer(props.copy(
-                                                    schema = cellSchema,
-                                                    uischema = if (resolvedLabel == null) labelSummary else
-                                                        labelSummary.copy(text = resolvedLabel, i18n = null,
-                                                            options = emptyMap()),
-                                                    path = cellPath, id = "$cellId-summary",
-                                                ))
+                                            if (labelSummary != null && (!interpolated ||
+                                                labelRendererHandlesInterpolation || resolvedLabel != null)) {
+                                                JsonFormsItemScope(items[index]) {
+                                                    JsonFormsDispatchRenderer(props.copy(
+                                                        schema = cellSchema,
+                                                        uischema = if (resolvedLabel == null) labelSummary else
+                                                            labelSummary.copy(text = resolvedLabel, i18n = null,
+                                                                options = emptyMap()),
+                                                        path = cellPath, id = "$cellId-summary",
+                                                    ))
+                                                }
                                             } else {
                                                 val previewTranslator = Translator { key, fallback, values ->
                                                     translateRendererText(translator,

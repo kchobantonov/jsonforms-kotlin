@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.selectable
@@ -25,16 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
@@ -57,6 +55,8 @@ import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.initialControlFocusRequested
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -105,16 +105,13 @@ internal fun MaterialRadioGroup(
     val accessibleState = listOfNotNull(requiredState, visibleDescription).joinToString(". ")
     val vertical = radioChoiceVertical(config, optionsMap)
     val canClear = dataProvided && enabled && !readonly &&
-        (optionsMap["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(optionsMap, config, "clearable") != false
     var groupHovered by remember { mutableStateOf(false) }
     var clearFocused by remember { mutableStateOf(false) }
-    val inputModeManager = LocalInputModeManager.current
-    val clearModifier = Modifier.size(32.dp)
+    val clearAffordance = rememberClearAffordanceState(focusKey)
+    val clearVisible = groupFocused || groupHovered || clearFocused || clearAffordance.isVisible()
+    val clearModifier = Modifier.size(32.dp).testTag("radio-clear-slot")
         .onFocusChanged { clearFocused = it.isFocused }
-        .graphicsLayer {
-            alpha = if (groupFocused || groupHovered || clearFocused ||
-                inputModeManager.inputMode == InputMode.Touch) 1f else 0f
-        }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val focusRequesters = remember(focusKey, options.map { it.value }) {
         List(options.size) { FocusRequester() }
@@ -128,6 +125,7 @@ internal fun MaterialRadioGroup(
 
     Column(Modifier.then(if (compact) Modifier.testTag("material-radio-cell") else Modifier).onFocusChanged {
             groupFocused = it.hasFocus
+            if (it.hasFocus) clearAffordance.selectField()
             onGroupFocusChanged(it.hasFocus)
         }.pointerInput(canClear) {
             awaitPointerEventScope {
@@ -135,6 +133,7 @@ internal fun MaterialRadioGroup(
                     when (awaitPointerEvent().type) {
                         PointerEventType.Enter -> groupHovered = true
                         PointerEventType.Exit -> groupHovered = false
+                        PointerEventType.Press -> clearAffordance.selectField()
                     }
                 }
             }
@@ -144,15 +143,16 @@ internal fun MaterialRadioGroup(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             if (!compact) Text(computeLabel(label, required, hideRequiredAsterisk), Modifier.weight(1f))
             if (canClear) ActionTooltip(clearLabel) {
-                IconButton(onClick = onClear, modifier = clearModifier) {
+                if (clearVisible) IconButton(onClick = onClear, modifier = clearModifier) {
                     Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
-                }
+                } else Spacer(clearModifier)
             }
         }
         if (vertical) Column {
             options.forEachIndexed { index, option ->
                 MaterialRadioChoice(index, option, options, focusRequesters, vertical, rtl,
-                    selectedValue, dataProvided, enabled, readonly, accessibleState, errors, onSelect)
+                    selectedValue, dataProvided, enabled, readonly, accessibleState, errors,
+                    { clearAffordance.selectField(); onSelect(it) })
             }
         } else FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -160,7 +160,8 @@ internal fun MaterialRadioGroup(
         ) {
             options.forEachIndexed { index, option ->
                 MaterialRadioChoice(index, option, options, focusRequesters, vertical, rtl,
-                    selectedValue, dataProvided, enabled, readonly, accessibleState, errors, onSelect)
+                    selectedValue, dataProvided, enabled, readonly, accessibleState, errors,
+                    { clearAffordance.selectField(); onSelect(it) })
             }
         }
         if (dataProvided && options.none { jsonSchemaChoiceEquals(it.value, selectedValue) }) {

@@ -19,6 +19,14 @@ class TableLabelSummaryTest {
             resolveTableLabelSummary("{name} · {city} — {title}", params, root, item, enabled))
     }
 
+    @Test fun staticParametersInterpolateWithoutDynamicValueGate() {
+        val staticParams = Json.parseToJsonElement("""{"prefix":"Person","count":"2"}""").jsonObject
+        assertEquals("Person 2", resolveTableLabelSummary("{prefix} {count}",
+            staticParams, root, item, emptyMap()))
+        assertEquals("Person 2", resolveTableLabelSummary("{prefix} {count}",
+            staticParams, root, item, enabled))
+    }
+
     @Test fun gateAndUnknownExpressionsNeverExposeTemplate() {
         assertNull(resolveTableLabelSummary("{name}", params, root, item, emptyMap()))
         assertNull(resolveTableLabelSummary("{name}", null, root, item, enabled))

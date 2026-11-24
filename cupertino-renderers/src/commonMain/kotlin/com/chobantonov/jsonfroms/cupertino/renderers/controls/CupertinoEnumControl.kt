@@ -37,7 +37,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -45,7 +44,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -60,6 +58,8 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellProps
 import com.chobantonov.jsonfroms.compose.asRendererProps
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberPendingEditOwner
 import com.chobantonov.jsonfroms.compose.useJsonForms
@@ -147,7 +147,7 @@ internal fun CupertinoSelectControl(
     val focusRequester = rememberInitialControlFocusRequester(stateProps.path,
         stateProps.config + stateProps.uischema.options, enabled)
     val canClear = hasValue && enabled &&
-        (stateProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(stateProps.uischema.options, stateProps.config, "clearable") != false
     val translator = useJsonForms().state.jsonforms.i18n.translate
     val startAdornments = resolveInputAdornments(stateProps.uischema.options, "startAdornment", translator)
     val endAdornments = resolveInputAdornments(stateProps.uischema.options, "endAdornment", translator)
@@ -163,9 +163,9 @@ internal fun CupertinoSelectControl(
     var clearFocused by remember(stateProps.path) { mutableStateOf(false) }
     var clearHovered by remember(stateProps.path) { mutableStateOf(false) }
     val clearFocusRequester = remember(stateProps.path) { FocusRequester() }
-    val inputModeManager = LocalInputModeManager.current
+    val clearAffordance = rememberClearAffordanceState(stateProps.path)
     val showClear = canClear && (selectorFocused || selectorHovered || clearFocused || clearHovered ||
-        inputModeManager.inputMode == InputMode.Touch)
+        clearAffordance.isVisible())
     val clearModifier = Modifier.size(28.dp)
         .onFocusChanged { clearFocused = it.isFocused }
         .pointerInput(stateProps.path) {
@@ -205,17 +205,22 @@ internal fun CupertinoSelectControl(
             Row(
                 Modifier.fillMaxWidth().then(if (compact) Modifier.testTag("cupertino-enum-cell") else Modifier)
                     .border(1.dp, borderColor, RoundedCornerShape(10.dp))
-                    .onFocusChanged { selectorFocused = it.hasFocus }
+                    .onFocusChanged {
+                        if (it.isFocused) clearAffordance.selectField()
+                        selectorFocused = it.hasFocus
+                    }
                     .focusRequester(focusRequester)
-                    .clickable(enabled) { expanded = !expanded }
+                    .clickable(enabled) { clearAffordance.selectField(); expanded = !expanded }
                     .semantics {
                         if (accessibleState.isNotBlank()) stateDescription = accessibleState
                         if (accessibleError.isNotBlank()) error(accessibleError)
+                        requestFocus { clearAffordance.selectField(); focusRequester.requestFocus(); true }
                     }
                     .pointerInput(stateProps.path) {
                         awaitPointerEventScope {
                             while (true) {
                                 when (awaitPointerEvent().type) {
+                                    PointerEventType.Press -> clearAffordance.selectField()
                                     PointerEventType.Enter -> selectorHovered = true
                                     PointerEventType.Exit -> selectorHovered = false
                                 }

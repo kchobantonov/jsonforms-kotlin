@@ -95,6 +95,7 @@ for (const rendererFamily of ['material', 'cupertino']) test(
     await send('Emulation.setDeviceMetricsOverride', { width:240, height:600, deviceScaleFactor:1, mobile:false });
     await until(() => evaluate('window.innerWidth'), width => width === 240, '240 pixel viewport');
     await until(() => evaluate("document.querySelector('#form')?._jsonformsMounted===true"), Boolean, 'mounted form');
+    await sleep(500);
     const geometry = await evaluate(`({width:innerWidth, scrollWidth:document.documentElement.scrollWidth,
       form:document.querySelector('#form').getBoundingClientRect().toJSON()})`);
     const cupertinoBaseline = rendererFamily === 'cupertino'

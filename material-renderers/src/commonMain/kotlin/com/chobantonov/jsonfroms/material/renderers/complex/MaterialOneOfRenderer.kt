@@ -1,6 +1,10 @@
 package com.chobantonov.jsonfroms.material.renderers.complex
 
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,14 +29,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalInputModeManager
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.requestFocus
+import androidx.compose.ui.platform.testTag as modifierTestTag
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
+import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsDispatchRenderer
@@ -135,7 +147,7 @@ fun MaterialOneOfRenderer(
             selectedIndex = index
         },
     )
-    val clearable = (control.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(control.options, controlProps.config, "clearable") != false
     val hasSelection = selectedIndex >= 0 && scopedValue != null
     val branchFeedback = if (renderInfos.size == 1 || hasSelection)
         activeBranchFeedback(props, control, controlProps, renderInfos[safeIndex].schema)
@@ -146,7 +158,10 @@ fun MaterialOneOfRenderer(
     var selectorHovered by remember(controlProps.path) { mutableStateOf(false) }
     var clearFocused by remember(controlProps.path) { mutableStateOf(false) }
     var clearHovered by remember(controlProps.path) { mutableStateOf(false) }
-    val inputModeManager = LocalInputModeManager.current
+    val clearFocusRequester = remember(controlProps.path) { FocusRequester() }
+    val clearAffordance = rememberClearAffordanceState(controlProps.path)
+    fun clearVisible() = selectorFocused || selectorHovered || clearFocused || clearHovered ||
+        clearAffordance.isVisible()
 
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
     CombinatorProperties(
@@ -181,6 +196,7 @@ fun MaterialOneOfRenderer(
                 .onFocusChanged {
                     if (selectorFocused && !it.isFocused) touched = true
                     selectorFocused = it.isFocused
+                    if (it.isFocused) clearAffordance.selectField()
                 }
                 .pointerInput(controlProps.path) {
                     awaitPointerEventScope {
@@ -188,6 +204,7 @@ fun MaterialOneOfRenderer(
                             when (awaitPointerEvent().type) {
                                 PointerEventType.Enter -> selectorHovered = true
                                 PointerEventType.Exit -> selectorHovered = false
+                                PointerEventType.Press -> clearAffordance.selectField()
                             }
                         }
                     }
@@ -217,28 +234,36 @@ fun MaterialOneOfRenderer(
             }
         }
     }
-    if (canClear) {
-        IconButton(
-            onClick = branchChange.clear,
-            modifier = Modifier.size(32.dp).testTag("oneof-selector-clear")
-                .onFocusChanged { clearFocused = it.isFocused }
-                .pointerInput(controlProps.path) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            when (awaitPointerEvent().type) {
-                                PointerEventType.Enter -> clearHovered = true
-                                PointerEventType.Exit -> clearHovered = false
+    if (canClear) Box(Modifier.size(32.dp).modifierTestTag("oneof-selector-clear-slot")) {
+        ActionTooltip(clearLabel) {
+            IconButton(
+                onClick = { if (clearVisible()) branchChange.clear() },
+                modifier = Modifier.size(32.dp)
+                    .onFocusChanged { clearFocused = it.isFocused }
+                    .pointerInput(controlProps.path) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                when (awaitPointerEvent().type) {
+                                    PointerEventType.Enter -> clearHovered = true
+                                    PointerEventType.Exit -> clearHovered = false
+                                }
                             }
                         }
                     }
-                }
-                // Keep focus/hover changes in the layer so the dropdown anchor stays mounted mid-click.
-                .graphicsLayer {
-                    alpha = if (selectorFocused || selectorHovered || clearFocused || clearHovered ||
-                        inputModeManager.inputMode == InputMode.Touch) 1f else 0f
-                },
-        ) {
-            Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
+                    .graphicsLayer { alpha = if (clearVisible()) 1f else 0f }
+                    .focusRequester(clearFocusRequester)
+                    .focusProperties { canFocus = clearVisible() }
+                    .clearAndSetSemantics {
+                        if (clearVisible()) {
+                            testTag = "oneof-selector-clear"
+                            contentDescription = clearLabel
+                            onClick { branchChange.clear(); true }
+                            requestFocus { clearFocusRequester.requestFocus(); true }
+                        }
+                    },
+            ) {
+                Icon(JsonFormsActionIcons.Clear, null, modifier = Modifier.size(16.dp))
+            }
         }
     }
     }

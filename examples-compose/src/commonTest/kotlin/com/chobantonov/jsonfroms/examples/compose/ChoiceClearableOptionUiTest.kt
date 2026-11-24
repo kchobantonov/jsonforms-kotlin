@@ -6,15 +6,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -45,6 +52,30 @@ class ChoiceClearableOptionUiTest {
 
     @Test fun materialEnumClearableAndReadOnly() = enumChoice(false)
     @Test fun cupertinoEnumClearableAndReadOnly() = enumChoice(true)
+    @Test fun materialEnumClearFollowsTouchSelection() = enumTouchSelection(false)
+    @Test fun cupertinoEnumClearFollowsTouchSelection() = enumTouchSelection(true)
+    @Test fun materialOneOfClearFollowsTouchSelection() = enumTouchSelection(false, true)
+    @Test fun cupertinoOneOfClearFollowsTouchSelection() = enumTouchSelection(true, true)
+
+    private fun enumTouchSelection(cupertino: Boolean, oneOf: Boolean = false) = runComposeUiTest {
+        var data by mutableStateOf(initial)
+        var inputMode: InputModeManager? = null
+        val field = if (oneOf) "channel" else "status"
+        setContent {
+            inputMode = LocalInputModeManager.current
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/$field"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data })
+        }
+        runOnIdle { inputMode!!.requestInputMode(InputMode.Touch) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodes(hasClickAction()).onFirst().performTouchInput { click() }
+        onNodeWithContentDescription("Clear value").assertExists()
+        onNodeWithContentDescription("Clear value").performSemanticsAction(SemanticsActions.OnClick) { it() }
+        runOnIdle { assertFalse(field in data.jsonObject) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+    }
     @Test fun materialOneOfEnumClearable() = oneOfChoice(false)
     @Test fun cupertinoOneOfEnumClearable() = oneOfChoice(true)
     @Test fun materialInvalidChoiceCanBeCleared() = invalidChoice(false)
@@ -67,6 +98,63 @@ class ChoiceClearableOptionUiTest {
     @Test fun cupertinoChoiceClearWorksWithKeyboard() = keyboardClear(true)
     @Test fun materialZeroAndEmptyAreClearableValues() = zeroAndEmpty(false)
     @Test fun cupertinoZeroAndEmptyAreClearableValues() = zeroAndEmpty(true)
+    @Test fun materialQuotedEnumClearableIsNotBoolean() = quotedClearable(false, false)
+    @Test fun cupertinoQuotedEnumClearableIsNotBoolean() = quotedClearable(true, false)
+    @Test fun materialQuotedOneOfClearableIsNotBoolean() = quotedClearable(false, true)
+    @Test fun cupertinoQuotedOneOfClearableIsNotBoolean() = quotedClearable(true, true)
+    @Test fun materialEnumUsesGlobalClearable() = globalClearable(false, false)
+    @Test fun cupertinoEnumUsesGlobalClearable() = globalClearable(true, false)
+    @Test fun materialOneOfEnumUsesGlobalClearable() = globalClearable(false, true)
+    @Test fun cupertinoOneOfEnumUsesGlobalClearable() = globalClearable(true, true)
+
+    private fun globalClearable(cupertino: Boolean, oneOf: Boolean) = runComposeUiTest {
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        val field = if (oneOf) "channel" else "status"
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = initial, schema = schema,
+                uischema = ControlElement("#/properties/$field",
+                    options = mapOf("clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = true }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithContentDescription("Clear value").assertExists()
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithContentDescription("Clear value").assertExists()
+    }
+
+    private fun quotedClearable(cupertino: Boolean, oneOf: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(initial)
+        var changes = 0
+        val field = if (oneOf) "channel" else "status"
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/$field",
+                    options = mapOf("clearable" to JsonPrimitive("false"))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithContentDescription("Clear value").performClick()
+        runOnIdle {
+            assertFalse(field in data.jsonObject)
+            assertEquals(1, changes)
+        }
+    }
 
     private fun zeroAndEmpty(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(initial)
@@ -79,10 +167,22 @@ class ChoiceClearableOptionUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle { assertFalse("priority" in data.jsonObject); field = "empty" }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("empty" in data.jsonObject)
@@ -236,10 +336,22 @@ class ChoiceClearableOptionUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle { assertFalse("status" in data.jsonObject); field = "channel" }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("channel" in data.jsonObject)
@@ -263,10 +375,16 @@ class ChoiceClearableOptionUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { clearable = true }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
         runOnIdle { readonly = true }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { readonly = false }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("status" in data.jsonObject)
@@ -288,7 +406,13 @@ class ChoiceClearableOptionUiTest {
         }
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { clearable = true }
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").assertExists()
+        onAllNodes(hasClickAction()).onFirst().performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
         onNodeWithContentDescription("Clear value").performClick()
         runOnIdle {
             assertFalse("channel" in data.jsonObject)

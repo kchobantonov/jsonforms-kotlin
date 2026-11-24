@@ -3,7 +3,9 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Slider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Button
@@ -19,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -26,7 +30,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
@@ -90,8 +96,10 @@ fun MaterialSliderControl(
     val thumbIndex = if (currentIndex >= 0) currentIndex else
         positions.nearestIndex(numeric?.doubleOrNull ?: defaultValue)
     val preserveEmptyValue = LocalPreserveEmptyValue.current
-    val clearable = (controlProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(controlProps.uischema.options, controlProps.config, "clearable") != false
     val canClear = clearable && stored != null && controlProps.enabled && !controlProps.readonly
+    val clearAffordance = rememberClearAffordanceState(controlProps.path)
+    val clearVisible = clearAffordance.isVisible()
     val focusRequester = rememberInitialControlFocusRequester(controlProps.path, appliedOptions,
         controlProps.enabled && !controlProps.readonly &&
             (positions.values.size > 1 || (positions.values.size == 1 && currentIndex < 0)))
@@ -123,6 +131,13 @@ fun MaterialSliderControl(
                 positions.values.size > 1 -> Slider(
                     modifier = Modifier.weight(1f).focusRequester(focusRequester)
                         .testTag(if (compact) "material-slider-cell" else "numeric-slider-${controlProps.path}")
+                        .then(clearAffordance.fieldModifier)
+                        .pointerInput(clearAffordance) {
+                            awaitPointerEventScope {
+                                while (true) if (awaitPointerEvent().type == PointerEventType.Press)
+                                    clearAffordance.selectField()
+                            }
+                        }
                         .semantics {
                             stateDescription = accessibleStatus
                             if (accessibleError.isNotBlank()) error(accessibleError)
@@ -133,6 +148,7 @@ fun MaterialSliderControl(
                         },
                     value = thumbIndex.toFloat(),
                     onValueChange = { value ->
+                        clearAffordance.selectField()
                         val next = positions.values[value.roundToInt().coerceIn(positions.values.indices)]
                         if (next != stored) bindings.dispatchProps.handleChange(bindings.stateProps.path, next)
                     },
@@ -141,10 +157,20 @@ fun MaterialSliderControl(
                     enabled = controlProps.enabled && !controlProps.readonly,
                 )
                 positions.values.size == 1 -> Button(
-                    onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path, positions.values.single()) },
+                    onClick = {
+                        clearAffordance.selectField()
+                        bindings.dispatchProps.handleChange(bindings.stateProps.path, positions.values.single())
+                    },
                     enabled = controlProps.enabled && !controlProps.readonly && currentIndex < 0,
                     modifier = Modifier.weight(1f).focusRequester(focusRequester)
                         .testTag(if (compact) "material-slider-cell" else "numeric-slider-${controlProps.path}")
+                        .then(clearAffordance.fieldModifier)
+                        .pointerInput(clearAffordance) {
+                            awaitPointerEventScope {
+                                while (true) if (awaitPointerEvent().type == PointerEventType.Press)
+                                    clearAffordance.selectField()
+                            }
+                        }
                         .semantics {
                             stateDescription = accessibleStatus
                             if (accessibleError.isNotBlank()) error(accessibleError)
@@ -157,11 +183,15 @@ fun MaterialSliderControl(
                     "slider.selectValue", "Select value")) }
             }
             Text(formatSliderEndpoint(maximum))
-            if (canClear) ActionTooltip(bindings.clearLabel) {
-                IconButton(onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path,
-                    if (preserveEmptyValue) JsonPrimitive(0) else null) }) {
-                    Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
+            if (canClear) {
+                if (clearVisible) ActionTooltip(bindings.clearLabel) {
+                    IconButton(onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path,
+                        if (preserveEmptyValue) JsonPrimitive(0) else null) },
+                        modifier = clearAffordance.clearModifier(48.dp)) {
+                        Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
+                    }
                 }
+                else Spacer(Modifier.size(48.dp))
             }
         }
         if (!compact || invalidStatus != null) Text(status,

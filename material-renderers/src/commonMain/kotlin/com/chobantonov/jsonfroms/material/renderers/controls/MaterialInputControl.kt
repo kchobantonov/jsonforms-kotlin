@@ -54,6 +54,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.StringMaskVisualTransformation
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceSelectionReset
 import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
@@ -129,7 +131,7 @@ fun MaterialInputControl(
     LaunchedEffect(focusRequester) {
         if (initialFocus && props.enabled) focusRequester.requestFocus()
     }
-    val clearable = (props.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(props.uischema.options, props.config, "clearable") ?: true
     val canClear = clearable && value.isNotEmpty() && props.enabled && !props.readonly
     val showClear = canClear && (focused || fieldFocused || hovered)
     val effectiveTrailingIcon: (@Composable () -> Unit)? = if (canClear || trailingIcon != null) {{
@@ -165,6 +167,7 @@ fun MaterialInputControl(
         effectiveError.takeIf(String::isNotBlank)?.toMaterialSupportingText(),
         storedValueStatus,
     ).distinct().joinToString(". ").takeIf(String::isNotBlank) else null
+    val resetClearSelection = rememberClearAffordanceSelectionReset()
     val modifier = inputModifier.fillMaxWidth().focusRequester(focusRequester).semantics {
         val accessibleName = listOfNotNull(
             props.label.takeIf(String::isNotBlank), compactError).joinToString(". ")
@@ -173,6 +176,7 @@ fun MaterialInputControl(
         else if (effectiveError.isNotBlank()) error(effectiveError.toMaterialSupportingText())
         if (accessibleState.isNotBlank()) stateDescription = accessibleState
     }.onFocusChanged { focusState ->
+        if (focusState.isFocused) resetClearSelection()
         fieldFocused = focusState.hasFocus
         if (focusState.isFocused) hasReceivedFocus = true
         else if (!focusState.hasFocus && hasReceivedFocus) touched = true
@@ -180,6 +184,7 @@ fun MaterialInputControl(
         awaitPointerEventScope {
             while (true) {
                 when (awaitPointerEvent().type) {
+                    PointerEventType.Press -> resetClearSelection()
                     PointerEventType.Enter -> hovered = true
                     PointerEventType.Exit -> hovered = false
                 }

@@ -46,6 +46,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceSelectionReset
 import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
@@ -98,7 +100,7 @@ fun CupertinoInputControl(
     LaunchedEffect(focusRequester) {
         if (initialFocus && props.enabled) focusRequester.requestFocus()
     }
-    val clearable = (props.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(props.uischema.options, props.config, "clearable") ?: true
     val canClear = clearable && value.isNotEmpty() && props.enabled && !props.readonly
     val showClear = canClear && (focused || fieldFocused || hovered)
     val visibleError = if (touched) props.errors else props.errorsBeforeTouch
@@ -120,6 +122,7 @@ fun CupertinoInputControl(
         storedValueStatus,
         props.description?.takeIf { it.isNotBlank() && descriptionVisible },
         placeholder?.takeIf { value.isEmpty() && it.isNotBlank() }).joinToString(". ")
+    val resetClearSelection = rememberClearAffordanceSelectionReset()
 
     @Composable fun inputField() {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -137,6 +140,7 @@ fun CupertinoInputControl(
                 if (accessibleError.isNotBlank()) accessibilityError(accessibleError)
                 if (accessibleState.isNotBlank()) stateDescription = accessibleState
             }.onFocusChanged { focusState ->
+                if (focusState.isFocused) resetClearSelection()
                 fieldFocused = focusState.hasFocus
                 if (focusState.isFocused) hasReceivedFocus = true
                 else if (!focusState.hasFocus && hasReceivedFocus) touched = true
@@ -146,6 +150,7 @@ fun CupertinoInputControl(
                     awaitPointerEventScope {
                         while (true) {
                             when (awaitPointerEvent().type) {
+                                PointerEventType.Press -> resetClearSelection()
                                 PointerEventType.Enter -> hovered = true
                                 PointerEventType.Exit -> hovered = false
                             }

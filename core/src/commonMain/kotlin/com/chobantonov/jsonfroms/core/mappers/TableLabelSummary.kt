@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 
-/** Resolves declared row/root parameters only when the dynamic-value gate is enabled. */
+/** Resolves static parameters and gated row/root parameters for a table Label summary. */
 fun resolveTableLabelSummary(
     template: String,
     parameters: JsonObject?,
@@ -18,12 +18,14 @@ fun resolveTableLabelSummary(
 ): String? {
     val extended = config["jsonformsExtended"].summaryField("dynamicValues")
     val enabled = extended.summaryField("enabled").summaryBoolean() ?: false
-    if (!enabled || parameters == null) return null
+    if (parameters == null) return null
     val token = Regex("\\{([A-Za-z][A-Za-z0-9_]*)\\}")
     val names = token.findAll(template).map { it.groupValues[1] }.toSet()
     if (names.isEmpty()) return template.takeIf { it.isNotBlank() && '{' !in it && '}' !in it }
     val resolved = names.associateWith { name ->
         val expression = (parameters[name] as? JsonPrimitive)?.contentOrNull ?: return null
+        if ('{' !in expression && '}' !in expression) return@associateWith expression
+        if (!enabled) return null
         val match = Regex("^\\{(item|data)(?:\\.([A-Za-z0-9_.-]+))?\\}$")
             .matchEntire(expression) ?: return null
         val source = if (match.groupValues[1] == "item") item else root

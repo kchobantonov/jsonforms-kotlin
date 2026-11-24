@@ -45,5 +45,7 @@ class CronPickerTest {
         assertEquals((0..6).toList(), cronChoiceValues(CronField.DayOfWeek))
         assertEquals(true, cronSameExpression("@daily", "0 0 0 * * *"))
         assertEquals(true, cronSameExpression("0 0/15 * * * *", "0 0,15,30,45 * * * *"))
+        assertEquals(true, cronSameExpression("0 0 9 ? * 5-7", "0 0 9 ? * FRI,SAT,SUN"))
+        assertEquals(CronPeriod.Day, cronPeriodOf("0 0 9 ? * 0-7"))
     }
 }

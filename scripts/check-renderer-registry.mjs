@@ -37,8 +37,9 @@ for (const delegate of delegates) {
   }
 }
 const extended = read(inventory.extended.source);
-const extendedEntries = [...extended.matchAll(/JsonFormsRendererRegistryEntry\(\s*(\w+)\s*,\s*((?:controls|layouts)\.\w+|\w+Renderer(?:\(cupertino\))?)\s*\)/g)]
-  .map((match) => ({ tester: match[1], implementation: match[2] }));
+const extendedEntries = [...extended.matchAll(/JsonFormsRendererRegistryEntry\(\s*(\w+)\s*,\s*((?:controls|layouts)\.\w+|\w+Renderer(?:\(cupertino\))?)\s*(?:,\s*handlesLabelInterpolation\s*=\s*(true|false))?\s*\)/g)]
+  .map((match) => ({ tester: match[1], implementation: match[2],
+    ...(match[3] ? { handlesLabelInterpolation: match[3] === 'true' } : {}) }));
 if (JSON.stringify(extendedEntries) !== JSON.stringify(inventory.extended.renderers)) failures.push('Extended renderer registry changed');
 const extendedCells = inventory.extended.cells;
 const cellCall = /ComposeJsonFormsCellRenderer \{ (\w+)\((it(?:\.asRendererProps\(\))?), cupertino = (true|false)(?:, compact = (true|false))?\) \}/g;

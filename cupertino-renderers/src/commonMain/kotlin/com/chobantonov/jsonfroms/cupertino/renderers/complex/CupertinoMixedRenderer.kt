@@ -18,6 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -94,6 +96,8 @@ fun CupertinoMixedRenderer(props: ComposeJsonFormsRendererProps) {
     val openTooltip = text("openTooltip", "Open")
     val openAriaLabel = text("openAriaLabel", "Open details")
     val clearLabel = translateControlClear(props.state.jsonforms.i18n)
+    val typeClearable = resolvedControlBooleanOption(control.options, props.config, "clearable") != false
+    val typeSelectionKey = "${controlProps.path}.__mixed_type"
     val searchLabel = text("searchTree", "Search tree…", scoped = false)
     val clearSearchLabel = text("clearSearch", "Clear search", scoped = false)
     val expandLabel = text("expand", "Expand", scoped = false)
@@ -161,7 +165,7 @@ fun CupertinoMixedRenderer(props: ComposeJsonFormsRendererProps) {
             var showPrimitives by remember(controlProps.path) { mutableStateOf(false) }
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                    CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                     Spacer(Modifier.weight(1f))
                     if (expansion.collapsible) {
                         ActionTooltip(if (isExpanded) collapseLabel else expandLabel) {
@@ -200,7 +204,7 @@ fun CupertinoMixedRenderer(props: ComposeJsonFormsRendererProps) {
         }
         complex && navigation != null && navigation.detailPath != controlProps.path -> {
             Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp), Alignment.Bottom) {
-                CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                 ActionTooltip(openTooltip) {
                     IconButton(onClick = { navigation.select(controlProps.path) }) {
                         Icon(
@@ -215,14 +219,14 @@ fun CupertinoMixedRenderer(props: ComposeJsonFormsRendererProps) {
         complex && navigation?.detailPath == controlProps.path -> {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (navigation.rootPath != controlProps.path) {
-                    CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                    CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                 }
                 CupertinoMixedValue(props, control, controlProps, selected)
             }
         }
         else -> {
             Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp), Alignment.Bottom) {
-                CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
+                CupertinoTypeSelector(types, selected, prompt, controlProps.label, interactive, typeClearable, typeSelectionKey, onSelect = updateType, onClear = clearType, clearLabel = clearLabel, i18n = i18n)
                 Box(Modifier.weight(1f)) {
                     CupertinoMixedValue(props, control, controlProps, selected)
                 }
@@ -256,11 +260,15 @@ private data class PendingMixedTypeChange(
 @Composable
 private fun CupertinoTypeSelector(
     types: List<JsonSchemaType>, selected: JsonSchemaType?, prompt: String, label: String,
-    interactive: Boolean, modifier: Modifier = Modifier.width(180.dp), onSelect: (JsonSchemaType) -> Unit,
+    interactive: Boolean, clearable: Boolean, selectionKey: String,
+    modifier: Modifier = Modifier.width(180.dp), onSelect: (JsonSchemaType) -> Unit,
     onClear: () -> Unit, clearLabel: String, i18n: JsonFormsI18nState,
 ) {
     val colors = LocalCupertinoColors.current
     var expanded by remember { mutableStateOf(false) }
+    val clearAffordance = rememberClearAffordanceState(selectionKey)
+    val canClear = interactive && clearable && selected != null
+    val clearVisible = clearAffordance.isVisible()
     Column(modifier) {
         Text(label.ifBlank { translateMixedRendererText(i18n, null, "type", "Type") },
             color = colors.secondaryLabel)
@@ -268,6 +276,13 @@ private fun CupertinoTypeSelector(
             Row(
                 Modifier.fillMaxWidth().border(1.dp, colors.controlBorder, RoundedCornerShape(10.dp))
                     .clickable(interactive) { expanded = !expanded }
+                    .then(clearAffordance.fieldModifier)
+                    .pointerInput(clearAffordance) {
+                        awaitPointerEventScope {
+                            while (true) if (awaitPointerEvent().type == PointerEventType.Press)
+                                clearAffordance.selectField()
+                        }
+                    }
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -275,10 +290,12 @@ private fun CupertinoTypeSelector(
                     selected?.let { translateMixedTypeName(i18n, it) } ?: prompt, Modifier.weight(1f),
                     color = if (interactive) colors.label else colors.secondaryLabel,
                 )
-                if (selected != null) {
-                    ActionTooltip(clearLabel) { IconButton(onClick = onClear, enabled = interactive, modifier = Modifier.size(28.dp)) {
-                        Icon(JsonFormsActionIcons.Clear, clearLabel, tint = colors.secondaryLabel, modifier = Modifier.size(15.dp))
-                    } }
+                if (canClear) {
+                    if (clearVisible) ActionTooltip(clearLabel) {
+                        IconButton(onClick = onClear, modifier = clearAffordance.clearModifier(28.dp)) {
+                            Icon(JsonFormsActionIcons.Clear, clearLabel, tint = colors.secondaryLabel, modifier = Modifier.size(15.dp))
+                        }
+                    } else Spacer(Modifier.size(28.dp))
                 }
                 CupertinoDropdownChevron(expanded, colors.secondaryLabel)
             }

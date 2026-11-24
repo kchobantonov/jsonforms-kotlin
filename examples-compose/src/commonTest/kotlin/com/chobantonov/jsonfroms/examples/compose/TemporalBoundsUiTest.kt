@@ -167,6 +167,7 @@ class TemporalBoundsUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers)
         }
         onNodeWithContentDescription(action).performClick()
+        if (format == "date-time" && cupertino) onNodeWithText("Next").performClick()
         val feedback = when (format) {
             "date" -> "Select a date within the allowed range."
             "time" -> "Select a time within the allowed range."
@@ -257,7 +258,7 @@ class TemporalBoundsUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers)
         }
         onNodeWithContentDescription(action).performClick()
-        if (format == "date-time" && !cupertino) onNodeWithText("Next").performClick()
+        if (format == "date-time") onNodeWithText("Next").performClick()
         onNodeWithText("OK").assertIsNotEnabled()
         onNodeWithText("OK").assert(SemanticsMatcher.expectValue(SemanticsProperties.Error, feedback))
         onNodeWithText(feedback).assertExists()

@@ -1,14 +1,22 @@
 package com.chobantonov.jsonfroms.extended.renderers
 
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -27,11 +35,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.core.actions.Actions
@@ -192,6 +207,7 @@ private val cronBg = JsonObject(mapOf(
     "cron.dayOfWeek" to JsonPrimitive("Дни от седмицата"),
     "cron.selectedPeriod" to JsonPrimitive("Избран период"),
     "cron.repeats" to JsonPrimitive("Повтаря се"),
+    "cron.chooseRepeats" to JsonPrimitive("Избери честота"),
     "cron.every" to JsonPrimitive("Всеки"),
     "cron.expression" to JsonPrimitive("Израз"),
     "cron.advanced" to JsonPrimitive("Този избор използва разширен cron синтаксис."),
@@ -235,11 +251,14 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
     )
     fun label(key: String, fallback: String): String = translateRendererText(
         i18n.translate, i18n.locale, key, fallback, mapOf("bg" to cronBg))
-    val showActions = (control.options["showActions"] as? JsonPrimitive)?.booleanOrNull != false
+    val showActions = (strictControlBooleanOption(control.options, "showActions")
+        ?: strictControlBooleanOption(props.config, "showActions")) != false
     var pickerOpen by remember(path, if (!showActions) null else current) {
         mutableStateOf(false)
     }
-    var period by remember(path, if (!showActions) null else current) { mutableStateOf(cronPeriodOf(current)) }
+    var period by remember(path, if (!showActions) null else current) {
+        mutableStateOf<CronPeriod?>(splitCron(current)?.let { cronPeriodOf(current) })
+    }
     var fields by remember(path, if (!showActions) null else current) {
         mutableStateOf(splitCron(current) ?: List(cronOrder.size) { "*" })
     }
@@ -257,7 +276,7 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         inputProps.handleChange(path, JsonPrimitive(expression))
     }
     fun resetPicker() {
-        period = cronPeriodOf(current)
+        period = splitCron(current)?.let { cronPeriodOf(current) }
         fields = splitCron(current) ?: List(cronOrder.size) { "*" }
         expressionDraft = current
         pickerDirty = false
@@ -268,13 +287,14 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         fields = next
         expressionDraft = next.joinToString(" ")
         pickerDirty = true
-        if (!showActions && cronProblem(expressionDraft) == null) publish(expressionDraft)
+        if (!showActions && (expressionDraft.isBlank() || cronProblem(expressionDraft) == null))
+            publish(expressionDraft)
     }
     fun editExpression(next: String) {
         expressionDraft = next
         splitCron(next)?.let { fields = it; period = cronPeriodOf(next) }
         pickerDirty = true
-        if (!showActions && cronProblem(next) == null) publish(next)
+        if (!showActions && (next.isBlank() || cronProblem(next) == null)) publish(next)
     }
     fun dismiss() { pickerOpen = false; resetPicker() }
     LaunchedEffect(current) {
@@ -285,7 +305,8 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         if (!stateProps.enabled || stateProps.readonly) dismiss()
     }
     fun apply() {
-        if (pickerDirty && cronProblem(expressionDraft) == null) publish(expressionDraft)
+        if (pickerDirty && (expressionDraft.isBlank() || cronProblem(expressionDraft) == null))
+            publish(expressionDraft)
         pickerOpen = false
     }
     val openPicker = {
@@ -293,9 +314,11 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         pickerOpen = !pickerOpen
     }
 
-    @Composable fun clearButton(description: String, onClick: () -> Unit) {
+    @Composable fun clearButton(description: String, modifier: Modifier = Modifier,
+        onClick: () -> Unit,
+    ) {
         val button: @Composable () -> Unit = {
-            IconButton(onClick = onClick, modifier = Modifier.semantics {
+            IconButton(onClick = onClick, modifier = modifier.semantics {
                 contentDescription = description
             }) { Icon(JsonFormsActionIcons.Clear, contentDescription = null) }
         }
@@ -303,17 +326,21 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         else MaterialActionTooltip(description) { button() }
     }
 
-    @Composable fun pickerContent() {
+    @Composable fun pickerContent(labelWidth: Dp, menuWidth: Dp) {
+        val editedProblem = expressionDraft.takeIf(String::isNotBlank)?.let(::cronProblem)
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(label("cron.repeats", "Repeats"), Modifier.width(112.dp))
+                Text(label("cron.repeats", "Repeats"), Modifier.width(labelWidth))
                 Box {
                     OutlinedButton(onClick = { periodMenuOpen = true },
                         modifier = Modifier.semantics {
                             contentDescription = label("cron.repeats", "Repeats")
-                            stateDescription = label("cron.selectedPeriod", "Selected period")
+                            stateDescription = if (period == null)
+                                label("cron.chooseRepeats", "Choose how often")
+                            else label("cron.selectedPeriod", "Selected period")
                         }) {
-                        Text(label("cron.period.${period.key}", period.defaultLabel))
+                        Text(period?.let { label("cron.period.${it.key}", it.defaultLabel) }
+                            ?: label("cron.chooseRepeats", "Choose how often"))
                         Text(" ⌄")
                     }
                     DropdownMenu(expanded = periodMenuOpen,
@@ -321,21 +348,24 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
                         CronPeriod.entries.forEach { choice ->
                             DropdownMenuItem(
                                 text = { Text(label("cron.period.${choice.key}", choice.defaultLabel)) },
+                                trailingIcon = if (choice == period) ({ Text("✓") }) else null,
                                 modifier = Modifier.semantics { selected = choice == period },
                                 onClick = {
                                     periodMenuOpen = false
                                     if (choice != period) {
                                         period = choice
-                                        edit(if (choice == CronPeriod.Second)
-                                            List(cronOrder.size) { "*" }
-                                        else cronForPeriod(expressionDraft, choice))
+                                        if (splitCron(expressionDraft) != null)
+                                            edit(if (choice == CronPeriod.Second)
+                                                List(cronOrder.size) { "*" }
+                                            else cronForPeriod(expressionDraft, choice))
                                     }
                                 })
                         }
                     }
                 }
             }
-            cronPeriodFields(period).forEach { field ->
+            val visibleFields = period?.let(::cronPeriodFields).orEmpty()
+            visibleFields.forEach { field ->
                 val fieldLabel = label("cron.${field.key}", when (field) {
                     CronField.Second -> "Seconds"; CronField.Minute -> "Minutes"
                     CronField.Hour -> "Hours"; CronField.DayOfMonth -> "Days of month"
@@ -344,75 +374,130 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
                 val raw = fields[field.ordinal]
                 val values = cronFieldValues(raw, field)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(fieldLabel, Modifier.width(112.dp))
+                    Text(fieldLabel, Modifier.width(labelWidth))
                     if (values == null) {
-                        OutlinedTextField(raw,
-                            onValueChange = { edit(cronEditedField(fields, field, it)) },
-                            singleLine = true, modifier = Modifier.weight(1f).semantics {
-                                contentDescription = fieldLabel
-                            },
-                            trailingIcon = if (raw.isNotEmpty()) ({
-                                clearButton("${translateControlClear(i18n)}: $fieldLabel") {
-                                    edit(cronEditedField(fields, field, "*"))
+                        val inputInteraction = remember(field) { MutableInteractionSource() }
+                        val inputFocused by inputInteraction.collectIsFocusedAsState()
+                        var inputHovered by remember(field) { mutableStateOf(false) }
+                        var inputClearFocused by remember(field) { mutableStateOf(false) }
+                        Box(Modifier.weight(1f).pointerInput(field) {
+                            awaitPointerEventScope {
+                                while (true) when (awaitPointerEvent().type) {
+                                    PointerEventType.Enter -> inputHovered = true
+                                    PointerEventType.Exit -> inputHovered = false
                                 }
-                            }) else null)
-                    } else Box(Modifier.weight(1f)) {
+                            }
+                        }) {
+                            OutlinedTextField(raw,
+                                onValueChange = { edit(cronEditedField(fields, field, it)) },
+                                singleLine = true, interactionSource = inputInteraction,
+                                modifier = Modifier.fillMaxWidth().semantics {
+                                    contentDescription = fieldLabel
+                                },
+                                trailingIcon = if (raw.isNotEmpty() && raw != "*" &&
+                                    (inputFocused || inputHovered || inputClearFocused)) ({
+                                    clearButton("${translateControlClear(i18n)}: $fieldLabel",
+                                        modifier = Modifier.onFocusChanged {
+                                            inputClearFocused = it.isFocused
+                                        }) {
+                                        inputClearFocused = false
+                                        edit(cronEditedField(fields, field, "*"))
+                                    }
+                                }) else null)
+                        }
+                    } else {
                         val choices = cronChoiceValues(field)
                         val selectedValues = if (values.size == choices.size) emptySet() else values
-                        OutlinedButton(onClick = { openField = if (openField == field) null else field },
-                            modifier = Modifier.fillMaxWidth().semantics {
-                                contentDescription = fieldLabel
-                            }) {
-                            Text(if (selectedValues.isEmpty()) label("cron.every", "Every")
-                                else selectedValues.sorted().joinToString(", ") {
-                                    cronChoiceLabel(field, it)
-                                }, Modifier.weight(1f))
-                            if (selectedValues.isNotEmpty()) {
-                                clearButton("${label("cron.every", "Every")}: $fieldLabel") {
+                        val hoverInteraction = remember(field) { MutableInteractionSource() }
+                        val buttonInteraction = remember(field) { MutableInteractionSource() }
+                        val hovered by hoverInteraction.collectIsHoveredAsState()
+                        val focused by buttonInteraction.collectIsFocusedAsState()
+                        var resetFocused by remember(field) { mutableStateOf(false) }
+                        val showReset = selectedValues.isNotEmpty() &&
+                            (hovered || focused || resetFocused || openField == field)
+                        Box(Modifier.weight(1f).hoverable(hoverInteraction)) {
+                            OutlinedButton(onClick = { openField = if (openField == field) null else field },
+                                interactionSource = buttonInteraction,
+                                modifier = Modifier.fillMaxWidth().semantics {
+                                    contentDescription = fieldLabel
+                                }) {
+                                Text(if (selectedValues.isEmpty()) label("cron.every", "Every")
+                                    else selectedValues.sorted().joinToString(", ") {
+                                        cronChoiceLabel(field, it)
+                                    }, Modifier.weight(1f), maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis)
+                                if (selectedValues.isNotEmpty()) Box(Modifier.width(48.dp))
+                                Text("⌄")
+                            }
+                            if (showReset) Box(Modifier.align(Alignment.CenterEnd).padding(end = 24.dp)
+                                .size(48.dp).zIndex(1f)) {
+                                clearButton("${label("cron.every", "Every")}: $fieldLabel",
+                                    modifier = Modifier.onFocusChanged { resetFocused = it.isFocused }) {
+                                    resetFocused = false
                                     edit(cronEditedField(fields, field, "*"))
                                 }
                             }
-                            Text("⌄")
-                        }
-                        DropdownMenu(expanded = openField == field,
-                            onDismissRequest = { openField = null },
-                            modifier = Modifier.width(220.dp).heightIn(max = 256.dp)) {
-                            Column(Modifier.heightIn(max = 256.dp).verticalScroll(rememberScrollState())) {
-                                choices.forEach { choice ->
-                                    DropdownMenuItem(
-                                        text = { Text(cronChoiceLabel(field, choice)) },
-                                        trailingIcon = if (choice in selectedValues) ({
-                                            Text("✓")
-                                        }) else null,
-                                        modifier = Modifier.semantics {
-                                            selected = choice in selectedValues
-                                            contentDescription = "$fieldLabel: ${cronChoiceLabel(field, choice)}"
-                                        },
-                                        onClick = {
-                                            val next = if (choice in selectedValues)
-                                                selectedValues - choice else selectedValues + choice
-                                            edit(cronEditedField(fields, field,
-                                                cronFormatChoices(field, next)))
-                                        })
+                            DropdownMenu(expanded = openField == field,
+                                onDismissRequest = { openField = null },
+                                modifier = Modifier.width(menuWidth).heightIn(max = 256.dp)) {
+                                Column(Modifier.heightIn(max = 256.dp).verticalScroll(rememberScrollState())) {
+                                    choices.forEach { choice ->
+                                        DropdownMenuItem(
+                                            text = { Text(cronChoiceLabel(field, choice)) },
+                                            trailingIcon = if (choice in selectedValues) ({
+                                                Text("✓")
+                                            }) else null,
+                                            modifier = Modifier.semantics {
+                                                selected = choice in selectedValues
+                                                contentDescription = "$fieldLabel: ${cronChoiceLabel(field, choice)}"
+                                            },
+                                            onClick = {
+                                                val next = if (choice in selectedValues)
+                                                    selectedValues - choice else selectedValues + choice
+                                                edit(cronEditedField(fields, field,
+                                                    cronFormatChoices(field, next)))
+                                            })
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            if (visibleFields.any { cronFieldValues(fields[it.ordinal], it) == null })
+                Text(label("cron.advanced", "This selection uses advanced cron syntax."))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(label("cron.expression", "Expression"), Modifier.width(112.dp))
-                OutlinedTextField(expressionDraft, onValueChange = ::editExpression,
-                    singleLine = true, isError = pickerDirty && cronProblem(expressionDraft) != null,
-                    modifier = Modifier.weight(1f).semantics {
-                        contentDescription = label("cron.expression", "Expression")
-                    }, trailingIcon = if (expressionDraft.isNotEmpty()) ({
-                        clearButton("${translateControlClear(i18n)}: ${label("cron.expression", "Expression")}") {
-                            editExpression("")
+                Text(label("cron.expression", "Expression"), Modifier.width(labelWidth))
+                val expressionInteraction = remember { MutableInteractionSource() }
+                val expressionFocused by expressionInteraction.collectIsFocusedAsState()
+                var expressionHovered by remember { mutableStateOf(false) }
+                var expressionClearFocused by remember { mutableStateOf(false) }
+                Box(Modifier.weight(1f).pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) when (awaitPointerEvent().type) {
+                            PointerEventType.Enter -> expressionHovered = true
+                            PointerEventType.Exit -> expressionHovered = false
                         }
-                    }) else null)
+                    }
+                }) {
+                    OutlinedTextField(expressionDraft, onValueChange = ::editExpression,
+                        singleLine = true, isError = pickerDirty && editedProblem != null,
+                        interactionSource = expressionInteraction,
+                        modifier = Modifier.fillMaxWidth().semantics {
+                            contentDescription = label("cron.expression", "Expression")
+                        }, trailingIcon = if (expressionDraft.isNotEmpty() &&
+                            (expressionFocused || expressionHovered || expressionClearFocused)) ({
+                            clearButton("${translateControlClear(i18n)}: ${label("cron.expression", "Expression")}",
+                                modifier = Modifier.onFocusChanged {
+                                    expressionClearFocused = it.isFocused
+                                }) {
+                                expressionClearFocused = false
+                                editExpression("")
+                            }
+                        }) else null)
+                }
             }
-            if (pickerDirty && cronProblem(expressionDraft) != null)
+            if (pickerDirty && editedProblem != null)
                 Text(label("cron.invalid", "Invalid cron expression."))
             if (showActions) Row(Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End) {
@@ -426,14 +511,14 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
                         CupertinoText(cancelText)
                     }
                     CupertinoButton(onClick = ::apply,
-                        enabled = !pickerDirty || cronProblem(expressionDraft) == null,
+                        enabled = !pickerDirty || editedProblem == null,
                         colors = CupertinoButtonDefaults.filledButtonColors()) {
                         CupertinoText(applyText)
                     }
                 } else {
                     TextButton(onClick = ::dismiss) { Text(cancelText) }
                     Button(onClick = ::apply,
-                        enabled = !pickerDirty || cronProblem(expressionDraft) == null) {
+                        enabled = !pickerDirty || editedProblem == null) {
                         Text(applyText)
                     }
                 }
@@ -447,7 +532,10 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
         val onTextChange: (String) -> Unit = { next ->
             inputProps.handleChange(path, if (next.isEmpty()) null else JsonPrimitive(next))
         }
-        Box {
+        BoxWithConstraints {
+        val popupWidth = minOf(384.dp, maxWidth)
+        val labelWidth = minOf(112.dp, maxOf(72.dp, popupWidth - 152.dp))
+        val menuWidth = minOf(220.dp, popupWidth - labelWidth - 24.dp)
         if (cupertino) CupertinoInputControl(inputProps, current,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
@@ -471,8 +559,8 @@ internal fun CronControl(props: ComposeJsonFormsRendererProps, cupertino: Boolea
                     periodMenuOpen -> periodMenuOpen = false
                     else -> dismiss()
                 }
-            }, modifier = Modifier.width(384.dp)) {
-            pickerContent()
+            }, modifier = Modifier.width(popupWidth).testTag("cron-picker-panel")) {
+            pickerContent(labelWidth, menuWidth)
         }
         }
     }

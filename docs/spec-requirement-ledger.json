@@ -693,7 +693,7 @@
         "compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/compose/StringMaskVisualTransformationTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/StringMaskFixtureUiTest.kt"
       ],
-      "next": "Ten mounted Material/Cupertino fixture cases pass on JVM and iOS simulator, including character-by-character booking and prefixed phone entry, Backspace, and mid-string insertion/removal at a selected display offset. Shared visual transformation maps raw caret offsets; pure JVM tests cover separators, phone prefix and invalid import identity. Verify arrow navigation across literals, accessibility and browser/device interaction."
+      "next": "The 14-case mounted Material/Cupertino fixture suite passes on JVM, JS browser, Wasm browser and iOS simulator. It covers character-by-character booking and prefixed phone entry, Backspace, mid-string selection edits, Left/Right navigation across a literal separator, and one multi-character formatted insertion for raw and masked storage in each family. Shared visual transformation maps raw caret offsets; pure tests cover separators, phone prefix and invalid import identity. Multi-character test insertion is not an operating-system clipboard shortcut; verify actual clipboard paste, accessibility and physical-device interaction."
     },
     {
       "id": "S5-04",
@@ -765,6 +765,8 @@
       "status": "partial",
       "evidence": [
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/ColorControlRenderer.kt",
+        "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/ColorSpectrum.kt",
+        "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/ColorSpectrumTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorControlUiTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorFixtureUiTest.kt"
       ],
@@ -900,7 +902,7 @@
         "material-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/material/renderers/controls/TemporalSaveFormatTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalSaveFormatUiTest.kt"
       ],
-      "next": "Material/Cupertino date, time and date-time controls reject authored save patterns whose sample cannot satisfy the schema-declared format, report temporal.saveFormatIncompatible and use the schema-compatible default. Pure and six mounted cases pass on JVM/iOS/JS/Wasm for incompatible date/month, time/minute and unzoned date-time patterns, valid storage and no mount writes. UI-only coarse save formats remain authored. Fourteen older temporal-cell/import cases pass on all four targets; the full examples-compose iOS suite passes after updating eight storage expectations. Verify other format-bearing controls and device interaction."
+      "next": "Material/Cupertino date, time and date-time controls reject authored save patterns whose sample cannot satisfy the schema-declared format, report temporal.saveFormatIncompatible and use the schema-compatible default. The warning now uses the scoped temporal translation path, with an English/Bulgarian locale-change mounted regression in both families and no mount write. Pure and six mounted storage cases pass on JVM/iOS/JS/Wasm for incompatible date/month, time/minute and unzoned date-time patterns. UI-only coarse save formats remain authored. Fourteen older temporal-cell/import cases pass on all four targets; the full examples-compose iOS suite passes after updating eight storage expectations. Verify other format-bearing controls and device interaction."
     },
     {
       "id": "S5.1-05",
@@ -2034,7 +2036,7 @@
       "evidence": [
         "GroupExpansionUiTest opens/closes native Material TextButton and CupertinoButton disclosures with state descriptions on JVM"
       ],
-      "next": "Verify keyboard and platform accessibility behavior."
+      "next": "The 22-case Group expansion suite passes on JVM, JS browser, Wasm browser and iOS simulator. Focused regional-card disclosure buttons accept Enter to close and Space to reopen without a form-data write in both families. Verify direct screen-reader output and physical-device keyboard behavior."
     },
     {
       "id": "S8.1-03",
@@ -2045,9 +2047,10 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "GroupExpansionTest resolves default/local/global booleans; GroupExpansionUiTest verifies initial collapsed and effective boolean changes in both JVM families"
+        "GroupExpansionTest resolves default/local/global booleans; GroupExpansionUiTest verifies initial collapsed and effective boolean changes in both JVM families",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/GroupExpansionUiTest.kt"
       ],
-      "next": "Test dynamic resolver integration and more config-source transitions."
+      "next": "The 20-case Group expansion suite passes on JVM, JS browser, Wasm browser and iOS simulator. A distinct Group replacing a collapsed Group at the same path initializes its own state without a data write. A regional card retains local expansion through map-to-JSON config-source replacement with an unchanged effective value and follows a true-to-false collapsed transition. Verify keyboard accessibility, other config combinations and physical-device behavior."
     },
     {
       "id": "S8.1-04",
@@ -2058,7 +2061,8 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "GroupExpansionTest verifies false default and local false over namespaced true; GroupDataPresenceUiTest mounts true/false options and live bound-value marker in both JVM families; GroupArrayItemContextUiTest mounts a collapsed detail Group in a real array item in both JVM families"
+        "GroupExpansionTest verifies false default and local false over namespaced true; GroupDataPresenceUiTest mounts true/false options and live bound-value marker in both JVM families; GroupArrayItemContextUiTest mounts a collapsed detail Group in a real array item in both JVM families",
+        "GroupRegionsAndAdornmentsUiTest verifies a noncollapsible authored card header shows the body-data indicator only after a bound value appears in both renderer families on JVM, JS browser, Wasm browser and arm64 iOS simulator."
       ],
       "next": "Array-item Group now has paired JVM UI evidence; verify indicator on other platforms."
     },
@@ -2073,7 +2077,8 @@
       "evidence": [
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/ContainerErrorIndexTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/GroupValidationIndicatorUiTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/GroupArrayItemContextUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/GroupArrayItemContextUiTest.kt",
+        "GroupRegionsAndAdornmentsUiTest verifies the enabled error-count indicator beside a noncollapsible authored card header in both renderer families on JVM, JS browser, Wasm browser and arm64 iOS simulator; the indicator disappears when the body becomes valid."
       ],
       "next": "Nested array-item Group aggregation has paired JVM UI evidence; verify non-JVM interaction."
     },
@@ -2117,7 +2122,8 @@
         "The newly pinned conformance/behavior.json vector group-header-accessible-name is represented by the mounted Button-before-Label English/Bulgarian cases; the Kotlin test reproduces its expected accessible name and non-repeated visual Group label.",
         "The first header Label now publishes its rendered interpolated text to the Group through a scoped Compose local. Four new Material/Cupertino collapsible/static cases place a Button before that Label, replace form data, switch English to Bulgarian, and verify matching visible heading and accessible Group name without a data write. All eight GroupAccessibleNameUiTest cases pass on JVM, iOS simulator, JS browser and Wasm browser; the 98-case Group/adornment JVM regression suite passes after the change.",
         "Two mounted Material/Cupertino array-detail cases per target exercise the actual JsonFormsItemScope: select another row, replace that row's name externally, switch to Bulgarian, return to the first row, and verify the Group accessible name follows the selected item without a form write. The full eight-case GroupArrayItemContextUiTest passes on JVM, iOS simulator, JS browser and Wasm browser.",
-        "A hidden first authored header Label continues to resolve its interpolated text for the Group accessible name without drawing the Label. Two mounted Material/Cupertino cases then reorder that Label behind another through host UI-schema replacement and verify the Group name follows the new first Label without data writes. All ten GroupAccessibleNameUiTest cases pass on JVM, iOS simulator, JS browser and Wasm browser; 36 extended Label JVM UI cases pass after the hidden-Label change."
+        "A hidden first authored header Label continues to resolve its interpolated text for the Group accessible name without drawing the Label. Two mounted Material/Cupertino cases then reorder that Label behind another through host UI-schema replacement and verify the Group name follows the new first Label without data writes. All ten GroupAccessibleNameUiTest cases pass on JVM, iOS simulator, JS browser and Wasm browser; 36 extended Label JVM UI cases pass after the hidden-Label change.",
+        "The ten-case GroupAccessibleNameUiTest now checks the second Label's smaller supporting typography when an interactive Button precedes both Labels. It reproduced title-sized supporting text in static Material/Cupertino cards before the fix and passes on JVM, JS browser, Wasm browser and arm64 iOS simulator afterward."
       ],
       "next": "Verify physical-device assistive-technology naming, Android runtime interaction and remaining header visual presentation."
     },
@@ -2143,7 +2149,8 @@
       "applicability": "portable",
       "status": "partial",
       "evidence": [
-        "MaterialGroupLayout and CupertinoGroupLayout compose one card; imported Group card fixture mounts in both families. Paired mounted 700-to-240 dp cases on JVM, JS browser, Wasm browser and iOS simulator prove authored heading and footer rows wrap while the footer remains below the body. Imported cover ImageView exposes authored alt text with fixture URL policy; its 100% width frame follows 700 and 240 dp card hosts on JVM, JS browser, Wasm browser and iOS simulator. Standalone Web Component JS and Wasm demo Chrome tests verify decoded imported cover pixels in their Compose canvases. The footer Button dispatches the Bulgarian setLocale action on all four targets."
+        "MaterialGroupLayout and CupertinoGroupLayout compose one card; imported Group card fixture mounts in both families. Paired mounted 700-to-240 dp cases on JVM, JS browser, Wasm browser and iOS simulator prove authored heading and footer rows wrap while the footer remains below the body. Imported cover ImageView exposes authored alt text with fixture URL policy; its 100% width frame follows 700 and 240 dp card hosts on JVM, JS browser, Wasm browser and iOS simulator. Standalone Web Component JS and Wasm demo Chrome tests verify decoded imported cover pixels in their Compose canvases. The footer Button dispatches the Bulgarian setLocale action on all four targets.",
+        "Both renderer families now place data and validation indicators beside an authored noncollapsible card header while leaving the authored content in the wrapping heading area. The full 100-case GroupRegionsAndAdornmentsUiTest class passes on JVM, JS browser, Wasm browser and arm64 iOS simulator after the change."
       ],
       "next": "Verify imported ImageView visual presentation/card spacing and loading lifecycle on native devices."
     },
@@ -2612,7 +2619,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/CategorySelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CategorySelectionUiTest.kt"
       ],
-      "next": "Mounted Material/Cupertino tabs and steps pass removal, reorder and orientation-change selection tests on JVM; test UI-schema immutability and native target interaction."
+      "next": "The 36-case mounted Material/Cupertino Category selection suite passes on JVM, JS browser, Wasm browser and iOS simulator. Same-path disjoint named-category replacement starts a new selection; category addition and unnamed-category label edits retain user selection. Test UI-schema immutability and physical-device interaction."
     },
     {
       "id": "S8.6-04",
@@ -2626,7 +2633,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/CategorySelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CategorySelectionUiTest.kt"
       ],
-      "next": "Test duplicate sibling names, hidden initial target on a live form, and target execution."
+      "next": "The 40-case mounted Material/Cupertino Category selection suite passes on JVM, JS browser, Wasm browser and iOS simulator. A live rule-hidden initial target diagnoses once and falls back; it does not retake selection when shown. Same-path replacement uses its own authored initial target, and unnamed categories retain authored-position selection through label edits. Test duplicate-name behavior after live schema replacement and physical-device interaction."
     },
     {
       "id": "S8.7-01",
@@ -2697,7 +2704,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/AccordionOptionsTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/AccordionUiTest.kt"
       ],
-      "next": "Mounted Material/Cupertino pointer and rerender behavior passes; state description and semantic click pass on JVM. Check keyboard and accessibility on native targets."
+      "next": "The 28-case mounted Material/Cupertino accordion suite passes on JVM, JS browser, Wasm browser and iOS simulator. Focused headers close with Enter and reopen with Space; pointer selection, rerender persistence and state descriptions remain covered. Verify direct screen-reader output and physical keyboard interaction."
     },
     {
       "id": "S8.8-03",
@@ -2711,7 +2718,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/AccordionOptionsTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/AccordionUiTest.kt"
       ],
-      "next": "Mounted Material/Cupertino hide, removal, duplicate names, reorder and all-hidden recovery pass on JVM; verify native target interaction."
+      "next": "The 32-case mounted Material/Cupertino accordion suite passes on JVM, JS browser, Wasm browser and iOS simulator. Named selection survives category reordering and addition; active removal and all-hidden recovery fall back predictably. Verify direct accessibility and physical-device interaction."
     },
     {
       "id": "S8.8-04",
@@ -2725,7 +2732,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/AccordionOptionsTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/AccordionUiTest.kt"
       ],
-      "next": "Mounted Material/Cupertino initial, close, unrelated data rerender and closed-panel validation pass with no data changes; test UI schema identity and native target interaction."
+      "next": "The 32-case mounted Material/Cupertino accordion suite passes on JVM, JS browser, Wasm browser and iOS simulator. A wholly different category set at the same path starts from its own initial target, while an overlapping set retains a user-selected panel; no form data write occurs. Closed-panel validation and unrelated data rerenders remain covered. Verify direct accessibility and physical-device interaction."
     },
     {
       "id": "S8.8-05",
@@ -2838,7 +2845,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/util/ImageViewSourceTest.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/ImageViewUiTest.kt"
       ],
-      "next": "Direct/empty/refused source precedence, scoped array-item strings, URL policy and both mounted renderer families have JVM evidence. Verify dynamic overlay sources and mounted iOS/JS/Wasm behavior."
+      "next": "Direct/empty/refused source precedence, scoped array-item strings, URL policy and both mounted renderer families have JVM evidence. The 16-case ImageView UI class passes on JVM, JS browser, Wasm browser and iOS simulator; live English/Bulgarian changes republish refused-source, missing-alt and load-failure diagnostic messages without a form write. Verify experimental dynamic-overlay sources, physical-device accessibility and browser image lifecycle before full conformance."
     },
     {
       "id": "S13.2-01",
@@ -3744,6 +3751,29 @@
       "next": "The §15.8 matrix inventories arrays, tuple tails, checkbox groups, multi-selects/chips, additional properties, text, numeric, temporal and file paths with explicit handler and target gaps. Expand to every renderer catalog entry and verify remaining stale callback, keyboard, native picker and browser/device paths before claiming full compliance."
     },
     {
+      "id": "S18.28-01",
+      "sourceLine": 7449,
+      "sourceAnchor": "#### Shared clear-control behavior",
+      "statement": "Editable value controls expose Clear only for a stored value on focus or hover, with localized keyboard-accessible action; options.clearable defaults true, false disables Clear, and clearing follows the control's storage contract without a schema-default write.",
+      "strength": "MUST",
+      "applicability": "portable controls",
+      "status": "partial",
+      "evidence": [
+        "compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/compose/InitialControlFocus.kt",
+        "compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/compose/ClearAffordanceState.kt",
+        "compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/compose/ControlBooleanOptionTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ChoiceClearableOptionUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/BooleanControlUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/SliderConformanceUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/OtpPasswordUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/RadioKeyboardUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/OneOfSelectorClearUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/MixedTypeClearUiTest.kt",
+        "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/FileScalarPickerUiTest.kt"
+      ],
+      "next": "Mounted Material/Cupertino tests cover local/global clearable precedence for input, enum, const-oneOf, Boolean checkbox/switch, radio, slider, password OTP, oneOf branch selectors and mixed-type selectors on JVM, JS browser, Wasm browser and iOS simulator. The OTP suite checks hidden Clear before focus/hover, hover reveal and exit, field and Clear focus, keyboard Enter activation, one clear write and persistent reveal action. The 72-case Boolean suite on those four targets checks absent Clear before focus, hover or touch selection; hover and focus handoff; touch activation and clearing; selection transfer between Boolean fields; dismissal on ordinary text-input, finite-enum or object oneOf branch-selector focus or press; and transfer to a selected radio choice, whose Clear removes only the radio property. The 36-case finite-choice suite and 14-case radio keyboard suite check that enum and const-oneOf Clear stays hidden in touch mode until selection, then removes the stored property and disappears. The 16-case slider suite checks hidden Clear in touch mode, hover reveal and exit, touch selection, and stored-property removal. The four-case mixed-type suite checks hidden Clear before interaction, hover reveal and exit, touch selection, null storage on clear, and strict option precedence. Its Material Clear button remains mounted without hidden semantics so opening the dropdown stays stable. The 44-case color suite also checks picker-only Clear on hover, exit and touch selection, keyboard focus handoff and Enter activation, localized tooltip text and removal of an imported null. The 20-case oneOf branch-selector suite checks touch reveal, hidden semantics, confirmation and a localized tooltip; its stable mounted button preserves the dropdown menu. JVM image cases verify hover, exit and focus. Verify transfer from Boolean to other control types, remaining control and cell contracts, physical keyboard and screen reader on device before closing this shared requirement."
+    },
+    {
       "id": "S18.29-01",
       "sourceLine": 7492,
       "sourceAnchor": "restrict applies minItems/maxItems prevention",
@@ -3962,9 +3992,10 @@
       "status": "partial",
       "evidence": [
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/DurationControlRenderer.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/DurationControlUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/DurationControlUiTest.kt",
+        "scripts/test-webcomponent-browser.mjs"
       ],
-      "next": "Material uses AlertDialog and Cupertino uses CupertinoAlertDialog. Eighteen mounted JVM and iOS simulator cases cover open, untouched OK, edited OK, Cancel, invalid disabled OK, translated trigger, selected-mode no-op and immediate repeated edits. Cupertino numeric fields use CupertinoInputControl with Bulgarian invalid-number feedback; trigger and mode controls use CupertinoButton. JS/Wasm main compilation passes. Verify popup geometry, focus restoration and browser/device interaction."
+      "next": "Material and Cupertino use a staged popup with family-specific buttons and input fields. Twenty-eight mounted cases pass on JVM, iOS simulator, JS browser and Wasm browser for untouched Apply, edited Apply, Cancel, invalid disabled Apply, translated trigger, selected-mode no-op, immediate repeated edits, a 240 dp host and strict JSON Boolean showActions parsing. Four new quoted-false cases failed against the original duration/cron implementations; each picker now stages the edit when showActions is the string false. Two additional mounted duration cases failed against local-only option resolution; valid local showActions now overrides valid global config, and a quoted local value falls through. They pass on JVM, JS browser, Wasm browser and iOS simulator. The popup fits narrow English/Bulgarian hosts with aligned quantity, label and remove-action columns. A production Chrome Web Component test opens Material and Cupertino duration popups at 240×720 and 240×240, keeps the document width stable and makes the short popup scrollable. Verify other viewport widths, focus restoration, caret/IME and physical-device interaction."
     },
     {
       "id": "S18.19-password-01",
@@ -4026,7 +4057,7 @@
         "compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/compose/OtpPasswordInput.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/OtpPasswordUiTest.kt"
       ],
-      "next": "Mounted JVM and iOS simulator tests verify partial minLength validation, leading-zero storage, arrow-key insertion, full replacement, reveal without a write, clear, read-only clear suppression, narrow action reachability and a visible imported overflow count that clears after recovery. Table cells retain ordinary masked password editing. Test actual clipboard paste, disabled behavior, screen reader semantics and device/browser interaction."
+      "next": "The 18-case mounted Material/Cupertino suite passes on JVM, JS browser, Wasm browser and iOS simulator. It verifies partial minLength validation, leading-zero storage, arrow-key insertion, full replacement, multi-character insertion retaining leading zeros, reveal without a write, clear, read-only clear suppression, narrow action reachability and a visible imported overflow count that clears after recovery. Table cells retain ordinary masked password editing. The JVM Compose test harness did not dispatch Meta+V or Ctrl+V to the text field, so actual operating-system clipboard paste remains unverified; test it in a real browser/device, along with disabled behavior and screen-reader semantics."
     },
     {
       "id": "S18.18.4-01",
@@ -4054,7 +4085,7 @@
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/FileControlRenderer.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/FileScalarPickerUiTest.kt"
       ],
-      "next": "Twelve paired Material/Cupertino mounted JVM cases cover filename replacement, clear, no raw editable payload, initial focus, required/help/error semantics, English/Bulgarian change, manual fallback, localized names for imported payload-only base64, and readonly/clearable action precedence. Verify browser/device interaction and direct screen-reader output."
+      "next": "The 18-case Material/Cupertino scalar File suite passes on JVM, JS browser, Wasm browser and iOS simulator. Clear for picker-backed values stays hidden before focus/hover/selection, appears on focus or hover, disappears on exit or focus transfer, and is absent when readonly or clearable:false. Existing cases cover filename replacement, invalid imported values, manual fallback, English/Bulgarian copy and no raw editable payload. Verify real picker and direct screen-reader interaction on devices."
     },
     {
       "id": "S18.18.4-02",
@@ -4522,9 +4553,10 @@
       "evidence": [
         "compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/compose/JsonFormsCompose.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PresentationSelectionTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PendingEditOwnerUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PendingEditOwnerUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalLiveConfigUiTest.kt"
       ],
-      "next": "JVM tests cover six family/format partial edits, corrected publication, host replacement, four schema/UI contract changes and owner disposal. Test config changes, focus, submission gating, accessibility, rapid edits and non-JVM interaction."
+      "next": "JVM tests cover six family/format partial edits, corrected publication, host replacement, four schema/UI contract changes and owner disposal. Six mounted Material/Cupertino tests on JVM, JS browser, Wasm browser and iOS simulator verify that live date/time/date-time display-format config changes discard stale invalid drafts, clear Pending and do not write data. Test focus, submission gating, accessibility, rapid edits and physical-device interaction."
     },
     {
       "id": "S18.19-03",
@@ -4540,9 +4572,10 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalBoundsUiTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalFormatLiteralUiTest.kt",
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/validation/OptimumCodeJsonSchemaValidatorTest.kt",
-        "material-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/material/renderers/controls/TemporalFormatsTest.kt"
+        "material-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/material/renderers/controls/TemporalFormatsTest.kt",
+        "material-renderers/src/jvmTest/kotlin/com/chobantonov/jsonfroms/material/renderers/controls/TemporalDaylightSavingJvmTest.kt"
       ],
-      "next": "Configured save formats and UTC-normalized offset-bearing Time imports pass JVM tests in both families. Shared schema/picker bound ordering covers offsets and fractional seconds. Square-bracket literal format text round-trips through formatting, masking and parsing on JVM/iOS simulator/JS browser/Wasm browser. The imported temporal-controls fixture now verifies schema-selected date display without a mount write and an authored YYYY.MM month edit saved as YYYY-MM in both families on JVM/iOS simulator. The default date-time policy retains local wall time on date edits and can shift the stored UTC hour across DST. Verify the fixture's other controls, custom offset-token formats, DST transitions and Android interaction."
+      "next": "The shared temporal formatter now round-trips custom `Z` numeric offsets and `[Z]` literals; fixed-offset and paired mounted Material/Cupertino date-time and time-only typed-edit cases pass on JVM, iOS simulator, JS browser and Wasm browser. Time-only custom offsets now keep the existing UTC-normalized value instead of attaching the host-zone offset. JVM named-zone cases prove spring/autumn date-only edits retain local wall time while UTC storage and custom offsets change. Wasm rejects the named America/New_York timezone in the installed datetime runtime, so named-zone browser parity and direct mounted picker transitions remain open. Verify other temporal fixture controls and Android interaction."
     },
     {
       "id": "S18.19-04",
@@ -4645,9 +4678,10 @@
       "status": "partial",
       "evidence": [
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/LabelInterpolationTest.kt",
-        "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/LabelInterpolationUiTest.kt"
+        "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/LabelInterpolationUiTest.kt",
+        "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/MarkupLabelUiTest.kt"
       ],
-      "next": "Pure JVM, iOS simulator and Wasm browser tests plus 28 mounted Material/Cupertino Label cases on JVM/iOS/JS/Wasm cover single and literal braces. Verify the remaining CEL grammar and physical-device interaction."
+      "next": "Pure JVM, iOS simulator and Wasm browser tests plus 28 mounted Material/Cupertino Label cases on JVM/iOS/JS/Wasm cover single and literal braces. Verify the remaining CEL grammar and physical-device interaction. Strict JSON Boolean regression coverage confirms quoted interpolation and markup configuration values do not change the documented defaults; paired mounted Material/Cupertino Label tests pass on JVM, JS browser, Wasm browser and iOS simulator."
     },
     {
       "id": "S9.1-02",
@@ -5180,7 +5214,7 @@
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/SafeMarkdownTest.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/MarkupLabelUiTest.kt"
       ],
-      "next": "Default-enabled path has pure and mounted JVM evidence; document host opt-out and verify target UI."
+      "next": "Default-enabled path has pure and mounted JVM evidence; document host opt-out and verify target UI. Strict JSON Boolean regression coverage confirms quoted interpolation and markup configuration values do not change the documented defaults; paired mounted Material/Cupertino Label tests pass on JVM, JS browser, Wasm browser and iOS simulator."
     },
     {
       "id": "S10.2-01",
@@ -5193,7 +5227,7 @@
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/SafeMarkdownTest.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/MarkupLabelUiTest.kt"
       ],
-      "next": "Pure precedence and paired mounted JVM cases pass; Material typography has a measurable size difference while Cupertino uses native CupertinoText. Verify visual theme behavior on native/browser targets."
+      "next": "Pure precedence and paired mounted JVM cases pass; Material typography has a measurable size difference while Cupertino uses native CupertinoText. Verify visual theme behavior on native/browser targets. Strict JSON Boolean regression coverage confirms quoted interpolation and markup configuration values do not change the documented defaults; paired mounted Material/Cupertino Label tests pass on JVM, JS browser, Wasm browser and iOS simulator."
     },
     {
       "id": "S10.2-02",
@@ -5673,7 +5707,8 @@
       "evidence": [
         "The 98 mounted Material/Cupertino Group/adornment cases per target include text, number, duration, cron, color, choice, date/time and password adornments; mount, picker, reveal, locale and narrow LTR/RTL text/choice/password/date/time/date-time/integer-stepper/decimal-stepper/duration/cron/color geometry checks do not write data. Forty-six additional mounted cases per target prove boolean, slider, radio, OTP, chips, multi-select, null, file-array, scalar file-picker, object, array, enum-array, tuple and object-combinator variants emit adornment.unsupported once without a data write, while scalar file controls without a picker and mixed-type controls with a selected scalar text editor render adornments through the text fallback; empty adornments stay inert and malformed scalars diagnose. renderer-capabilities.md declares support by variant.",
         "The 46-case UnsupportedAdornmentsUiTest and four-case AdornmentGrammarUiTest pass per target on JVM, JS browser, Wasm browser and iOS simulator; unsupported and invalid diagnostic messages use English/Bulgarian defaults. Full core/examples-compose JVM suites pass 600/2,289 cases with zero failures (13 existing core skips).",
-        "Four AdornmentChoiceArrowOrderUiTest cases per target measure real nonsearchable enum arrow and adornment bounds at 240 dp in LTR/RTL. Cupertino keeps end adornment outside its arrow; Material follows its TextField suffix-slot convention before the trailing arrow. All four pass on JVM, JS browser, Wasm browser and iOS simulator with zero writes; 12 related choice-clear JVM cases and Android assembleDebug also pass."
+        "Four AdornmentChoiceArrowOrderUiTest cases per target measure real nonsearchable enum arrow and adornment bounds at 240 dp in LTR/RTL. Cupertino keeps end adornment outside its arrow; Material follows its TextField suffix-slot convention before the trailing arrow. All four pass on JVM, JS browser, Wasm browser and iOS simulator with zero writes; 12 related choice-clear JVM cases and Android assembleDebug also pass.",
+        "CodeProfileFallbackTest now distinguishes code-format string and object Controls. Paired Material/Cupertino string cases render start/end adornments through the native text fallback, edit only the stored string and report only Monaco unavailability; paired object cases report adornment.unsupported, hide the authored adornment and make no write on mount. All nine CodeProfileFallbackTest cases pass on JVM, JS browser, Wasm browser and iOS simulator. The Monaco engine remains unavailable."
       ],
       "next": "Audit the remaining composite and unsupported variants with diagnostics where applicable; verify choice arrow and adornment placement on physical devices."
     },
@@ -5884,7 +5919,7 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronControlUiTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronFixtureUiTest.kt"
       ],
-      "next": "The six-field format validator is registered with normal schema validation, including hidden controls. Four core tests pass on JVM/iOS/JS Node/Wasm browser, including unbounded positive steps and weekday 7 normalization before stepping. The imported Unix five-field and Quartz seven-field values show local feedback and recover after correction in both renderer families on JVM/iOS/JS/Wasm. The renderer does not publish additional errors. Audit further selector forms and host error policy before closing."
+      "next": "The six-field format validator is registered with normal schema validation, including hidden controls. Five core tests pass on JVM/iOS/JS Node/Wasm browser; a schema-validation matrix covers named months/weekdays and L, W, #, wrapped ranges, plus invalid selector bounds. The 42-case mounted cron class passes on JVM/iOS/JS/Wasm; an invalid five-field edit reports one schema error and zero additional errors, then clears both counts on correction. Imported Unix five-field and Quartz seven-field values also show local feedback and recover after correction. Audit Android and other host error-policy combinations before closing."
     },
     {
       "id": "S18.25-02",
@@ -5898,9 +5933,11 @@
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/CronControlRenderer.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/CronPickerTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronControlUiTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronFixtureUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronFixtureUiTest.kt",
+        "examples-compose/src/jsTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronPopupPointerJsTest.kt",
+        "scripts/test-webcomponent-cron-browser.mjs"
       ],
-      "next": "Material/Cupertino picker periods and numeric field editing are mounted on JVM/iOS/JS browser/Wasm browser; pure tests cover period lenses and valid/invalid time defaults. The imported fixture now tests unchanged MON-FRI and L selectors and edits to a weekday list and numeric month day in both families across those targets. The active period exposes selected semantics and an English/Bulgarian state description in all 16 focused control cases. Verify other complex selectors, narrow geometry, keyboard focus, direct screen-reader output, real webcomponent integration and device interaction."
+      "next": "Material/Cupertino picker periods and numeric field editing are mounted on JVM/iOS/JS browser/Wasm browser; pure tests cover period lenses and valid/invalid time defaults. An unset or unparseable value opens with no selected period and no field selectors; choosing only a period leaves storage unchanged, while choosing hour 9 produces a six-field expression. Six English/Bulgarian and invalid-value mounted regressions bring the cron class to 42 passing cases on JVM, iOS simulator, JS browser and Wasm browser with zero failures/skips. The scrollable field menus support repeated multi-selection and reset to Every; the reset action is separate from the dropdown trigger, appears on hover/focus, and stays visible when keyboard focus moves onto it; Enter resets the field without publishing before Apply. The selected repeat period has a visible checkmark and selected semantics; advanced visible field values show an English/Bulgarian explanation. A four-case JS browser pointer suite clicks reset and text clears without early writes. A production Chrome Web Component test resets Hours, scrolls Seconds to 59, and applies the combined draft in both families within 240 px. The imported fixture tests unchanged MON-FRI and L selectors and edits to a weekday list and numeric month day across targets. The iOS simulator's synthetic pointer/touch click misses popup reset actions even though their accessibility OnClick works; verify real device hit testing before closing. Other complex selectors, other widths, direct screen-reader output and physical-device interaction remain open. Numeric weekday ranges now expand through Sunday alias 7 before canonicalization: 5-7 and FRI-7 expose Friday through Sunday choices, while 0-7 is the full week and classifies as Daily. Pure parser/picker regressions pass on JVM, JS browser, Wasm browser and iOS simulator."
     },
     {
       "id": "S18.25-03",
@@ -5913,9 +5950,10 @@
       "evidence": [
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/CronControlRenderer.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronControlUiTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronFixtureUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronFixtureUiTest.kt",
+        "examples-compose/src/jsTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronPopupPointerJsTest.kt"
       ],
-      "next": "Material/Cupertino mounted cases pass on JVM/iOS/JS browser/Wasm browser for invalid direct text, untouched aliases, Apply/Cancel, immediate edits, Clear, readonly, live Bulgarian locale, host replacement, disable-rule changes and invalid staged picker feedback. Ten imported fixture cases add authored schema/UI selection, unset picker cancellation, five-/seven-field repair, and unchanged/edited weekday and month-end selectors on the same targets. Verify focus/IME, real webcomponent/device input and accessible dialog semantics."
+      "next": "The 42-case Material/Cupertino mounted cron suite passes on JVM, iOS simulator, JS browser and Wasm browser for invalid direct text, untouched aliases, Apply/Cancel, immediate edits, Clear, readonly, live Bulgarian locale, host replacement, disable-rule changes, invalid staged feedback and strict JSON Boolean showActions parsing. A quoted false now retains staging; the original implementation failed the new regressions by committing immediately. Two further mounted cron cases failed against local-only option resolution; valid local showActions now overrides valid global config, and a quoted local value falls through. They pass on JVM, JS browser, Wasm browser and iOS simulator. Popup advanced-field and Expression clear actions are localized, reveal on hover/focus, remain visible through keyboard focus handoff, and stage until Apply; an empty Expression can be applied as an empty string like React shadcn. Four JS browser pointer cases click the popup clears. The iOS simulator's synthetic pointer/touch click still misses them despite a working accessibility OnClick; real native hit testing remains unverified. Ten imported fixture cases cover authored schema/UI selection, unset cancellation, five-/seven-field repair and weekday/month-end selectors. Verify focus/IME, webcomponent/device input and accessible dialog semantics."
     },
     {
       "id": "S18.27-01",
@@ -5928,9 +5966,10 @@
       "evidence": [
         "core/src/commonMain/kotlin/com/chobantonov/jsonfroms/core/validation/ColorFormat.kt",
         "extended-renderers/src/commonTest/kotlin/com/chobantonov/jsonfroms/extended/renderers/ColorProfileTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorControlUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorControlUiTest.kt",
+        "scripts/test-webcomponent-color-browser.mjs"
       ],
-      "next": "Codec and 22 mounted color cases pass JVM/iOS/JS browser/Wasm browser after Cupertino picker adopted native controls; Android main compiles. Verify Android device, actual webcomponent and physical keyboard/screen-reader behavior."
+      "next": "Codec and 34 mounted color cases pass JVM/iOS/JS browser/Wasm browser. The picker exposes an app-owned saturation/brightness spectrum with pointer and keyboard editing and a labeled hue slider; edits still use the configured serializer and preserve alpha. A production Chrome Web Component test exercises spectrum writes and narrow channel geometry in both families and English/Bulgarian. Android main compiles; verify Android device and physical screen-reader behavior."
     },
     {
       "id": "S18.27-02",
@@ -5957,9 +5996,10 @@
       "status": "partial",
       "evidence": [
         "extended-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/extended/renderers/ColorControlRenderer.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorControlUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ColorControlUiTest.kt",
+        "scripts/test-webcomponent-color-browser.mjs"
       ],
-      "next": "Picker-only Clear, initial Hex/RGB/HSB view, non-mutating switching/reopen reset, host replacement and readonly invalidation pass JVM/iOS/JS browser/Wasm browser with native Cupertino buttons, sliders and inputs. Android main compiles; verify device focus and visual selection."
+      "next": "Picker-only Clear, initial Hex/RGB/HSB view, non-mutating switching/reopen reset, host replacement and readonly invalidation pass JVM/iOS/JS browser/Wasm browser. The panel opens directly to an app-owned saturation/brightness spectrum and localized hue slider; pointer and keyboard edits, footer and in-field Clear for stored values (including imported null), hover exit and touch selection, absent Clear when empty or clearable:false, readonly dismissal and strict JSON Boolean colorTextEntry parsing pass 44 mounted tests per target in both families. A quoted colorTextEntry false keeps direct text input; the original implementation failed two new Material/Cupertino regressions. Narrow RGB/HSB/alpha rows stack labels and values above full-width sliders; a production Chrome Web Component test checks all four Material/Cupertino and English/Bulgarian combinations at 240 px. Pure tests cover HSB corner/center mapping, alpha preservation and pointer clamping. Six compact color-cell tests pass on JVM/iOS/Wasm and direct JS Karma after choosing the visible Close button; actual device screen-reader output remains open."
     },
     {
       "id": "S18.18.3-01",
@@ -6184,9 +6224,12 @@
       "applicability": "portable temporal controls",
       "status": "partial",
       "evidence": [
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalBoundsUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalBoundsUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalDateTimeActionsUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalPickerSecondsUiTest.kt",
+        "cupertino-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/cupertino/renderers/controls/CupertinoDateTimeControl.kt"
       ],
-      "next": "Verify schema-bound choice disabling and picker geometry/accessibility on all targets, including Android device interaction."
+      "next": "Cupertino date-time now advances from its native date picker to the same time picker used by standalone Time; Material already advances to its standalone clock. External host value replacement dismisses an open date or time step in both families without a write, while schema-bound changes refresh validation in the open picker. Focused action and bound suites pass 48 cases on each of JVM, JS browser, Wasm browser and iOS simulator; retained-second cases passed in the prior cross-target run. Verify date/time popup geometry, accessibility and Android device interaction before full conformance."
     },
     {
       "id": "S18.19-direct-entry-02",
@@ -6237,7 +6280,7 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/validation/CronFormatTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/CronControlUiTest.kt"
       ],
-      "next": "Run a grammar matrix covering named months/weekdays and L/W/# selectors across targets; verify schema-owned error and no additional-error publication."
+      "next": "A schema-validation matrix covers named months/weekdays, L/W/# selectors, wrapped ranges and invalid bounds on JVM, JS Node, Wasm browser and iOS simulator (five core tests per target, zero failures/skips). The 34-case mounted Material/Cupertino cron class passes on JVM, JS browser, Wasm browser and iOS simulator; invalid five-field input yields one schema error and zero additional errors, and correction clears the schema count. Verify Android runtime and further combined selector/error-policy cases before marking fully supported. Numeric weekday range endpoints retain 7 until expansion, so 5-7 and FRI-7 include Sunday and 0-7 includes the full week; standalone 7 and 7/2 keep their alias semantics. Parser and picker regressions pass on JVM, JS browser, Wasm browser and iOS simulator."
     },
     {
       "id": "S18.17-editor-identity-01",
@@ -6290,6 +6333,35 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ArrayRowDetailErrorNavigationUiTest.kt"
       ],
       "next": "Verify summary and cell error coexist, including off-page errors and host additional errors."
+    },
+    {
+      "id": "S18.21-dialog-viewport-01",
+      "sourceLine": 6947,
+      "sourceAnchor": "Re-clamp after viewport changes",
+      "statement": "A table row or composite-cell detail dialog re-clamps to a changed viewport while its title and action footer stay visible and the body scrolls inside.",
+      "strength": "normative",
+      "applicability": "portable table dialogs",
+      "status": "partial",
+      "evidence": [
+        "scripts/test-webcomponent-dialog-viewport-browser.mjs",
+        "material-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/material/renderers/additional/DetailDialogFrame.kt"
+      ],
+      "next": "The corrected production Chrome test first exposed a clipped footer; the shared frame now reserves title/footer space and scrolls the remaining body. Four Material/Cupertino row and composite-cell dialog cases pass after an 800×600 to 360×260 viewport change, with a later field revealed by inner scrolling and no page scroll or form write. Verify native-device resizing and direct assistive-technology output."
+    },
+    {
+      "id": "S18.21-cell-dialog-options-01",
+      "sourceLine": 6919,
+      "sourceAnchor": "Cell editors accept",
+      "statement": "Composite cell dialog geometry accepts the collection cells[field].dialog form and options.dialog on the authored composite detail element, with global dialog settings as fallback.",
+      "strength": "normative",
+      "applicability": "portable table cells",
+      "status": "partial",
+      "evidence": [
+        "core/src/commonMain/kotlin/com/chobantonov/jsonfroms/core/mappers/ArrayTableCellOptions.kt",
+        "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/mappers/ArrayTableCellOptionsTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ArrayCompositeCellDialogUiTest.kt"
+      ],
+      "next": "The sibling cell dialog wins over a detail element's options.dialog, which in turn supplies geometry ahead of the form-wide default. Six core and 28 mounted Material/Cupertino composite-cell cases pass on JVM, JS browser and Wasm browser; the full core and demo iOS simulator suites pass 603/2,595 cases. The seven-module JVM gate, Android debug APK and JS/Wasm/Web Component production builds pass. Production Chrome now covers an open cell dialog during viewport shrink; direct assistive-technology and native-device interaction remain open."
     },
     {
       "id": "S18.21-list-splitter-01",
@@ -6774,7 +6846,7 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/DemoEditorLifecycleUiTest.kt",
         "examples-compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/examples/compose/ExamplesComposeApp.kt"
       ],
-      "next": "Mounted JVM workflows reach Data, Schema, UI Schema, UI Schemas, Internationalization and Config editor views and observe their effects in the Demo form. Check example selection, pane geometry, accessibility and other-target runtime."
+      "next": "Mounted JVM workflows reach Data, Schema, UI Schema, UI Schemas, Internationalization and Config editor views and observe their effects in the Demo form. Check example selection, pane geometry, accessibility and other-target runtime. The same 22 editor lifecycle cases pass in JS and Wasm browser runners; the full 2,591-case iOS simulator demo suite passes, including these workflows. Other target-specific accessibility and focus remain open. A demo action can now replace schema and refresh the clean Schema editor without discarding a dirty draft; paired Material/Cupertino mounted cases pass on JVM, JS browser, Wasm browser and iOS simulator. The same source-aware refresh covers other JSON editor backing properties."
     },
     {
       "id": "S30.2-02",
@@ -6789,7 +6861,7 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/EditorDraftTest.kt",
         "examples-compose/src/commonMain/kotlin/com/chobantonov/jsonfroms/examples/compose/ExamplesComposeApp.kt"
       ],
-      "next": "Paired Material/Cupertino-style mounted JVM tests cover invalid Apply, valid Apply and nonapplying Reload for all six JSON editor panes. Data drafts track unapplied changes: tabbed and simultaneous Demo/Data form edits retain dirty or reloaded-original drafts, while clean drafts refresh after compact JSON Apply. Every pane exposes an accessible error after invalid Apply, clears it on Reload and leaves the form intact; Data also clears it on edit. Keyboard tests reach Reload, Apply and the Data editor input with Tab. Bulgarian Data Apply failure now has a localized explanation in visible and accessible feedback while retaining parser detail; English behavior remains. The focused JVM suite passes and iOS simulator test sources compile. Verify other-target runtime, focus across the remaining panes and direct screen-reader behavior."
+      "next": "Paired Material/Cupertino-style mounted JVM tests cover invalid Apply, valid Apply and nonapplying Reload for all six JSON editor panes. Data drafts track unapplied changes: tabbed and simultaneous Demo/Data form edits retain dirty or reloaded-original drafts, while clean drafts refresh after compact JSON Apply. Every pane exposes an accessible error after invalid Apply, clears it on Reload and leaves the form intact; Data also clears it on edit. Keyboard tests reach Reload, Apply and the Data editor input with Tab. Bulgarian Data Apply failure now has a localized explanation in visible and accessible feedback while retaining parser detail; English behavior remains. The focused JVM suite passes and iOS simulator test sources compile. Verify other-target runtime, focus across the remaining panes and direct screen-reader behavior. All 22 mounted editor lifecycle cases now pass on JS and Wasm browser runners, and the full 2,591-case iOS simulator demo suite passes with zero failures/skips. Direct screen-reader output and focus across all editor panes remain open. A baseline regression exposed stale clean Schema JSON after a demo action changed the active schema. Source-aware refresh now updates clean Data, Schema, UI Schema, UI Schemas, Internationalization and Config panes only when their backing JSON changes, while dirty drafts remain intact. Paired Material/Cupertino action cases bring the editor lifecycle suite to 24 cases passing on JVM, JS browser and Wasm browser; the full iOS simulator demo suite passes 2,593 cases. Direct screen-reader output and focus across all editor panes remain open."
     },
     {
       "id": "S30.2-03",
@@ -6803,7 +6875,7 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/DemoSplitPaneUiTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/DemoEditorLifecycleUiTest.kt"
       ],
-      "next": "JVM mounted split-pane tests verify initial wide 75/25 geometry, minimum widths, narrow stacking, progress/keyboard/touch resizing and RTL direction; paired full-workspace tests edit form and Data JSON simultaneously. Check browser/native pointer and keyboard focus and screen-reader semantics."
+      "next": "JVM mounted split-pane tests verify initial wide 75/25 geometry, minimum widths, narrow stacking, progress/keyboard/touch resizing and RTL direction; paired full-workspace tests edit form and Data JSON simultaneously. Check browser/native pointer and keyboard focus and screen-reader semantics. The two mounted split-pane cases pass on JS and Wasm browser runners, and the full 2,591-case iOS simulator demo suite passes. Direct screen-reader output and physical-device pointer/keyboard interaction remain open."
     },
     {
       "id": "S30.2-04",
@@ -6885,7 +6957,7 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/ArrayRowDetailDialogUiTest.kt",
         "material-renderers/src/commonMain/kotlin/com/chobantonov/jsonfroms/material/renderers/additional/DetailDialogFrame.kt"
       ],
-      "next": "The shared demo toolbar tooltip now opens on focus and dismisses when focus moves; paired mounted JVM tests verify English/Bulgarian icon names and tooltip text. Paired Material/Cupertino row-detail tests verify focus enters the dialog frame and returns to the Edit details trigger on cancel; settings overlay focus restoration also passes. Audit remaining icon actions/dialogs and browser/native focus behavior before marking supported."
+      "next": "The shared demo toolbar tooltip now opens on focus and dismisses when focus moves; paired mounted JVM tests verify English/Bulgarian icon names and tooltip text. Paired Material/Cupertino row-detail tests verify focus enters the dialog frame and returns to the Edit details trigger on cancel. The Settings overlay keeps Tab within its first and last actions, restores focus on Escape/backdrop dismissal, hides the still-mounted toolbar/workspace from accessibility, and now exposes a localized pane title without an extra card-wide click action; a blank panel tap is absorbed. The Material mounted case passes on JVM/JS/Wasm/iOS, and the Cupertino case passes on JVM. Audit remaining icon actions/dialogs and direct browser/native assistive-technology behavior before marking supported."
     },
     {
       "id": "S30.3-03",

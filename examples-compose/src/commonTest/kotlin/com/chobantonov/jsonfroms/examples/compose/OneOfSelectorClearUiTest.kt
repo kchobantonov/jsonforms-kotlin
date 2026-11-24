@@ -11,11 +11,19 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.geometry.Offset
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlinx.serialization.json.Json
@@ -41,12 +49,82 @@ class OneOfSelectorClearUiTest {
 
     @Test fun materialClearPreservesEnclosingFieldAndNoSelection() = clear(false)
     @Test fun cupertinoClearPreservesEnclosingFieldAndNoSelection() = clear(true)
+    @Test fun materialClearFollowsTouchSelection() = touchClear(false)
+    @Test fun cupertinoClearFollowsTouchSelection() = touchClear(true)
+    @Test fun materialClearHasBulgarianTooltip() = clearTooltip(false)
+    @Test fun cupertinoClearHasBulgarianTooltip() = clearTooltip(true)
+
+    private fun clearTooltip(cupertino: Boolean) = runComposeUiTest {
+        var writes = 0
+        setContent {
+            JsonForms(data = original, schema = schema, uischema = ControlElement("#/properties/choice"),
+                i18n = JsonFormsI18nState(locale = "bg"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("Email contact").performMouseInput { moveTo(center) }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true)
+            .assertContentDescriptionEquals("Изчисти стойността")
+            .performMouseInput { moveTo(center) }
+        waitForIdle()
+        onNodeWithText("Изчисти стойността").assertExists()
+        runOnIdle { assertEquals(0, writes) }
+    }
+
+    private fun touchClear(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf<JsonElement>(original)
+        var inputMode: InputModeManager? = null
+        setContent {
+            inputMode = LocalInputModeManager.current
+            JsonForms(data = data, schema = schema, uischema = ControlElement("#/properties/choice"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data })
+        }
+        runOnIdle { inputMode!!.requestInputMode(InputMode.Touch) }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("Email contact").performTouchInput { click() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertExists()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
+        onNodeWithText("Change this branch?").assertExists()
+        onNodeWithText("Yes").performClick()
+        runOnIdle { assertEquals(preserved, data) }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
+    }
     @Test fun materialEmptySelectedBranchCanClear() = emptyBranch(false)
     @Test fun cupertinoEmptySelectedBranchCanClear() = emptyBranch(true)
     @Test fun materialSwitchPreservesEnclosingField() = switch(false)
     @Test fun cupertinoSwitchPreservesEnclosingField() = switch(true)
     @Test fun materialClearableFalseHidesAction() = optOut(false)
     @Test fun cupertinoClearableFalseHidesAction() = optOut(true)
+    @Test fun materialOneOfUsesGlobalClearable() = globalClearable(false)
+    @Test fun cupertinoOneOfUsesGlobalClearable() = globalClearable(true)
+
+    private fun globalClearable(cupertino: Boolean) = runComposeUiTest {
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        setContent {
+            JsonForms(data = original, schema = schema,
+                uischema = ControlElement("#/properties/choice", options = mapOf(
+                    "clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
+        runOnIdle { global = true }
+        onNodeWithText("Email contact").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertExists()
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onNodeWithText("Email contact").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertExists()
+    }
     @Test fun materialReadOnlyRevokesPendingClear() = readonly(false)
     @Test fun cupertinoReadOnlyRevokesPendingClear() = readonly(true)
     @Test fun materialHostReplacementInvalidatesPendingClear() = stale(false)
@@ -64,10 +142,10 @@ class OneOfSelectorClearUiTest {
         }
         onNodeWithText("Email contact")
             .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
-        onNodeWithTag("oneof-selector-clear").assertContentDescriptionEquals("Clear value")
-        onNodeWithTag("oneof-selector-clear")
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertContentDescriptionEquals("Clear value")
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
-        onNodeWithTag("oneof-selector-clear").performKeyInput {
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performKeyInput {
             keyDown(Key.Enter); keyUp(Key.Enter)
         }
         onNodeWithText("Change this branch?").assertExists()
@@ -83,15 +161,19 @@ class OneOfSelectorClearUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("Email contact")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Change this branch?").assertExists()
         onNodeWithText("No").performClick()
         runOnIdle { assertEquals(original, data); assertEquals(0, changes) }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("Email contact")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Yes").performClick()
         runOnIdle { assertEquals(preserved, data); assertEquals(1, changes) }
         onNodeWithText("Email contact").assertDoesNotExist()
-        onNodeWithTag("oneof-selector-clear").assertDoesNotExist()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("Choice").performClick()
         waitForIdle()
         onNodeWithText("Phone contact").performClick()
@@ -105,10 +187,13 @@ class OneOfSelectorClearUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data })
         }
-        onNodeWithTag("oneof-selector-clear").assertExists()
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("Email contact").performMouseInput {
+            moveTo(Offset(-100f, -100f)); moveTo(center)
+        }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertExists()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Change this branch?").assertDoesNotExist()
-        onNodeWithTag("oneof-selector-clear").assertDoesNotExist()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
         runOnIdle { assertEquals(preserved, data) }
     }
 
@@ -133,7 +218,7 @@ class OneOfSelectorClearUiTest {
                 uischema = ControlElement("#/properties/choice", options = mapOf("clearable" to JsonPrimitive(false))),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers)
         }
-        onNodeWithTag("oneof-selector-clear").assertDoesNotExist()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("Email contact").assertExists()
     }
 
@@ -147,11 +232,13 @@ class OneOfSelectorClearUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("Email contact")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Change this branch?").assertExists()
         runOnIdle { readonly = true }
         onNodeWithText("Change this branch?").assertDoesNotExist()
-        onNodeWithTag("oneof-selector-clear").assertDoesNotExist()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
         runOnIdle { assertEquals(original, data); assertEquals(0, changes) }
     }
 
@@ -163,7 +250,9 @@ class OneOfSelectorClearUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("Email contact")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Change this branch?").assertExists()
         runOnIdle { data = hostReplacement }
         onNodeWithText("Change this branch?").assertDoesNotExist()

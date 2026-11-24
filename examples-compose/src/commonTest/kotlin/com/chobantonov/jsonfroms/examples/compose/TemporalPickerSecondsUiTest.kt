@@ -43,7 +43,7 @@ class TemporalPickerSecondsUiTest {
                 onChange = { data = it.data })
         }
         onNodeWithContentDescription("Choose date and time").performClick()
-        if (!cupertino) onNodeWithText("Next").performClick()
+        onNodeWithText("Next").performClick()
         onNodeWithText("OK").performClick()
         waitForIdle()
         assertEquals(original, data)

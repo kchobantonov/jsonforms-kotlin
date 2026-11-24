@@ -41,11 +41,9 @@ import com.chobantonov.jsonfroms.material.renderers.controls.yearPageStart
 import com.chobantonov.jsonfroms.material.renderers.controls.yearsOnPage
 import com.chobantonov.jsonfroms.material.renderers.controls.rememberTimeViewsDraft
 import com.slapps.cupertino.CupertinoDatePicker
-import com.slapps.cupertino.CupertinoDateTimePicker
 import com.slapps.cupertino.CupertinoTimePicker
 import com.slapps.cupertino.ExperimentalCupertinoApi
 import com.slapps.cupertino.rememberCupertinoDatePickerState
-import com.slapps.cupertino.rememberCupertinoDateTimePickerState
 import com.slapps.cupertino.rememberCupertinoTimePickerState
 
 @OptIn(ExperimentalCupertinoApi::class)
@@ -290,51 +288,6 @@ internal fun CupertinoTimeViewsDialog(
                     color = colors.accent)
             }
         }
-    }
-}
-
-@OptIn(ExperimentalCupertinoApi::class)
-@Composable
-internal fun CupertinoDateTimePickerDialog(
-    initialDateMillis: Long,
-    initialHour: Int,
-    initialMinute: Int,
-    is24Hour: Boolean,
-    titleLabel: String,
-    cancelLabel: String,
-    okLabel: String,
-    onDismiss: () -> Unit,
-    onConfirm: (Long, Int, Int) -> Unit,
-    canConfirm: (Long, Int, Int) -> Boolean = { _, _, _ -> true },
-    invalidSelectionMessage: String? = null,
-    showActions: Boolean = true,
-    onSelectionChange: (Long, Int, Int) -> Unit = { _, _, _ -> },
-) {
-    val initialYear = pickerMillisToDate(initialDateMillis).year
-    val state = rememberCupertinoDateTimePickerState(
-        initialSelectedDateMillis = initialDateMillis,
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = is24Hour,
-        yearRange = (initialYear - 100)..(initialYear + 100),
-    )
-    val valid = canConfirm(state.selectedDateTimeMillis, state.selectedHour, state.selectedMinute)
-    val selection = Triple(state.selectedDateTimeMillis, state.selectedHour, state.selectedMinute)
-    var observed by remember(initialDateMillis, initialHour, initialMinute) {
-        mutableStateOf(selection)
-    }
-    LaunchedEffect(selection, showActions) {
-        if (!showActions && selection != observed && canConfirm(selection.first, selection.second,
-                selection.third)) {
-            onSelectionChange(selection.first, selection.second, selection.third)
-        }
-        observed = selection
-    }
-    CupertinoPickerDialog(titleLabel, cancelLabel, okLabel, onDismiss, {
-        if (valid) onConfirm(state.selectedDateTimeMillis, state.selectedHour, state.selectedMinute)
-    }, canConfirm = valid, invalidSelectionMessage = invalidSelectionMessage,
-        showActions = showActions) {
-        CupertinoDateTimePicker(state, modifier = Modifier.fillMaxWidth())
     }
 }
 

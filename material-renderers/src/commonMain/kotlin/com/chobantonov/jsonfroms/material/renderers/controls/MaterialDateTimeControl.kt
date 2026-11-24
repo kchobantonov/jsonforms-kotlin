@@ -43,7 +43,8 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
     val displayFormat = options.stringOption("dateTimeFormat") ?: DEFAULT_DATE_TIME_DISPLAY_FORMAT
     val saveFormat = temporalSaveFormatForControl(controlProps.schema.format,
         options.stringOption("dateTimeSaveFormat"), DEFAULT_DATE_TIME_SAVE_FORMAT,
-        bindings.stateProps.path, props.config)
+        bindings.stateProps.path, props.config, props.state.jsonforms.i18n,
+        bindings.stateProps.i18nKeyPrefix, displayFormat)
     val timeViews = resolveTimeViews(options["views"], displayFormat)
     val dateMode = resolveDateViewMode(options["views"], displayFormat)
     val showActions = options.booleanOption("showActions") == true
@@ -79,10 +80,10 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
         params = mapOf("bound" to violation.bound),
     ) }
     val displayValue = committedTemporal?.let { formatTemporal(it, displayFormat) } ?: committedValue
-    var draftValue by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(displayValue) }
-    var observedCommittedValue by remember(bindings.stateProps.path, props.schema, props.uischema) { mutableStateOf(committedValue) }
-    var pickerStep by remember(bindings.stateProps.path, props.uischema) { mutableStateOf<PickerStep?>(null) }
-    var pendingValue by remember(bindings.stateProps.path, props.uischema) { mutableStateOf<TemporalValue?>(null) }
+    var draftValue by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(displayValue) }
+    var observedCommittedValue by remember(bindings.stateProps.path, props.schema, props.uischema, displayFormat, saveFormat) { mutableStateOf(committedValue) }
+    var pickerStep by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf<PickerStep?>(null) }
+    var pendingValue by remember(bindings.stateProps.path, props.uischema, displayFormat, saveFormat) { mutableStateOf<TemporalValue?>(null) }
     val maskInput = options.booleanOption("mask") != false
     val parsedDraft = draftValue.takeIf(String::isNotEmpty)?.let { parseDateTimeValue(it, listOf(displayFormat)) }
     val localError = when {
@@ -92,11 +93,13 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
     }
     val preserveEmptyValue = LocalPreserveEmptyValue.current
     val setPending = rememberPendingEditOwner("temporal:date-time:${bindings.stateProps.path}:${props.id}")
-    LaunchedEffect(props.uischema) { setPending(false) }
+    LaunchedEffect(props.uischema, displayFormat, saveFormat) { setPending(false) }
     LaunchedEffect(committedValue, displayValue, props.state.jsonforms.core.data) {
         if (committedValue != observedCommittedValue) {
             draftValue = displayValue
             observedCommittedValue = committedValue
+            pickerStep = null
+            pendingValue = null
             setPending(false)
         } else if (draftValue != displayValue && parseDateTimeValue(draftValue, listOf(displayFormat)) == null) {
             setPending(true)

@@ -26,15 +26,15 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class TemporalDateTimeActionsUiTest {
     @Test fun materialDateTimeColumnsCommitEachStepByDefault() = columns(false)
     @Test fun cupertinoDateTimeColumnsCommitEachStepByDefault() = columns(true)
     @Test fun materialNativeDateThenTimeDialCommitsByDefault() = materialNative()
-    @Test fun cupertinoNativeDateTimeCommitsByDefault() = cupertinoNative()
+    @Test fun cupertinoNativeDateThenTimePickerCommitsByDefault() = cupertinoNative()
+    @Test fun materialHostReplacementDismissesTimeStep() = hostReplacement(false)
+    @Test fun cupertinoHostReplacementDismissesTimeStep() = hostReplacement(true)
 
     private val schema = JsonSchema(Json.parseToJsonElement(
         """{"type":"object","properties":{"value":{"type":"string","format":"date-time"}}}"""
@@ -113,17 +113,40 @@ class TemporalDateTimeActionsUiTest {
         onNodeWithText("OK").assertDoesNotExist()
         onNodeWithText("Cancel").assertDoesNotExist()
         assertEquals(0, changes)
-        // Native date-time exposes date, hour, and minute wheels in that order.
-        // Visible hour labels depend on the host time zone, so select the wheel by position.
-        val wheels = SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)
-        waitUntil(timeoutMillis = 5_000) { onAllNodes(wheels).fetchSemanticsNodes().size >= 3 }
-        onAllNodes(wheels)[1]
-            .performSemanticsAction(SemanticsActions.ScrollToIndex) { it(20) }
+        onNodeWithText("Next").performClick()
         waitForIdle()
-        val committed = data.jsonObject.getValue("value").toString().trim('"')
-        assertNotEquals("2025-01-10T09:30:37Z", committed)
-        assertTrue(committed.startsWith("2025-01-10T"))
-        assertTrue(committed.endsWith(":30:37Z"))
+        onNodeWithText("Select time").assertExists()
+        val wheels = SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)
+        waitUntil(timeoutMillis = 5_000) { onAllNodes(wheels).fetchSemanticsNodes().size >= 2 }
+        onAllNodes(wheels)[0]
+            .performSemanticsAction(SemanticsActions.ScrollToIndex) { it(1) }
+        waitForIdle()
+        val selectedInstant = formatTemporal(TemporalValue(2025, 1, 10, 10, 30, 37),
+            DEFAULT_DATE_TIME_SAVE_FORMAT)
+        assertEquals(Json.parseToJsonElement("""{"value":"$selectedInstant"}"""), data)
         assertEquals(1, changes)
     }
+
+    private fun hostReplacement(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(Json.parseToJsonElement("""{"value":"2025-01-10T09:30:37Z"}"""))
+        val replacement = Json.parseToJsonElement("""{"value":"2026-03-12T11:45:00Z"}""")
+        var changes = 0
+        setContent {
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/value"),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onNodeWithContentDescription("Choose date and time").performClick()
+        onNodeWithText("Next").performClick()
+        onNodeWithText("Select time").assertExists()
+        assertEquals(0, changes)
+        runOnIdle { data = replacement }
+        waitForIdle()
+        onNodeWithText("Select time").assertDoesNotExist()
+        onNodeWithText("Next").assertDoesNotExist()
+        assertEquals(replacement, data)
+        assertEquals(0, changes)
+    }
+
 }

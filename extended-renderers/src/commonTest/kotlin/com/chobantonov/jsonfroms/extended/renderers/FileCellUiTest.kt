@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
@@ -20,6 +21,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -257,6 +259,8 @@ class FileCellUiTest {
         runOnIdle { locale = "bg-BG" }
         onNodeWithText("Невалидна стойност: {\"raw\":true}").assertExists()
         runOnIdle { assertEquals(0, changes) }
+        if (!multiple) onNodeWithText("Замени")
+            .performSemanticsAction(SemanticsActions.RequestFocus)
         onAllNodesWithText(if (multiple) "Премахни всички" else "Изчисти").onLast().performClick()
         runOnIdle {
             assertEquals(1, changes)
@@ -486,6 +490,8 @@ class FileCellUiTest {
             )
         }
         onNodeWithText("Replace").assertExists()
+        onNodeWithText("Clear").assertDoesNotExist()
+        onNodeWithText("Replace").performSemanticsAction(SemanticsActions.RequestFocus)
         onNodeWithText("Clear").assertExists()
         runOnIdle { locale = "en-US" }
         onNodeWithText("Replace").assertExists()

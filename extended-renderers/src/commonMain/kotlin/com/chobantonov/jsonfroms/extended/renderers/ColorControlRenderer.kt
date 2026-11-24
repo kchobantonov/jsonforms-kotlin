@@ -7,8 +7,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -19,12 +21,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
@@ -47,9 +51,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlin.math.roundToInt
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
+import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
 import com.chobantonov.jsonfroms.compose.rememberPendingEditOwner
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import com.chobantonov.jsonfroms.core.actions.Actions
 import com.chobantonov.jsonfroms.core.i18n.translateControlClear
 import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
@@ -90,7 +97,6 @@ import com.slapps.cupertino.CupertinoText
 import com.slapps.cupertino.ExperimentalCupertinoApi
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.JsonObject
 
 val colorControlTester: RankedTester = rankWith(
@@ -164,11 +170,9 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
         is String -> raw
         else -> null
     }
-    fun booleanOption(key: String): Boolean? = when (val raw = option(key)) {
-        is JsonPrimitive -> raw.booleanOrNull
-        is Boolean -> raw
-        else -> null
-    }
+    fun booleanOption(key: String): Boolean? =
+        strictControlBooleanOption(control.options, key)
+            ?: strictControlBooleanOption(mapOf(key to globalOption(key)), key)
     val format = colorSaveFormat(stringOption("colorSaveFormat"))
     val textEntry = booleanOption("colorTextEntry") != false
     val editable = stateProps.enabled && !stateProps.readonly
@@ -199,13 +203,12 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
         colorText("invalid", "Invalid color.") else null
     val pickerError = listOfNotNull(invalidStatus, importedColorError,
         visibleError.takeIf { it.isNotBlank() }).distinct().joinToString(". ")
-    val clearable = (control.options["clearable"] as? JsonPrimitive)?.booleanOrNull
-        ?: (stateProps.config["clearable"] as? Boolean)
-        ?: (stateProps.config["clearable"] as? JsonPrimitive)?.booleanOrNull
-        ?: true
+    val clearable = resolvedControlBooleanOption(control.options, stateProps.config, "clearable") ?: true
     val textInputProps = inputProps.copy(uischema = control.copy(
         options = control.options + ("clearable" to JsonPrimitive(clearable))))
     val path = composeWithUi(control, props.path)
+    val clearAffordance = rememberClearAffordanceState(path)
+    var pickerHovered by remember(path) { mutableStateOf(false) }
     var textDraft by remember(path) { mutableStateOf(value?.contentOrNull.orEmpty()) }
     var textDraftDirty by remember(path) { mutableStateOf(false) }
     val setPending = rememberPendingEditOwner("color:$path:${props.id}")
@@ -293,6 +296,7 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
             modifier = modifier.semantics { contentDescription = accessibleName })
     }
     val togglePicker = {
+        if (!textEntry) clearAffordance.selectField()
         if (!pickerOpen) {
             view = initialColorView(format)
             draft = emptyMap()
@@ -331,8 +335,19 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
         if (!textEntry && stateProps.label.isNotBlank()) {
             Text(computeLabel(stateProps.label, stateProps.required, hideRequiredAsterisk))
         }
+        val canClearPicker = !textEntry && editable && clearable && stateProps.dataProvided
+        val showClearPicker = canClearPicker &&
+            (pickerFocused || pickerHovered || clearAffordance.isVisible())
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().then(if (!textEntry) Modifier.pointerInput(path) {
+                awaitPointerEventScope {
+                    while (true) when (awaitPointerEvent().type) {
+                        PointerEventType.Enter -> pickerHovered = true
+                        PointerEventType.Exit -> pickerHovered = false
+                        PointerEventType.Press -> clearAffordance.selectField()
+                    }
+                }
+            } else Modifier),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -356,6 +371,18 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                 else if (cupertino) CupertinoText(value?.contentOrNull.orEmpty())
                 else Text(value?.contentOrNull.orEmpty())
             }
+            if (canClearPicker) {
+                if (showClearPicker) {
+                    val clearText = translateControlClear(i18n)
+                    @Composable fun clearButton() {
+                        IconButton(onClick = {
+                            props.dispatch(Actions.update(path = path, updater = { null }))
+                        }) { Icon(JsonFormsActionIcons.Clear, clearText, modifier = Modifier.size(16.dp)) }
+                    }
+                    if (cupertino) CupertinoActionTooltip(clearText) { clearButton() }
+                    else MaterialActionTooltip(clearText) { clearButton() }
+                } else Spacer(Modifier.size(48.dp))
+            }
             if (!textEntry && editable) pickerAction()
         }
         if (importedColorError != null) {
@@ -371,16 +398,22 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
            Column(Modifier.heightIn(max = 600.dp).verticalScroll(rememberScrollState())
                .padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(colorText("choose", "Choose color"))
-            if (clearable && !value?.contentOrNull.isNullOrEmpty()) {
-                val clearText = translateControlClear(i18n)
-                if (cupertino) CupertinoActionTooltip(clearText) {
-                    ColorPickerAction(cupertino = true, label = clearText,
-                        onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
-                } else MaterialActionTooltip(clearText) {
-                    ColorPickerAction(cupertino = false, label = clearText,
-                        onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
-                }
+            ColorSpectrum(parsed, colorText("spectrum", "Saturation and brightness"),
+                colorText("saturation", "Saturation"), colorText("brightness", "Brightness")) {
+                draft = emptyMap()
+                save(it)
             }
+            val spectrumHsb = rgbToHsb(parsed ?: RgbaColor(255, 0, 0))
+            ColorPickerSlider(cupertino = cupertino, value = spectrumHsb.h / 359f,
+                onValueChange = { fraction ->
+                    editColorChannel(parsed ?: RgbaColor(255, 0, 0), ColorChannelView.Hsb,
+                        "h", (fraction * 359).roundToInt().toString())?.let {
+                        draft = emptyMap()
+                        save(it)
+                    }
+                }, modifier = Modifier.fillMaxWidth().semantics {
+                    contentDescription = colorText("spectrumHue", "Spectrum hue")
+                })
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ffffff", "#000000")
@@ -449,9 +482,7 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                 val labels = names.map { (key, english) -> colorText(key, english) }
                 labels.forEachIndexed { index, label ->
                     val name = names[index].first
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        if (cupertino) Box(Modifier.width(100.dp)) { CupertinoText(label) }
-                        else Text(label, Modifier.width(100.dp))
+                    val channelSlider: @Composable (Modifier) -> Unit = { modifier ->
                         ColorPickerSlider(cupertino = cupertino,
                             value = channels[index],
                             onValueChange = { next ->
@@ -459,11 +490,13 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                                 editColorChannel(parsed, view, keys[index],
                                     (next * maximum).roundToInt().toString())?.let(::save)
                             },
-                            modifier = Modifier.weight(1f).semantics {
+                            modifier = modifier.semantics {
                                 contentDescription = colorText("$name.channel", "${names[index].second} channel",
                                     colorChannelLocaleBundles(name))
                             },
                         )
+                    }
+                    val channelValue: @Composable () -> Unit = {
                         pickerField(key = keys[index], label = label,
                             value = draft[keys[index]] ?: ((channels[index] *
                             (if (view == ColorChannelView.Rgb) 255 else if (index == 0) 360 else 100)).roundToInt()).toString(),
@@ -476,18 +509,37 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                                 colorChannelLocaleBundles(name)), numeric = true,
                             modifier = Modifier.width(100.dp))
                     }
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        if (maxWidth < 320.dp) {
+                            Column {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    if (cupertino) Box(Modifier.weight(1f)) { CupertinoText(label) }
+                                    else Text(label, Modifier.weight(1f))
+                                    channelValue()
+                                }
+                                channelSlider(Modifier.fillMaxWidth())
+                            }
+                        } else {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                if (cupertino) Box(Modifier.width(100.dp)) { CupertinoText(label) }
+                                else Text(label, Modifier.width(100.dp))
+                                channelSlider(Modifier.weight(1f))
+                                channelValue()
+                            }
+                        }
+                    }
                 }
                 }
                 if (format != ColorSaveFormat.Hex3) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        val alphaLabel = colorText("alpha", "Alpha")
-                        if (cupertino) Box(Modifier.width(100.dp)) { CupertinoText(alphaLabel) }
-                        else Text(alphaLabel, Modifier.width(100.dp))
+                    val alphaLabel = colorText("alpha", "Alpha")
+                    val alphaSlider: @Composable (Modifier) -> Unit = { modifier ->
                         ColorPickerSlider(cupertino = cupertino, value = parsed.a.toFloat(),
                             onValueChange = { save(parsed.copy(a = it.toDouble())) },
-                            modifier = Modifier.weight(1f).semantics {
+                            modifier = modifier.semantics {
                                 contentDescription = colorText("alphaChannel", "Alpha channel")
                             })
+                    }
+                    val alphaValue: @Composable () -> Unit = {
                         pickerField(key = "alpha", label = "%",
                             value = draft["alpha"] ?: (parsed.a * 100).roundToInt().toString(),
                             onChange = { next ->
@@ -498,6 +550,25 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                             }, accessibleName = colorText("alphaValue", "Alpha channel value"), numeric = true,
                             modifier = Modifier.width(90.dp))
                     }
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        if (maxWidth < 320.dp) {
+                            Column {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    if (cupertino) Box(Modifier.weight(1f)) { CupertinoText(alphaLabel) }
+                                    else Text(alphaLabel, Modifier.weight(1f))
+                                    alphaValue()
+                                }
+                                alphaSlider(Modifier.fillMaxWidth())
+                            }
+                        } else {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                if (cupertino) Box(Modifier.width(100.dp)) { CupertinoText(alphaLabel) }
+                                else Text(alphaLabel, Modifier.width(100.dp))
+                                alphaSlider(Modifier.weight(1f))
+                                alphaValue()
+                            }
+                        }
+                    }
                 }
             }
             if (problem != null) {
@@ -507,8 +578,21 @@ internal fun ColorControl(props: ComposeJsonFormsRendererProps, cupertino: Boole
                 }
                 if (cupertino) CupertinoText(message) else Text(message)
             }
-            ColorPickerAction(cupertino = cupertino, label = colorText("close", "Close"),
-                onClick = { pickerOpen = false })
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                if (clearable && stateProps.dataProvided) {
+                    val clearText = translateControlClear(i18n)
+                    if (cupertino) CupertinoActionTooltip(clearText) {
+                        ColorPickerAction(cupertino = true, label = clearText,
+                            onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
+                    } else MaterialActionTooltip(clearText) {
+                        ColorPickerAction(cupertino = false, label = clearText,
+                            onClick = { props.dispatch(Actions.update(path = path, updater = { null })) })
+                    }
+                }
+                ColorPickerAction(cupertino = cupertino, label = colorText("close", "Close"),
+                    onClick = { pickerOpen = false })
+            }
            }
           }
         }

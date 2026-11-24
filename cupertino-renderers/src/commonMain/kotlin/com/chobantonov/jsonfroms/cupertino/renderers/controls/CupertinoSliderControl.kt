@@ -3,7 +3,9 @@ package com.chobantonov.jsonfroms.cupertino.renderers.controls
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -28,7 +32,9 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsCellProps
 import com.chobantonov.jsonfroms.compose.asRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.core.i18n.translateControlLocalError
 import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
@@ -84,8 +90,10 @@ fun CupertinoSliderControl(props: ComposeJsonFormsRendererProps, compact: Boolea
     val thumbIndex = if (currentIndex >= 0) currentIndex else
         positions.nearestIndex(numeric?.doubleOrNull ?: default)
     val preserveEmptyValue = LocalPreserveEmptyValue.current
-    val clearable = (control.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(control.uischema.options, control.config, "clearable") != false
     val canClear = clearable && stored != null && control.enabled && !control.readonly
+    val clearAffordance = rememberClearAffordanceState(control.path)
+    val clearVisible = clearAffordance.isVisible()
     val focusRequester = rememberInitialControlFocusRequester(control.path, options,
         control.enabled && !control.readonly &&
             (positions.values.size > 1 || (positions.values.size == 1 && currentIndex < 0)))
@@ -118,11 +126,19 @@ fun CupertinoSliderControl(props: ComposeJsonFormsRendererProps, compact: Boolea
                 positions.values.size > 1 -> CupertinoSlider(
                     value = thumbIndex.toFloat(),
                     onValueChange = { value ->
+                        clearAffordance.selectField()
                         val next = positions.values[value.roundToInt().coerceIn(positions.values.indices)]
                         if (next != stored) bindings.dispatchProps.handleChange(bindings.stateProps.path, next)
                     },
                     modifier = Modifier.weight(1f).focusRequester(focusRequester)
                         .testTag(if (compact) "cupertino-slider-cell" else "numeric-slider-${control.path}")
+                        .then(clearAffordance.fieldModifier)
+                        .pointerInput(clearAffordance) {
+                            awaitPointerEventScope {
+                                while (true) if (awaitPointerEvent().type == PointerEventType.Press)
+                                    clearAffordance.selectField()
+                            }
+                        }
                         .semantics {
                             stateDescription = accessibleStatus
                             if (accessibleError.isNotBlank()) error(accessibleError)
@@ -136,10 +152,20 @@ fun CupertinoSliderControl(props: ComposeJsonFormsRendererProps, compact: Boolea
                     steps = (positions.values.size - 2).coerceAtLeast(0),
                 )
                 positions.values.size == 1 -> CupertinoButton(
-                    onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path, positions.values.single()) },
+                    onClick = {
+                        clearAffordance.selectField()
+                        bindings.dispatchProps.handleChange(bindings.stateProps.path, positions.values.single())
+                    },
                     enabled = control.enabled && !control.readonly && currentIndex < 0,
                     modifier = Modifier.weight(1f).focusRequester(focusRequester)
                         .testTag(if (compact) "cupertino-slider-cell" else "numeric-slider-${control.path}")
+                        .then(clearAffordance.fieldModifier)
+                        .pointerInput(clearAffordance) {
+                            awaitPointerEventScope {
+                                while (true) if (awaitPointerEvent().type == PointerEventType.Press)
+                                    clearAffordance.selectField()
+                            }
+                        }
                         .semantics {
                             stateDescription = accessibleStatus
                             if (accessibleError.isNotBlank()) error(accessibleError)
@@ -153,11 +179,15 @@ fun CupertinoSliderControl(props: ComposeJsonFormsRendererProps, compact: Boolea
                     "slider.selectValue", "Select value")) }
             }
             Text(formatEndpoint(maximum), color = colors.secondaryLabel)
-            if (canClear) ActionTooltip(bindings.clearLabel) {
-                IconButton(onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path,
-                    if (preserveEmptyValue) JsonPrimitive(0) else null) }) {
-                    Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
+            if (canClear) {
+                if (clearVisible) ActionTooltip(bindings.clearLabel) {
+                    IconButton(onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path,
+                        if (preserveEmptyValue) JsonPrimitive(0) else null) },
+                        modifier = clearAffordance.clearModifier(48.dp)) {
+                        Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
+                    }
                 }
+                else Spacer(Modifier.size(48.dp))
             }
         }
         if (!compact || invalidStatus != null) Text(status,

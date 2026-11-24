@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.examples.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -34,11 +35,15 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontFamily
@@ -76,7 +81,11 @@ import com.chobantonov.jsonfroms.material.renderers.util.MaterialThemePreset
 import com.chobantonov.jsonfroms.material.renderers.util.materialColorScheme
 import com.russhwolf.settings.Settings
 import com.slapps.cupertino.CupertinoButton
+import com.slapps.cupertino.CupertinoSegmentedControl
+import com.slapps.cupertino.CupertinoSegmentedControlTab
+import com.slapps.cupertino.CupertinoSurface
 import com.slapps.cupertino.CupertinoText
+import com.slapps.cupertino.ExperimentalCupertinoApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -91,8 +100,8 @@ private val LocalDemoUiStyle = compositionLocalOf { DemoUiStyle.Material }
 internal val LocalDemoLocale = compositionLocalOf { DemoLocale.English }
 
 @Composable
-private fun demoText(english: String, bulgarian: String): String =
-    if (LocalDemoLocale.current == DemoLocale.Bulgarian) bulgarian else english
+private fun demoText(key: DemoTextKey): String =
+    demoChromeText(key, LocalDemoLocale.current)
 
 internal enum class DemoThemeMode(val displayName: String) {
     System("System"),
@@ -143,12 +152,14 @@ private data class EditorDrafts(val values: Map<DemoPane, EditorDraft>) {
     fun update(pane: DemoPane, transform: (EditorDraft) -> EditorDraft) =
         copy(values = values + (pane to transform(get(pane))))
 
-    fun refreshDataAfterFormEdit(next: StateProps) =
-        update(DemoPane.Data) { draft ->
-            if (!draft.dirty)
-                EditorDraft(editorText(DemoPane.Data, next))
-            else draft
-        }
+    fun refreshAfterStateChange(previous: StateProps, next: StateProps) = copy(
+        values = values.mapValues { (pane, draft) ->
+            if (draft.dirty || !pane.editorSourceChanged(previous, next)) draft else {
+                val nextText = editorText(pane, next)
+                if (editorText(pane, previous) == nextText) draft else EditorDraft(nextText)
+            }
+        },
+    )
 
     companion object {
         fun from(state: StateProps) = EditorDrafts(
@@ -161,6 +172,17 @@ private data class EditorDrafts(val values: Map<DemoPane, EditorDraft>) {
 
 private val DemoPane.isEditor: Boolean
     get() = this != DemoPane.Demo
+
+private fun DemoPane.editorSourceChanged(previous: StateProps, next: StateProps): Boolean = when (this) {
+    DemoPane.Data -> previous.dataProvided != next.dataProvided || previous.data != next.data
+    DemoPane.Schema -> previous.schema != next.schema
+    DemoPane.UiSchema -> previous.uischema != next.uischema
+    DemoPane.UiSchemas -> previous.uischemas != next.uischemas
+    DemoPane.Internationalization -> previous.translations != next.translations ||
+        previous.localizedTranslations != next.localizedTranslations
+    DemoPane.Config -> previous.config != next.config
+    DemoPane.Demo -> false
+}
 
 internal data class DemoSettings(
     val themeMode: DemoThemeMode = DemoThemeMode.System,
@@ -286,8 +308,10 @@ fun ExamplesComposeApp(
 
         BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).safeDrawingPadding()) {
             val compact = maxWidth < CompactWidth
-            val showBrandLogo = maxWidth >= 280.dp
+            val compactDrawerWidth = minOf(320.dp, maxOf(1.dp, maxWidth - 48.dp))
+            val showBrandLogo = true
             val showBrandTitle = maxWidth >= 440.dp
+            val denseToolbar = maxWidth < 280.dp
             val navigationVisible = view.drawer ?: !compact
             val selectExample: (ExampleDescription) -> Unit = {
                 localSelectedName = it.name
@@ -295,9 +319,8 @@ fun ExamplesComposeApp(
                 if (compact) updateView(view.copy(drawer = null))
             }
             val updateState: (StateProps) -> Unit = { nextState ->
-                if (nextState.data != state.data || nextState.dataProvided != state.dataProvided) {
-                    editorDrafts = editorDrafts.refreshDataAfterFormEdit(nextState)
-                }
+                if (nextState != state)
+                    editorDrafts = editorDrafts.refreshAfterStateChange(state, nextState)
                 state = nextState
             }
             val switchRuntime: (DemoBrowserRuntime, Boolean) -> Unit = { target, openDemo ->
@@ -312,7 +335,9 @@ fun ExamplesComposeApp(
                     selectExample(examples.first())
                 }
             }
-            Column(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize().then(if (settingsOpen && !view.formOnly)
+                Modifier.clearAndSetSemantics { testTag = "settings-background" }
+            else Modifier)) {
                 if (!view.formOnly) DemoTopBar(
                     navigationVisible, view.formOnly && !showLanding, settingsOpen,
                     { updateView(view.copy(drawer = (!navigationVisible).takeUnless { it == !compact })) },
@@ -327,18 +352,41 @@ fun ExamplesComposeApp(
                     { updateView(view.copy(webComponent = !view.webComponent)) },
                     showBrandLogo,
                     showBrandTitle,
+                    denseToolbar,
                     settingsButtonFocus,
                 )
                 if (compact) {
-                    CompactLayout(
-                        examples, selected, originalState, state, navigationVisible && !view.formOnly,
-                        view.formOnly, effectiveSettings, view.activePane, { updateView(view.copy(activePane = it)) },
-                        editorDrafts, { editorDrafts = it }, selectExample, updateState, updateSettings,
-                        showLanding, { updateView(view.copy(formOnly = false)); selectExample(examples.first()) },
-                        onHomeSelected?.takeIf { !showBrandLogo },
-                        analysisPending, { analysisPending = it },
-                        browserRuntime, { target -> switchRuntime(target, true) },
-                    )
+                    val drawerOpen = navigationVisible && !view.formOnly
+                    Box(Modifier.fillMaxSize()) {
+                        Box(Modifier.fillMaxSize().then(if (drawerOpen)
+                            Modifier.clearAndSetSemantics { testTag = "compact-workspace" }
+                        else Modifier.testTag("compact-workspace"))) {
+                            CompactLayout(
+                                selected, originalState, state,
+                                view.formOnly, effectiveSettings, view.activePane,
+                                { updateView(view.copy(activePane = it)) },
+                                editorDrafts, { editorDrafts = it }, updateState, updateSettings,
+                                showLanding, { updateView(view.copy(formOnly = false)); selectExample(examples.first()) },
+                                analysisPending, { analysisPending = it },
+                                browserRuntime, { target -> switchRuntime(target, true) },
+                            )
+                        }
+                        if (drawerOpen) {
+                            Box(Modifier.fillMaxSize().zIndex(1f)
+                                .background(Color.Black.copy(alpha = .35f))
+                                .testTag("example-drawer-backdrop")
+                                .clickable { updateView(view.copy(drawer = null)) })
+                            ExampleNavigation(
+                                examples, selected.takeUnless { showLanding }, selectExample,
+                                Modifier.align(Alignment.TopStart).zIndex(2f)
+                                    .width(compactDrawerWidth).fillMaxHeight()
+                                    .testTag("example-drawer"),
+                                onHome = onHomeSelected?.takeIf { !showBrandLogo }?.let { home ->
+                                    { updateView(view.copy(drawer = null, formOnly = false)); home() }
+                                },
+                            )
+                        }
+                    }
                 } else {
                     ExpandedLayout(
                         examples, selected, originalState, state, navigationVisible && !view.formOnly,
@@ -352,7 +400,7 @@ fun ExamplesComposeApp(
             }
             if (view.formOnly && !showLanding) {
                 Box(Modifier.zIndex(1f).align(Alignment.TopEnd).padding(8.dp)) {
-                    ToolbarButton(PanelsIcon, demoText("Show full UI", "Покажи целия интерфейс")) {
+                    ToolbarButton(PanelsIcon, demoText(DemoTextKey.ShowFullUi)) {
                         updateView(view.copy(formOnly = false))
                     }
                 }
@@ -374,13 +422,10 @@ fun ExamplesComposeApp(
             }
             if (runtimeSwitchError) AlertDialog(
                 onDismissRequest = { runtimeSwitchError = false },
-                title = { Text(demoText("Unable to switch runtime", "Неуспешна смяна на средата")) },
-                text = { Text(demoText(
-                    "The browser could not preserve the current form data. Free browser storage and try again.",
-                    "Браузърът не можа да запази данните на формуляра. Освободете място и опитайте отново.",
-                )) },
+                title = { Text(demoText(DemoTextKey.UnableToSwitchRuntime)) },
+                text = { Text(demoText(DemoTextKey.RuntimeSwitchStorageError)) },
                 confirmButton = { TextButton(onClick = { runtimeSwitchError = false }) {
-                    Text(demoText("OK", "Добре"))
+                    Text(demoText(DemoTextKey.Ok))
                 } },
             )
             if (view.webComponent && supportsWebComponentView) {
@@ -446,6 +491,7 @@ private fun DemoTopBar(
     onWebComponentToggle: () -> Unit,
     showBrandLogo: Boolean,
     showBrandTitle: Boolean,
+    denseToolbar: Boolean,
     settingsButtonFocus: FocusRequester,
 ) {
     val uriHandler = LocalUriHandler.current
@@ -459,49 +505,66 @@ private fun DemoTopBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ToolbarButton(MenuIcon, if (navigationVisible)
-                demoText("Hide example menu", "Скрий менюто с примери")
-                else demoText("Show example menu", "Покажи менюто с примери"), navigationVisible,
-                onClick = onNavigation)
+                demoText(DemoTextKey.HideExampleMenu)
+                else demoText(DemoTextKey.ShowExampleMenu), navigationVisible,
+                dense = denseToolbar, onClick = onNavigation)
             if (showBrandLogo) Icon(
                 KotlinLogo,
                 contentDescription = if (onHome != null)
-                    demoText("Go to welcome page", "Към началната страница")
-                    else demoText("Kotlin logo", "Лого на Kotlin"),
+                    demoText(DemoTextKey.GoToWelcomePage)
+                    else demoText(DemoTextKey.KotlinLogo),
                 tint = Color.Unspecified,
-                modifier = Modifier.size(40.dp).clickable(enabled = onHome != null) { onHome?.invoke() }.padding(6.dp),
+                modifier = Modifier.size(if (denseToolbar) 24.dp else 40.dp)
+                    .clickable(enabled = onHome != null) { onHome?.invoke() }
+                    .padding(if (denseToolbar) 2.dp else 6.dp),
             )
             if (showBrandTitle) Text("JSON Forms Kotlin", style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f).clickable(enabled = onHome != null) { onHome?.invoke() })
             else Spacer(Modifier.weight(1f))
             ToolbarButton(PanelsIcon, if (formOnly)
-                demoText("Show full UI", "Покажи целия интерфейс")
-                else demoText("Show form only", "Покажи само формуляра"), formOnly,
-                onClick = onFormOnly)
+                demoText(DemoTextKey.ShowFullUi)
+                else demoText(DemoTextKey.ShowFormOnly), formOnly,
+                dense = denseToolbar, onClick = onFormOnly)
             if (supportsWebComponentView) {
-                ToolbarButton(WebComponentIcon, if (webComponentMode)
-                    demoText("Show Compose form", "Покажи Compose формуляр")
-                    else demoText("Show web component", "Покажи уеб компонента"),
-                    webComponentMode, onClick = onWebComponentToggle)
+                ToolbarButton(webComponentLogo(MaterialTheme.colorScheme.onSurface), if (webComponentMode)
+                    demoText(DemoTextKey.ShowComposeForm)
+                    else demoText(DemoTextKey.ShowWebComponent),
+                    webComponentMode, dense = denseToolbar, preserveColors = true,
+                    onClick = onWebComponentToggle)
             }
-            ToolbarButton(GitHubIcon, demoText("Open GitHub", "Отвори GitHub")) { uriHandler.openUri(GitHubUrl) }
+            ToolbarButton(GitHubIcon, demoText(DemoTextKey.OpenGithub),
+                dense = denseToolbar) { uriHandler.openUri(GitHubUrl) }
             ToolbarButton(SettingsIcon, if (settingsOpen)
-                demoText("Close settings", "Затвори настройките")
-                else demoText("Open settings", "Отвори настройките"), settingsOpen,
-                Modifier.focusRequester(settingsButtonFocus), onSettings)
+                demoText(DemoTextKey.CloseSettings)
+                else demoText(DemoTextKey.OpenSettings), settingsOpen,
+                Modifier.focusRequester(settingsButtonFocus), denseToolbar,
+                onClick = onSettings)
         }
     }
 }
 
 @Composable
 private fun ToolbarButton(icon: ImageVector, description: String, selected: Boolean = false,
-    modifier: Modifier = Modifier, onClick: () -> Unit) {
+    modifier: Modifier = Modifier, dense: Boolean = false, preserveColors: Boolean = false,
+    onClick: () -> Unit) {
+    var focused by remember { mutableStateOf(false) }
     ActionTooltip(description) {
         Surface(
             color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
             shape = RoundedCornerShape(10.dp),
+            border = if (dense && focused) BorderStroke(2.dp, MaterialTheme.colorScheme.tertiary) else null,
         ) {
-            IconButton(onClick = onClick, modifier = modifier) { Icon(icon, contentDescription = description) }
+            if (dense) Box(Modifier.size(40.dp).then(modifier)
+                .onFocusChanged { focused = it.isFocused }
+                .clickable(role = Role.Button, onClick = onClick),
+                contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = description, modifier = Modifier.size(20.dp),
+                    tint = if (preserveColors) Color.Unspecified else LocalContentColor.current)
+            } else IconButton(onClick = onClick, modifier = modifier) {
+                Icon(icon, contentDescription = description,
+                    tint = if (preserveColors) Color.Unspecified else LocalContentColor.current)
+            }
         }
     }
 }
@@ -525,29 +588,28 @@ private fun ActionTooltip(label: String, content: @Composable () -> Unit) {
 }
 
 @Composable
+private fun DemoTabPanel(modifier: Modifier, content: @Composable () -> Unit) {
+    if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino) {
+        CupertinoSurface(modifier = modifier, content = content)
+    } else {
+        Surface(modifier, shape = RoundedCornerShape(16.dp), tonalElevation = 1.dp,
+            content = content)
+    }
+}
+
+@Composable
 private fun CompactLayout(
-    examples: List<ExampleDescription>, selected: ExampleDescription, originalState: StateProps, state: StateProps,
-    navigationVisible: Boolean, formOnly: Boolean, settings: DemoSettings,
+    selected: ExampleDescription, originalState: StateProps, state: StateProps,
+    formOnly: Boolean, settings: DemoSettings,
     selectedPane: DemoPane, onPaneSelected: (DemoPane) -> Unit,
     editorDrafts: EditorDrafts, onEditorDraftsChange: (EditorDrafts) -> Unit,
-    onSelected: (ExampleDescription) -> Unit, onStateChange: (StateProps) -> Unit,
+    onStateChange: (StateProps) -> Unit,
     onSettingsChange: (DemoSettings) -> Unit,
-    showLanding: Boolean, onOpenDemo: () -> Unit, onCompactHome: (() -> Unit)?,
+    showLanding: Boolean, onOpenDemo: () -> Unit,
     analysisPending: Boolean, onAnalysisPendingChange: (Boolean) -> Unit,
     browserRuntime: DemoBrowserRuntime?, onRuntimeSwitch: (DemoBrowserRuntime) -> Unit,
 ) {
-    if (navigationVisible) {
-        // On a phone the picker is the current navigation surface. Keeping the
-        // form composed below it both wastes space and lets content show through
-        // when the list is short.
-        ExampleNavigation(
-            examples = examples,
-            selected = selected.takeUnless { showLanding },
-            onSelected = onSelected,
-            modifier = Modifier.fillMaxSize(),
-            onHome = onCompactHome,
-        )
-    } else if (showLanding) {
+    if (showLanding) {
         DemoLandingPage(onOpenDemo, browserRuntime, onRuntimeSwitch, Modifier.fillMaxSize())
     } else {
         val validationIssues = remember(state.data, state.dataProvided, state.schema, state.uischema,
@@ -559,29 +621,33 @@ private fun CompactLayout(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (!formOnly) ExampleHeader(selected)
-            if (!formOnly) {
-                DemoPaneSelector(selectedPane, validationIssues.size,
-                    settings.demoLayout == DemoLayout.DemoAndData, validationIssues,
-                    analysisPending, onPaneSelected)
-            }
-            when {
-                formOnly -> FormCard(state, true, settings, onStateChange, onSettingsChange,
+            if (formOnly) {
+                FormCard(state, true, settings, onStateChange, onSettingsChange,
                     onPendingChange = onAnalysisPendingChange)
-                selectedPane.isEditor -> EditorCard(
-                    selectedPane, originalState, state, editorDrafts, onEditorDraftsChange, onStateChange, settings.locale,
-                    Modifier.fillMaxWidth().heightIn(min = 520.dp),
-                )
-                settings.demoLayout == DemoLayout.DemoAndData -> {
-                    FormCard(state, true, settings, onStateChange, onSettingsChange,
-                        onPendingChange = onAnalysisPendingChange)
-                    EditorCard(
-                        DemoPane.Data, originalState, state, editorDrafts,
-                        onEditorDraftsChange, onStateChange, settings.locale,
-                        Modifier.fillMaxWidth().heightIn(min = 520.dp),
-                    )
+            } else DemoTabPanel(Modifier.fillMaxWidth().testTag("demo-tab-panel")) {
+                Column(Modifier.fillMaxWidth().padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DemoPaneSelector(selectedPane, validationIssues.size,
+                        settings.demoLayout == DemoLayout.DemoAndData, validationIssues,
+                        analysisPending, onPaneSelected)
+                    when {
+                        selectedPane.isEditor -> EditorCard(
+                            selectedPane, originalState, state, editorDrafts,
+                            onEditorDraftsChange, onStateChange, settings.locale,
+                            Modifier.fillMaxWidth().heightIn(min = 520.dp),
+                        )
+                        settings.demoLayout == DemoLayout.DemoAndData -> {
+                            FormCard(state, true, settings, onStateChange, onSettingsChange,
+                                onPendingChange = onAnalysisPendingChange)
+                            EditorCard(DemoPane.Data, originalState, state, editorDrafts,
+                                onEditorDraftsChange, onStateChange, settings.locale,
+                                Modifier.fillMaxWidth().heightIn(min = 520.dp))
+                        }
+                        selectedPane == DemoPane.Demo -> FormCard(state, true, settings,
+                            onStateChange, onSettingsChange,
+                            onPendingChange = onAnalysisPendingChange)
+                    }
                 }
-                selectedPane == DemoPane.Demo -> FormCard(state, true, settings, onStateChange,
-                    onSettingsChange, onPendingChange = onAnalysisPendingChange)
             }
         }
     }
@@ -608,50 +674,53 @@ private fun ExpandedLayout(
         Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (navigationVisible) ExampleNavigation(
-            examples, selected.takeUnless { showLanding }, onSelected, Modifier.width(260.dp).fillMaxHeight(),
+            examples, selected.takeUnless { showLanding }, onSelected,
+            Modifier.width(260.dp).fillMaxHeight().testTag("expanded-navigation"),
         )
         if (showLanding) {
-            DemoLandingPage(onOpenDemo, browserRuntime, onRuntimeSwitch, Modifier.fillMaxSize())
-        } else Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            DemoLandingPage(onOpenDemo, browserRuntime, onRuntimeSwitch,
+                Modifier.fillMaxSize().testTag("expanded-workspace"))
+        } else Column(Modifier.fillMaxSize().testTag("expanded-workspace"),
+            verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (!formOnly) ExampleHeader(selected)
-            if (!formOnly) {
-                DemoPaneSelector(selectedPane, validationIssues.size,
-                    settings.demoLayout == DemoLayout.DemoAndData, validationIssues,
-                    analysisPending, onPaneSelected)
-            }
-            if (!formOnly && selectedPane.isEditor) {
-                EditorCard(
-                    selectedPane, originalState, state, editorDrafts, onEditorDraftsChange, onStateChange, settings.locale,
-                    Modifier.weight(1f).fillMaxWidth(),
-                )
-            } else if (formOnly) {
+            if (formOnly) {
                 FormCard(
                     state, false, settings, onStateChange, onSettingsChange,
                     Modifier.weight(1f).fillMaxWidth(), true, onAnalysisPendingChange,
                 )
-            } else if (settings.demoLayout == DemoLayout.DemoAndData) {
-                DemoSplitPane(
-                    fraction = splitFraction,
-                    onFractionChange = { splitFraction = it },
-                    resizeLabel = if (settings.locale == DemoLocale.Bulgarian)
-                        "Преоразмеряване на формуляра и данните" else "Resize form and data panes",
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    form = { pane -> FormCard(state, false, settings, onStateChange, onSettingsChange,
-                        pane, true, onAnalysisPendingChange) },
-                    data = { pane -> EditorCard(DemoPane.Data, originalState, state, editorDrafts,
-                        onEditorDraftsChange, onStateChange, settings.locale, pane) },
-                )
-            } else if (selectedPane == DemoPane.Demo) {
-                FormCard(
-                    state, false, settings, onStateChange, onSettingsChange,
-                    Modifier.weight(1f).fillMaxWidth(), true, onAnalysisPendingChange,
-                )
+            } else DemoTabPanel(Modifier.weight(1f).fillMaxWidth().testTag("demo-tab-panel")) {
+                Column(Modifier.fillMaxSize().padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DemoPaneSelector(selectedPane, validationIssues.size,
+                        settings.demoLayout == DemoLayout.DemoAndData, validationIssues,
+                        analysisPending, onPaneSelected)
+                    if (selectedPane.isEditor) {
+                        EditorCard(selectedPane, originalState, state, editorDrafts,
+                            onEditorDraftsChange, onStateChange, settings.locale,
+                            Modifier.weight(1f).fillMaxWidth())
+                    } else if (settings.demoLayout == DemoLayout.DemoAndData) {
+                        DemoSplitPane(
+                            fraction = splitFraction,
+                            onFractionChange = { splitFraction = it },
+                            resizeLabel = demoChromeText(DemoTextKey.ResizeFormAndData, settings.locale),
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            form = { pane -> FormCard(state, false, settings, onStateChange, onSettingsChange,
+                                pane, true, onAnalysisPendingChange) },
+                            data = { pane -> EditorCard(DemoPane.Data, originalState, state, editorDrafts,
+                                onEditorDraftsChange, onStateChange, settings.locale, pane) },
+                        )
+                    } else if (selectedPane == DemoPane.Demo) {
+                        FormCard(state, false, settings, onStateChange, onSettingsChange,
+                            Modifier.weight(1f).fillMaxWidth(), true, onAnalysisPendingChange)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
+@OptIn(ExperimentalCupertinoApi::class)
 internal fun DemoPaneSelector(
     selected: DemoPane,
     errorCount: Int,
@@ -660,32 +729,64 @@ internal fun DemoPaneSelector(
     analysisPending: Boolean = false,
     onSelected: (DemoPane) -> Unit,
 ) {
-    SecondaryScrollableTabRow(
-        selectedTabIndex = DemoPane.entries.indexOf(selected),
-        modifier = Modifier.fillMaxWidth(),
-        edgePadding = 0.dp,
-        minTabWidth = 80.dp,
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-    ) {
-        DemoPane.entries.forEach { pane ->
-            Tab(
-                selected = selected == pane,
-                onClick = { onSelected(pane) },
-                text = {
-                    val label = demoPaneLabel(pane, demoAndData, LocalDemoLocale.current)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (pane == DemoPane.Demo && errorCount > 0) "$label ($errorCount)" else label)
-                        if (pane == DemoPane.Demo && analysisPending) {
-                            Text(demoText(" · Analysis pending", " · Анализът продължава"),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (pane == DemoPane.Demo && validationIssues.isNotEmpty()) {
-                            DemoValidationDetails(validationIssues)
+    if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino) {
+        BoxWithConstraints(Modifier.fillMaxWidth().testTag("cupertino-demo-tabs")) {
+            val tabWidth = 160.dp
+            val rowWidth = maxOf(maxWidth, tabWidth * DemoPane.entries.size)
+            Box(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                CupertinoSegmentedControl(
+                    selectedTabIndex = DemoPane.entries.indexOf(selected),
+                    modifier = Modifier.width(rowWidth),
+                    paddingValues = PaddingValues(0.dp),
+                ) {
+                    DemoPane.entries.forEach { pane ->
+                        CupertinoSegmentedControlTab(
+                            onClick = { onSelected(pane) },
+                            isSelected = selected == pane,
+                            modifier = Modifier.testTag("cupertino-tab-${pane.name}")
+                                .semantics { this.selected = selected == pane },
+                        ) {
+                            DemoPaneTabLabel(pane, errorCount, demoAndData,
+                                validationIssues, analysisPending, cupertino = true)
                         }
                     }
-                },
-            )
+                }
+            }
+        }
+    } else {
+        SecondaryScrollableTabRow(
+            selectedTabIndex = DemoPane.entries.indexOf(selected),
+            modifier = Modifier.fillMaxWidth(),
+            edgePadding = 0.dp,
+            minTabWidth = 80.dp,
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {
+            DemoPane.entries.forEach { pane ->
+                Tab(selected = selected == pane, onClick = { onSelected(pane) },
+                    text = { DemoPaneTabLabel(pane, errorCount, demoAndData,
+                        validationIssues, analysisPending, cupertino = false) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun DemoPaneTabLabel(
+    pane: DemoPane, errorCount: Int, demoAndData: Boolean,
+    validationIssues: List<DemoValidationIssue>, analysisPending: Boolean,
+    cupertino: Boolean,
+) {
+    val label = demoPaneLabel(pane, demoAndData, LocalDemoLocale.current)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val display = if (pane == DemoPane.Demo && errorCount > 0) "$label ($errorCount)" else label
+        if (cupertino) CupertinoText(display) else Text(display)
+        if (pane == DemoPane.Demo && analysisPending) {
+            Text(demoText(DemoTextKey.AnalysisPending),
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (pane == DemoPane.Demo && validationIssues.isNotEmpty()) {
+            DemoValidationDetails(validationIssues)
         }
     }
 }
@@ -693,12 +794,10 @@ internal fun DemoPaneSelector(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DemoValidationDetails(issues: List<DemoValidationIssue>) {
-    val bulgarian = LocalDemoLocale.current == DemoLocale.Bulgarian
-    val description = if (bulgarian) {
-        "${issues.size} ${if (issues.size == 1) "грешка" else "грешки"}. Покажи подробности"
-    } else {
-        "${issues.size} validation ${if (issues.size == 1) "error" else "errors"}. Show details"
-    }
+    val locale = LocalDemoLocale.current
+    val description = demoChromeText(if (issues.size == 1)
+        DemoTextKey.ValidationDetailsOne else DemoTextKey.ValidationDetailsMany, locale)
+        .replace("{count}", issues.size.toString())
     var expanded by remember { mutableStateOf(false) }
     var focused by remember { mutableStateOf(false) }
     val tooltip = rememberTooltipState()
@@ -711,7 +810,7 @@ private fun DemoValidationDetails(issues: List<DemoValidationIssue>) {
             tooltip = {
                 PlainTooltip(Modifier.widthIn(max = 420.dp)) {
                     Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
-                        issues.forEach { Text(demoValidationIssueLabel(it, bulgarian)) }
+                        issues.forEach { Text(demoValidationIssueLabel(it, locale)) }
                     }
                 }
             },
@@ -726,34 +825,32 @@ private fun DemoValidationDetails(issues: List<DemoValidationIssue>) {
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false },
             modifier = Modifier.widthIn(max = 480.dp).heightIn(max = 400.dp)) {
             issues.forEach { issue ->
-                Text(demoValidationIssueLabel(issue, bulgarian), Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                Text(demoValidationIssueLabel(issue, locale), Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
     }
 }
 
-internal fun demoValidationIssueLabel(issue: DemoValidationIssue, bulgarian: Boolean): String {
-    val source = when (issue.source) {
-        DemoErrorSource.Schema -> if (bulgarian) "Схема" else "Schema"
-        DemoErrorSource.Host -> if (bulgarian) "Хост" else "Host"
-    }
+internal fun demoValidationIssueLabel(issue: DemoValidationIssue, locale: DemoLocale): String {
+    val source = demoChromeText(when (issue.source) {
+        DemoErrorSource.Schema -> DemoTextKey.ErrorSourceSchema
+        DemoErrorSource.Host -> DemoTextKey.ErrorSourceHost
+    }, locale)
     val path = issue.path.ifEmpty { "/" }
     return "$source $path: ${issue.message}"
 }
 
 internal fun demoPaneLabel(pane: DemoPane, demoAndData: Boolean, locale: DemoLocale): String {
-    if (locale == DemoLocale.English) {
-        return if (pane == DemoPane.Demo && demoAndData) "Demo and Data" else pane.displayName
+    val key = when (pane) {
+        DemoPane.Demo -> if (demoAndData) DemoTextKey.PaneDemoAndData else DemoTextKey.PaneDemo
+        DemoPane.Data -> DemoTextKey.PaneData
+        DemoPane.Schema -> DemoTextKey.PaneSchema
+        DemoPane.UiSchema -> DemoTextKey.PaneUiSchema
+        DemoPane.UiSchemas -> DemoTextKey.PaneUiSchemas
+        DemoPane.Internationalization -> DemoTextKey.PaneInternationalization
+        DemoPane.Config -> DemoTextKey.PaneConfig
     }
-    return when (pane) {
-        DemoPane.Demo -> if (demoAndData) "Демо и данни" else "Демо"
-        DemoPane.Data -> "Данни"
-        DemoPane.Schema -> "Схема"
-        DemoPane.UiSchema -> "UI схема"
-        DemoPane.UiSchemas -> "UI схеми"
-        DemoPane.Internationalization -> "Преводи"
-        DemoPane.Config -> "Конфигурация"
-    }
+    return demoChromeText(key, locale)
 }
 
 @Composable
@@ -770,19 +867,19 @@ private fun ExampleNavigation(
     Surface(modifier, tonalElevation = 1.dp, shape = RoundedCornerShape(16.dp)) {
         Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (onHome != null) OutlinedButton(onClick = onHome) {
-                Text(demoText("Home", "Начало"))
+                Text(demoText(DemoTextKey.Home))
             }
-            Text(demoText("Example source", "Източник на пример"), style = MaterialTheme.typography.labelMedium)
+            Text(demoText(DemoTextKey.ExampleSource), style = MaterialTheme.typography.labelMedium)
             Box {
                 OutlinedButton(onClick = { sourceMenuOpen = true }) {
                     Text(source?.let { demoExampleSourceLabel(it, LocalDemoLocale.current) }
-                        ?: demoText("All examples", "Всички примери"))
+                        ?: demoText(DemoTextKey.AllExamples))
                 }
                 DropdownMenu(expanded = sourceMenuOpen, onDismissRequest = { sourceMenuOpen = false }) {
                     listOf(ExampleSource.Spec, ExampleSource.JsonForms, null).forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option?.let { demoExampleSourceLabel(it, LocalDemoLocale.current) }
-                                ?: demoText("All examples", "Всички примери")) },
+                                ?: demoText(DemoTextKey.AllExamples)) },
                             onClick = { source = option; sourceMenuOpen = false },
                         )
                     }
@@ -790,14 +887,14 @@ private fun ExampleNavigation(
             }
             OutlinedTextField(
                 query, { query = it }, Modifier.fillMaxWidth(), singleLine = true,
-                placeholder = { Text(demoText("Search examples...", "Търсене на примери...")) },
+                placeholder = { Text(demoText(DemoTextKey.SearchExamples)) },
                 leadingIcon = { Icon(SearchIcon, contentDescription = null) },
             )
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (filtered.isEmpty()) Text(demoText("No examples found.", "Няма намерени примери."), modifier = Modifier.padding(8.dp),
+                if (filtered.isEmpty()) Text(demoText(DemoTextKey.NoExamplesFound), modifier = Modifier.padding(8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val groups = filtered.groupBy(ExampleDescription::featureGroup)
                 ExampleFeatureGroup.entries.forEach { group ->
@@ -829,31 +926,22 @@ private fun ExampleNavigation(
 }
 
 internal fun demoExampleSourceLabel(source: ExampleSource, locale: DemoLocale): String =
-    if (locale == DemoLocale.Bulgarian) when (source) {
-        ExampleSource.Spec -> "Примери от спецификацията"
-        ExampleSource.JsonForms -> "Примери от JSON Forms"
-    } else source.displayName
+    demoChromeText(when (source) {
+        ExampleSource.Spec -> DemoTextKey.SourceSpecExamples
+        ExampleSource.JsonForms -> DemoTextKey.SourceJsonFormsExamples
+    }, locale)
 
 internal fun exampleFeatureGroupLabel(group: ExampleFeatureGroup, locale: DemoLocale): String =
-    if (locale == DemoLocale.Bulgarian) when (group) {
-        ExampleFeatureGroup.Controls -> "Полета"
-        ExampleFeatureGroup.Collections -> "Колекции и таблици"
-        ExampleFeatureGroup.Layout -> "Оформление и навигация"
-        ExampleFeatureGroup.Composition -> "Композиция и правила"
-        ExampleFeatureGroup.Validation -> "Валидация"
-        ExampleFeatureGroup.Internationalization -> "Преводи"
-        ExampleFeatureGroup.Advanced -> "Разширени възможности"
-        ExampleFeatureGroup.Other -> "Други примери"
-    } else when (group) {
-        ExampleFeatureGroup.Controls -> "Controls"
-        ExampleFeatureGroup.Collections -> "Collections and tables"
-        ExampleFeatureGroup.Layout -> "Layout and navigation"
-        ExampleFeatureGroup.Composition -> "Composition and rules"
-        ExampleFeatureGroup.Validation -> "Validation"
-        ExampleFeatureGroup.Internationalization -> "Internationalization"
-        ExampleFeatureGroup.Advanced -> "Advanced features"
-        ExampleFeatureGroup.Other -> "Other examples"
-    }
+    demoChromeText(when (group) {
+        ExampleFeatureGroup.Controls -> DemoTextKey.GroupControls
+        ExampleFeatureGroup.Collections -> DemoTextKey.GroupCollections
+        ExampleFeatureGroup.Layout -> DemoTextKey.GroupLayout
+        ExampleFeatureGroup.Composition -> DemoTextKey.GroupComposition
+        ExampleFeatureGroup.Validation -> DemoTextKey.GroupValidation
+        ExampleFeatureGroup.Internationalization -> DemoTextKey.GroupInternationalization
+        ExampleFeatureGroup.Advanced -> DemoTextKey.GroupAdvanced
+        ExampleFeatureGroup.Other -> DemoTextKey.GroupOther
+    }, locale)
 
 internal fun filterExamples(
     examples: List<ExampleDescription>, query: String, source: ExampleSource? = null,
@@ -869,9 +957,9 @@ internal fun filterExamples(
 internal fun ExampleHeader(example: ExampleDescription) {
     val uriHandler = LocalUriHandler.current
     val sourceLabel = when {
-        example.sourceUrl == null -> demoText("Host example", "Пример от приложението")
-        example.source == ExampleSource.Spec -> demoText("Specification fixture", "Пример от спецификацията")
-        else -> demoText("JSON Forms original", "Оригинал от JSON Forms")
+        example.sourceUrl == null -> demoText(DemoTextKey.HostExample)
+        example.source == ExampleSource.Spec -> demoText(DemoTextKey.SpecificationFixture)
+        else -> demoText(DemoTextKey.JsonFormsOriginal)
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp)) {
         Text(
@@ -884,7 +972,7 @@ internal fun ExampleHeader(example: ExampleDescription) {
             Text(sourceLabel, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall)
             example.sourceUrl?.let { url ->
-                val linkLabel = demoText("View source", "Виж източника")
+                val linkLabel = demoText(DemoTextKey.ViewSource)
                 if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino) {
                     CupertinoButton(onClick = { uriHandler.openUri(url) },
                         modifier = Modifier.semantics { contentDescription = linkLabel }) {
@@ -899,7 +987,7 @@ internal fun ExampleHeader(example: ExampleDescription) {
         example.capabilityNotice[locale.languageTag]?.let { notice ->
             Surface(color = MaterialTheme.colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
-                Text("${demoText("Capability notice", "Бележка за възможностите")}: $notice",
+                Text("${demoText(DemoTextKey.CapabilityNotice)}: $notice",
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(10.dp))
@@ -917,6 +1005,8 @@ private fun DemoLandingPage(
 ) {
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val compact = maxWidth < 600.dp
+        val rendererName = if (LocalDemoUiStyle.current == DemoUiStyle.Cupertino)
+            "Cupertino" else "Material 3"
         Column(
             Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -924,35 +1014,34 @@ private fun DemoLandingPage(
         ) {
             Icon(
                 KotlinLogo,
-                contentDescription = demoText("Kotlin logo", "Лого на Kotlin"),
+                contentDescription = demoText(DemoTextKey.KotlinLogo),
                 modifier = Modifier.size(if (compact) 88.dp else 120.dp),
                 tint = Color.Unspecified,
             )
             Text(
-                demoText("JSON FORMS RENDERER SET", "РЕНДЕРЕРИ ЗА JSON FORMS"),
+                demoText(DemoTextKey.JsonFormsRendererSet),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 letterSpacing = 2.sp,
                 textAlign = TextAlign.Center,
             )
             Text(
-                demoText("Welcome to JSON Forms Kotlin", "Добре дошли в JSON Forms Kotlin"),
+                "JSON Forms Kotlin $rendererName",
                 style = if (compact) MaterialTheme.typography.headlineLarge else MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.widthIn(max = 800.dp),
             )
             Text(
-                demoText("Compose Multiplatform renderers for JSON Forms.",
-                    "Compose Multiplatform рендерери за JSON Forms."),
+                demoText(DemoTextKey.MoreFormsLessCode),
                 style = if (compact) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             if (browserRuntime == null) {
-                Button(onClick = onOpenDemo) { Text(demoText("Open Demo", "Отвори демото")) }
+                Button(onClick = onOpenDemo) { Text(demoText(DemoTextKey.OpenDemo)) }
             } else {
-                Text(demoText("Choose a web runtime", "Изберете уеб среда"),
+                Text(demoText(DemoTextKey.ChooseAWebRuntime),
                     style = MaterialTheme.typography.titleMedium)
                 val runtimeButtons: @Composable () -> Unit = {
                     DemoBrowserRuntime.entries.forEach { runtime ->
@@ -1072,8 +1161,7 @@ private fun EditorCard(
                     Text(demoPaneLabel(pane, false, locale), style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold)
                     Text(
-                        demoText("Changes affect the active form only after Apply succeeds.",
-                            "Промените засягат активния формуляр само след успешно прилагане."),
+                        demoText(DemoTextKey.EditorApplyHint),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )
@@ -1093,11 +1181,10 @@ private fun EditorCard(
                         },
                         onFailure = { failure ->
                             val detail = failure.message?.takeIf(String::isNotBlank)
-                            val message = if (locale == DemoLocale.Bulgarian) {
-                                "JSON не може да се приложи." + (detail?.let { " $it" } ?: "")
-                            } else {
-                                detail ?: "The JSON could not be applied."
-                            }
+                            val message = if (detail == null)
+                                demoChromeText(DemoTextKey.EditorApplyErrorNoDetail, locale)
+                            else demoChromeText(DemoTextKey.EditorApplyErrorWithDetail, locale)
+                                .replace("{detail}", detail)
                             onDraftsChange(drafts.update(pane) { it.copy(error = message) })
                         },
                     )
@@ -1121,8 +1208,7 @@ private fun EditorCard(
             )
             if (pane == DemoPane.UiSchemas) {
                 Text(
-                    demoText("Registry tester functions are retained by position; the number of entries cannot be changed here.",
-                        "Функциите за избор в регистъра се запазват по позиция; броят на записите не може да се променя тук."),
+                    demoText(DemoTextKey.RegistryTesterPositionHint),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -1132,19 +1218,17 @@ private fun EditorCard(
 }
 
 internal fun editorActionLabel(locale: DemoLocale, pane: DemoPane, reload: Boolean): String {
-    if (locale == DemoLocale.English) {
-        return "${if (reload) "Reload" else "Apply"} ${pane.displayName}"
+    val key = when (pane) {
+        DemoPane.Demo -> if (reload) DemoTextKey.ReloadDemo else DemoTextKey.ApplyDemo
+        DemoPane.Data -> if (reload) DemoTextKey.ReloadData else DemoTextKey.ApplyData
+        DemoPane.Schema -> if (reload) DemoTextKey.ReloadSchema else DemoTextKey.ApplySchema
+        DemoPane.UiSchema -> if (reload) DemoTextKey.ReloadUiSchema else DemoTextKey.ApplyUiSchema
+        DemoPane.UiSchemas -> if (reload) DemoTextKey.ReloadUiSchemas else DemoTextKey.ApplyUiSchemas
+        DemoPane.Internationalization -> if (reload) DemoTextKey.ReloadInternationalization
+            else DemoTextKey.ApplyInternationalization
+        DemoPane.Config -> if (reload) DemoTextKey.ReloadConfig else DemoTextKey.ApplyConfig
     }
-    val paneName = when (pane) {
-        DemoPane.Demo -> "Демо"
-        DemoPane.Data -> "данни"
-        DemoPane.Schema -> "схема"
-        DemoPane.UiSchema -> "UI схема"
-        DemoPane.UiSchemas -> "UI схеми"
-        DemoPane.Internationalization -> "преводи"
-        DemoPane.Config -> "конфигурация"
-    }
-    return "${if (reload) "Презареди" else "Приложи"} $paneName"
+    return demoChromeText(key, locale)
 }
 
 @Composable
@@ -1329,24 +1413,26 @@ private fun SettingsPanel(
         mutableStateOf((settings.filterErrorKeywordsBeforeTouch
             ?: configuredErrorKeywords(exampleConfig)).joinToString(", "))
     }
+    val panelTitle = demoText(DemoTextKey.Settings)
     Card(modifier.onPreviewKeyEvent { event ->
         if (event.type == KeyEventType.KeyDown && event.key == Key.Escape) {
             onClose()
             true
         } else false
-    }.clickable { }) {
+    }.pointerInput(Unit) { detectTapGestures(onTap = {}) }
+        .semantics { paneTitle = panelTitle }
+        .testTag("settings-panel")) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(demoText("Settings", "Настройки"), style = MaterialTheme.typography.headlineSmall)
-                    Text(demoText("Configure the renderer demo and JSON Forms behavior.",
-                        "Настройте демото на рендерера и поведението на JSON Forms."),
+                    Text(demoText(DemoTextKey.Settings), style = MaterialTheme.typography.headlineSmall)
+                    Text(demoText(DemoTextKey.SettingsDescription),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                 }
-                val closeLabel = demoText("Close settings", "Затвори настройките")
+                val closeLabel = demoText(DemoTextKey.CloseSettings)
                 ActionTooltip(closeLabel) {
                     IconButton(onClose, modifier = Modifier.focusRequester(closeButtonFocus)
                         .focusProperties { previous = lastSwitchFocus }) {
@@ -1355,40 +1441,40 @@ private fun SettingsPanel(
                 }
             }
             if (browserRuntime != null) SettingsSelect(
-                label = demoText("Web runtime", "Уеб среда"),
+                label = demoText(DemoTextKey.WebRuntime),
                 selected = browserRuntime,
                 values = DemoBrowserRuntime.entries,
                 displayName = DemoBrowserRuntime::label,
                 onSelected = { if (it != browserRuntime) onRuntimeSwitch(it) },
             )
             SettingsSelect(
-                label = demoText("Locale", "Език"),
+                label = demoText(DemoTextKey.Locale),
                 selected = settings.locale,
                 values = DemoLocale.entries,
                 displayName = DemoLocale::displayName,
                 onSelected = { onChange(settings.copy(locale = it)) },
             )
             SettingsSelect(
-                label = demoText("Direction", "Посока"),
+                label = demoText(DemoTextKey.Direction),
                 selected = settings.direction,
                 values = DemoDirection.entries,
                 displayName = DemoDirection::displayName,
                 onSelected = { onChange(settings.copy(direction = it)) },
             )
             SettingsSelect(
-                label = demoText("Demo Layout", "Оформление на демото"),
+                label = demoText(DemoTextKey.DemoLayout),
                 selected = settings.demoLayout,
                 values = DemoLayout.entries,
-                displayName = { layout -> if (settings.locale == DemoLocale.Bulgarian) when (layout) {
-                    DemoLayout.Default -> "По подразбиране"
-                    DemoLayout.DemoAndData -> "Демо и данни"
-                } else layout.displayName },
+                displayName = { layout -> demoChromeText(when (layout) {
+                    DemoLayout.Default -> DemoTextKey.LayoutDefault
+                    DemoLayout.DemoAndData -> DemoTextKey.LayoutDemoAndData
+                }, settings.locale) },
                 onSelected = { onChange(settings.copy(demoLayout = it)) },
             )
             HorizontalDivider()
-            Text(demoText("Appearance", "Външен вид"), style = MaterialTheme.typography.titleMedium)
+            Text(demoText(DemoTextKey.Appearance), style = MaterialTheme.typography.titleMedium)
             SettingsSelect(
-                label = demoText("Interface Style", "Стил на интерфейса"),
+                label = demoText(DemoTextKey.InterfaceStyle),
                 selected = settings.uiStyle,
                 values = DemoUiStyle.entries,
                 displayName = DemoUiStyle::displayName,
@@ -1404,22 +1490,22 @@ private fun SettingsPanel(
                         onClick = { onChange(settings.copy(themeMode = mode)) },
                         modifier = Modifier.weight(1f),
                     ) { Text(when (mode) {
-                        DemoThemeMode.System -> demoText("System", "Системен")
-                        DemoThemeMode.Light -> demoText("Light", "Светъл")
-                        DemoThemeMode.Dark -> demoText("Dark", "Тъмен")
+                        DemoThemeMode.System -> demoText(DemoTextKey.System)
+                        DemoThemeMode.Light -> demoText(DemoTextKey.Light)
+                        DemoThemeMode.Dark -> demoText(DemoTextKey.Dark)
                     }) }
                 }
             }
             if (settings.effectiveUiStyle() == DemoUiStyle.Material) {
                 SettingsSelect(
-                    label = demoText("Light Material Theme", "Светла Material тема"),
+                    label = demoText(DemoTextKey.LightMaterialTheme),
                     selected = settings.lightMaterialTheme,
                     values = MaterialThemePreset.entries,
                     displayName = MaterialThemePreset::displayName,
                     onSelected = { onChange(settings.copy(lightMaterialTheme = it)) },
                 )
                 SettingsSelect(
-                    label = demoText("Dark Material Theme", "Тъмна Material тема"),
+                    label = demoText(DemoTextKey.DarkMaterialTheme),
                     selected = settings.darkMaterialTheme,
                     values = MaterialThemePreset.entries,
                     displayName = MaterialThemePreset::displayName,
@@ -1427,14 +1513,14 @@ private fun SettingsPanel(
                 )
             } else {
                 SettingsSelect(
-                    label = demoText("Light iOS Theme", "Светла iOS тема"),
+                    label = demoText(DemoTextKey.LightIosTheme),
                     selected = settings.lightCupertinoTheme,
                     values = CupertinoThemePreset.entries,
                     displayName = CupertinoThemePreset::displayName,
                     onSelected = { onChange(settings.copy(lightCupertinoTheme = it)) },
                 )
                 SettingsSelect(
-                    label = demoText("Dark iOS Theme", "Тъмна iOS тема"),
+                    label = demoText(DemoTextKey.DarkIosTheme),
                     selected = settings.darkCupertinoTheme,
                     values = CupertinoThemePreset.entries,
                     displayName = CupertinoThemePreset::displayName,
@@ -1442,50 +1528,49 @@ private fun SettingsPanel(
                 )
             }
             HorizontalDivider()
-            Text(demoText("Validation", "Валидация"), style = MaterialTheme.typography.titleMedium)
+            Text(demoText(DemoTextKey.Validation), style = MaterialTheme.typography.titleMedium)
             ValidationMode.entries.forEach { mode ->
                 Surface(
                     color = if (settings.validationMode == mode) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth().clickable { onChange(settings.copy(validationMode = mode)) },
-                ) { Text(if (settings.locale == DemoLocale.Bulgarian) when (mode) {
-                    ValidationMode.ValidateAndShow -> "Проверявай и показвай"
-                    ValidationMode.ValidateAndHide -> "Проверявай и скривай"
-                    ValidationMode.NoValidation -> "Без валидация"
-                } else mode.displayName(), modifier = Modifier.padding(12.dp)) }
+                ) { Text(demoChromeText(when (mode) {
+                    ValidationMode.ValidateAndShow -> DemoTextKey.ValidationModeShow
+                    ValidationMode.ValidateAndHide -> DemoTextKey.ValidationModeHide
+                    ValidationMode.NoValidation -> DemoTextKey.ValidationModeNone
+                }, settings.locale), modifier = Modifier.padding(12.dp)) }
             }
             HorizontalDivider()
-            Text(demoText("Options", "Опции"), style = MaterialTheme.typography.titleMedium)
-            SettingSwitch(demoText("Hide Required Asterisk", "Скрий звездичката за задължителни полета"),
-                demoText("Hide asterisks in labels for required fields.", "Скрий звездичките в етикетите на задължителните полета."), settings.hideRequiredAsterisk) {
+            Text(demoText(DemoTextKey.Options), style = MaterialTheme.typography.titleMedium)
+            SettingSwitch(demoText(DemoTextKey.HideRequiredAsterisk),
+                demoText(DemoTextKey.HideAsterisksInLabelsForRequiredFields), settings.hideRequiredAsterisk) {
                 onChange(settings.copy(hideRequiredAsterisk = it))
             }
-            SettingSwitch(demoText("Show Unfocused Description", "Показвай описанието без фокус"),
-                demoText("Keep input descriptions visible while controls are unfocused.", "Показвай описанията и когато полетата не са на фокус."), settings.showUnfocusedDescription) {
+            SettingSwitch(demoText(DemoTextKey.ShowUnfocusedDescription),
+                demoText(DemoTextKey.UnfocusedDescriptionHint), settings.showUnfocusedDescription) {
                 onChange(settings.copy(showUnfocusedDescription = it))
             }
-            SettingSwitch(demoText("Restrict", "Ограничения"),
-                demoText("Enforce schema input and array size restrictions.", "Прилагай ограниченията за въвеждане и размер на масивите от схемата."), settings.restrict) { onChange(settings.copy(restrict = it)) }
-            SettingSwitch(demoText("Read-Only", "Само за четене"),
-                demoText("Set all controls to read-only.", "Направи всички полета само за четене."),
+            SettingSwitch(demoText(DemoTextKey.Restrict),
+                demoText(DemoTextKey.RestrictHint), settings.restrict) { onChange(settings.copy(restrict = it)) }
+            SettingSwitch(demoText(DemoTextKey.ReadOnly),
+                demoText(DemoTextKey.ReadOnlyHint),
                 settings.readonly, tag = "setting-readonly") { onChange(settings.copy(readonly = it)) }
-            SettingSwitch(demoText("Collapse new array items", "Свивай новите елементи на масив"),
-                demoText("Do not expand newly added array items.", "Не разгъвай новодобавените елементи на масив."), settings.collapseNewItems) {
+            SettingSwitch(demoText(DemoTextKey.CollapseNewArrayItems),
+                demoText(DemoTextKey.CollapseNewItemsHint), settings.collapseNewItems) {
                 onChange(settings.copy(collapseNewItems = it))
             }
-            SettingSwitch(demoText("Hide array summary validation", "Скрий обобщението на грешките в масив"),
-                demoText("Hide validation summaries in array headers.", "Скрий обобщенията на грешките в заглавията на масивите."), settings.hideArraySummaryValidation) {
+            SettingSwitch(demoText(DemoTextKey.HideArraySummaryValidation),
+                demoText(DemoTextKey.HideArraySummaryHint), settings.hideArraySummaryValidation) {
                 onChange(settings.copy(hideArraySummaryValidation = it))
             }
-            SettingSwitch(demoText("Collapse arrays initially", "Свий масивите първоначално"),
-                demoText("Start array accordions collapsed.", "Първоначално показвай масивите свити."), settings.initCollapsed) {
+            SettingSwitch(demoText(DemoTextKey.CollapseArraysInitially),
+                demoText(DemoTextKey.InitialArrayCollapseHint), settings.initCollapsed) {
                 onChange(settings.copy(initCollapsed = it))
             }
-            SettingSwitch(demoText("Hide Array Item Avatar", "Скрий номера на елемента"),
-                demoText("Hide array index avatars.", "Скрий номерата на елементите в масивите."), settings.hideAvatar) { onChange(settings.copy(hideAvatar = it)) }
-            SettingSwitch(demoText("Enable Filter Errors Before Touch", "Скрий грешките преди докосване"),
-                demoText("Hide inline errors until a field loses focus.",
-                    "Скрий грешките до излизане от полето."),
+            SettingSwitch(demoText(DemoTextKey.HideArrayItemAvatar),
+                demoText(DemoTextKey.HideArrayAvatarHint), settings.hideAvatar) { onChange(settings.copy(hideAvatar = it)) }
+            SettingSwitch(demoText(DemoTextKey.EnableFilterErrorsBeforeTouch),
+                demoText(DemoTextKey.FilterErrorsHint),
                 settings.enableFilterErrorsBeforeTouch ?: (exampleConfig["enableFilterErrorsBeforeTouch"] == true),
                 tag = "setting-filter-before-touch") {
                 onChange(settings.copy(enableFilterErrorsBeforeTouch = it))
@@ -1497,14 +1582,12 @@ private fun SettingsPanel(
                     onChange(settings.copy(filterErrorKeywordsBeforeTouch = parseErrorKeywords(draft)))
                 },
                 modifier = Modifier.fillMaxWidth().testTag("setting-error-keywords"),
-                label = { Text(demoText("Filter Error Keywords Before Touch", "Грешки за скриване преди докосване")) },
-                supportingText = { Text(demoText("Comma-separated JSON Schema keywords; empty hides all inline errors when filtering is enabled.",
-                    "Ключови думи от JSON Schema, разделени със запетая; празно поле скрива всички грешки при включено филтриране.")) },
+                label = { Text(demoText(DemoTextKey.FilterErrorKeywordsBeforeTouch)) },
+                supportingText = { Text(demoText(DemoTextKey.FilterErrorKeywordsHint)) },
                 singleLine = true,
             )
-            SettingSwitch(demoText("Allow Additional Properties By Default", "Позволявай допълнителни свойства по подразбиране"),
-                demoText("Allow new object properties when the schema does not specify additionalProperties.",
-                    "Позволявай нови свойства, когато схемата не задава additionalProperties."),
+            SettingSwitch(demoText(DemoTextKey.AllowAdditionalPropertiesByDefault),
+                demoText(DemoTextKey.AdditionalPropertiesHint),
                 settings.allowAdditionalPropertiesByDefault ?: (exampleConfig["allowAdditionalPropertiesIfMissing"] == true),
                 tag = "setting-additional-properties-default",
                 modifier = Modifier.focusRequester(lastSwitchFocus)
@@ -1612,12 +1695,6 @@ private fun DemoChoiceChip(
     }
 }
 
-private fun ValidationMode.displayName() = when (this) {
-    ValidationMode.ValidateAndShow -> "Validate And Show"
-    ValidationMode.ValidateAndHide -> "Validate And Hide"
-    ValidationMode.NoValidation -> "No Validation"
-}
-
 internal fun exampleI18nForLocale(state: StateProps, languageTag: String): JsonFormsI18nState {
     val language = languageTag.substringBefore('-').lowercase()
     val localized = state.localizedTranslations[languageTag]
@@ -1679,7 +1756,7 @@ private fun ExampleDescription.toStateProps() = StateProps(
 @Composable
 private fun EmptyExamplesState() {
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).safeDrawingPadding(), contentAlignment = Alignment.Center) {
-        Text(demoText("No examples registered", "Няма регистрирани примери"),
+        Text(demoText(DemoTextKey.NoExamplesRegistered),
             style = MaterialTheme.typography.titleLarge)
     }
 }
@@ -1717,10 +1794,25 @@ private val ValidationIssueIcon = lineIcon("Validation errors") {
     moveTo(12f, 17f); lineTo(12f, 17.1f)
 }
 private val PanelsIcon = lineIcon("Form only") { moveTo(3f, 4f); horizontalLineTo(21f); verticalLineTo(20f); horizontalLineTo(3f); close(); moveTo(8f, 4f); verticalLineTo(20f); moveTo(8f, 10f); horizontalLineTo(21f) }
-private val WebComponentIcon = lineIcon("Web component") {
-    moveTo(3f, 4f); horizontalLineTo(21f); verticalLineTo(20f); horizontalLineTo(3f); close()
-    moveTo(9f, 9f); lineTo(6f, 12f); lineTo(9f, 15f)
-    moveTo(15f, 9f); lineTo(18f, 12f); lineTo(15f, 15f)
+@Composable
+private fun webComponentLogo(foreground: Color): ImageVector = remember(foreground) {
+    val primary = Color(0xFFEF562F)
+    val primaryDark = Color(0xFF890000)
+    val secondary = Color(0xFFB4D44E)
+    ImageVector.Builder("Web Components", 24.dp, 24.dp, 161f, 132f).apply {
+        fun part(path: String, color: Color) = addPath(
+            pathData = PathParser().parsePathString(path).toNodes(),
+            fill = SolidColor(color),
+        )
+        part("M160.6 65.9l-17.4 29.3-24.4-29.7 24.4-28.9z", primaryDark)
+        part("M141.3 100.2l-26.5-31.7-15.9 26.6 24.7 36.1z", secondary)
+        part("M141 31.4l-26.2 31.8-15.9-26.6L123.6.9z", primaryDark)
+        part("M61.1 31.4H141L123.4.9H78.7z", primary)
+        part("M114.8 63.3H159l-15.9-26.8H98.8", primary)
+        part("M141.3 100.3H61l17.6 30.5h45z", secondary)
+        part("M78.6 130.8L41 65.8 79.1.8H37.9L.4 65.8l37.5 65z", foreground)
+        part("M114.8 68.4H159l-15.9 26.8H98.8", secondary)
+    }.build()
 }
 private val GitHubIcon = ImageVector.Builder("GitHub", 24.dp, 24.dp, 16f, 16f).apply {
     addPath(

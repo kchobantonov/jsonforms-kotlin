@@ -11,6 +11,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.CategorizationElement
@@ -133,17 +135,21 @@ class DestructiveConfirmationFixtureUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("By email")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Change the selection?").assertExists()
         onNodeWithText("No").performClick()
         runOnIdle { assertEquals(fixture.data, data); assertEquals(0, changes) }
-        onNodeWithTag("oneof-selector-clear").performClick()
+        onNodeWithText("By email")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).performClick()
         onNodeWithText("Yes").performClick()
         runOnIdle {
             assertEquals(false, "contact" in data.jsonObject)
             assertEquals(1, changes)
         }
-        onNodeWithTag("oneof-selector-clear").assertDoesNotExist()
+        onNodeWithTag("oneof-selector-clear", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("By email").assertDoesNotExist()
     }
 

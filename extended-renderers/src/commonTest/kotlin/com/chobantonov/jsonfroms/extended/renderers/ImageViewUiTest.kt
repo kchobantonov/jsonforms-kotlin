@@ -77,6 +77,39 @@ class ImageViewUiTest {
 
     @Test fun materialBlockedImageUsesLocaleDefault() = localizedBlocked(materialExtendedRenderers)
     @Test fun cupertinoBlockedImageUsesLocaleDefault() = localizedBlocked(cupertinoExtendedRenderers)
+    @Test fun materialImageDiagnosticsFollowLocaleChange() = diagnosticLocaleChange(materialExtendedRenderers)
+    @Test fun cupertinoImageDiagnosticsFollowLocaleChange() = diagnosticLocaleChange(cupertinoExtendedRenderers)
+
+    private fun diagnosticLocaleChange(
+        renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>,
+    ) = runComposeUiTest {
+        val diagnostics = mutableListOf<UiDiagnostic>()
+        val reporter = UiDiagnosticReporter(diagnostics::add)
+        val locale = mutableStateOf("en")
+        var changes = 0
+        setContent {
+            JsonForms(data = buildJsonObject {}, schema = schema,
+                uischema = ImageViewElement(src = "javascript:alert(1)"),
+                renderers = renderers,
+                config = mapOf(UiDiagnosticReporterConfigKey to reporter),
+                i18n = JsonFormsI18nState(locale = locale.value),
+                onChange = { changes++ })
+        }
+        waitForIdle()
+        assertEquals(2, diagnostics.size)
+        assertEquals("Image source refused by URL policy",
+            diagnostics.last { it.code == "image.urlRefused" }.message)
+        assertEquals("Image alternative text is missing",
+            diagnostics.last { it.code == "image.missingAlt" }.message)
+        runOnIdle { locale.value = "bg-BG" }
+        waitForIdle()
+        assertEquals(4, diagnostics.size)
+        assertEquals("Източникът на изображението е отказан от правилата за URL адреси",
+            diagnostics.last { it.code == "image.urlRefused" }.message)
+        assertEquals("Липсва алтернативен текст за изображението",
+            diagnostics.last { it.code == "image.missingAlt" }.message)
+        assertEquals(0, changes)
+    }
 
     private fun localizedBlocked(renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>) = runComposeUiTest {
         val diagnostics = mutableListOf<UiDiagnostic>()
@@ -142,7 +175,9 @@ class ImageViewUiTest {
         assertEquals(UiDiagnosticSeverity.Error, diagnostics.single().severity)
         runOnIdle { locale.value = "bg" }
         onNodeWithText("Изображението е блокирано").assertExists()
-        assertEquals(1, diagnostics.size)
+        assertEquals(2, diagnostics.size)
+        assertEquals("Източникът на изображението е отказан от правилата за URL адреси",
+            diagnostics.last().message)
     }
 
     @Test fun materialReportsMissingImageFields() = missingFields(materialExtendedRenderers)
@@ -225,8 +260,11 @@ class ImageViewUiTest {
         assertEquals(UiDiagnosticSeverity.Error, diagnostics.single().severity)
         runOnIdle { locale.value = "bg" }
         onNodeWithText("Изображението не е достъпно").assertExists()
-        onNodeWithText("Опитай отново").performClick()
         waitUntil(timeoutMillis = 5_000) { diagnostics.size == 2 }
+        assertEquals("Източникът на изображението не може да се зареди",
+            diagnostics.last().message)
+        onNodeWithText("Опитай отново").performClick()
+        waitUntil(timeoutMillis = 5_000) { diagnostics.size == 3 }
         onNodeWithText("Изображението не е достъпно").assertExists()
         val fixture = getBuiltInExamples().first { it.name == "spec-presentation" }
         val imageCategory = assertIs<CategorizationElement>(
@@ -236,7 +274,7 @@ class ImageViewUiTest {
         runOnIdle { source.value = valid }
         onNodeWithText("Изображението не е достъпно").assertDoesNotExist()
         onNodeWithContentDescription("Preview").assertExists()
-        assertEquals(2, diagnostics.size)
+        assertEquals(3, diagnostics.size)
         assertEquals(0, changes)
     }
 

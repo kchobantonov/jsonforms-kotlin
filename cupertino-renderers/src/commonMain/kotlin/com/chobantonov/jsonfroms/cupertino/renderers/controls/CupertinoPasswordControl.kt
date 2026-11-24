@@ -1,11 +1,17 @@
 package com.chobantonov.jsonfroms.cupertino.renderers.controls
 
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -57,7 +63,7 @@ fun CupertinoPasswordControl(props: ComposeJsonFormsRendererProps, compact: Bool
         count > 0 && bindings.stateProps.schema.minLength?.let { it in 0..count } == true &&
             (controlProps.uischema.options["variant"] as? JsonPrimitive)?.contentOrNull == "otp"
     }
-    val clearable = (controlProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+    val clearable = resolvedControlBooleanOption(controlProps.uischema.options, controlProps.config, "clearable") != false
     val onPasswordChange: (String) -> Boolean = { value ->
         if (!acceptsRestrictedStringEdit(current, value,
                 bindings.stateProps.schema.maxLength,
@@ -76,13 +82,15 @@ fun CupertinoPasswordControl(props: ComposeJsonFormsRendererProps, compact: Bool
             borderColor = colors.controlBorder, focusColor = colors.accent,
             errorColor = colors.destructive,
             storedValueStatus = invalidStatus,
-            trailingContent = {
-                if (clearable && current.isNotEmpty() && controlProps.enabled && !controlProps.readonly)
+            trailingContent = { clearVisible ->
+                val canClear = clearable && current.isNotEmpty() && controlProps.enabled && !controlProps.readonly
+                if (canClear && clearVisible)
                     ActionTooltip(bindings.clearLabel) {
                         IconButton(onClick = { onPasswordChange("") }) {
                             Icon(JsonFormsActionIcons.Clear, bindings.clearLabel)
                         }
                     }
+                else if (canClear) Spacer(Modifier.size(48.dp))
                 ActionTooltip(visibilityText.tooltip) {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(if (passwordVisible) JsonFormsActionIcons.VisibilityOff

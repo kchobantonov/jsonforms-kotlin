@@ -31,7 +31,8 @@ private fun extendedEntries(
     JsonFormsRendererRegistryEntry(codeProfileFallbackTester,
         codeProfileFallbackRenderer(if (cupertino) cupertinoRenderers else materialRenderers)),
     JsonFormsRendererRegistryEntry(imageViewTester, imageViewRenderer(cupertino)),
-    JsonFormsRendererRegistryEntry(markupLabelTester, markupLabelRenderer(cupertino)),
+    JsonFormsRendererRegistryEntry(markupLabelTester, markupLabelRenderer(cupertino),
+        handlesLabelInterpolation = true),
 )
 
 val materialExtendedRendererEntries = extendedEntries(materialExtendedControls, extendedLayouts, cupertino = false)

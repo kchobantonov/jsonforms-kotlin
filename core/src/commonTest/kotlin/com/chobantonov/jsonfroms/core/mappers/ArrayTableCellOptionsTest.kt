@@ -18,7 +18,8 @@ class ArrayTableCellOptionsTest {
     @Test fun parsesCellSpecificSummaryDetailAndDialog() {
         val options: JsonOptions = Json.parseToJsonElement("""{"cells":{"contact":{
           "summary":{"type":"Control","scope":"#/properties/city"},
-          "detail":{"type":"Control","scope":"#"},"dialog":{"width":720}},
+          "detail":{"type":"Control","scope":"#","options":{"dialog":{"width":640}}},
+          "dialog":{"width":720}},
           "virtual":{"summary":{"type":"Label","text":"Preview"}}}}""").jsonObject
         val contact = assertNotNull(resolveArrayTableCellOptions(options, "contact"))
         assertEquals("#/properties/city", assertIs<ControlElement>(contact.summary).scope)
@@ -26,6 +27,13 @@ class ArrayTableCellOptionsTest {
         assertEquals("720", contact.dialog?.get("width")?.toString())
         assertIs<LabelElement>(resolveArrayTableCellOptions(options, "virtual")?.summary)
         assertNull(resolveArrayTableCellOptions(options, "missing"))
+    }
+
+    @Test fun detailElementDialogIsUsedWhenCellHasNoSiblingDialog() {
+        val options: JsonOptions = Json.parseToJsonElement("""{"cells":{"contact":{
+          "detail":{"type":"Control","scope":"#","options":{"dialog":{"width":640}}}}}}""").jsonObject
+        val contact = assertNotNull(resolveArrayTableCellOptions(options, "contact"))
+        assertEquals("640", contact.dialog?.get("width")?.toString())
     }
 
     @Test fun typeIndicatorUsesCellThenCollectionThenTopLevelConfig() {

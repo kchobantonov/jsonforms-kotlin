@@ -73,8 +73,12 @@ class GroupRegionsAndAdornmentsUiTest {
     @Test fun cupertinoHeaderInputDoesNotToggleDisclosure() = interactiveHeader(true)
     @Test fun materialGroupIndicatorsUseBodyOnly() = groupIndicatorsUseBodyOnly(false)
     @Test fun cupertinoGroupIndicatorsUseBodyOnly() = groupIndicatorsUseBodyOnly(true)
+    @Test fun materialNoncollapsibleCardHeaderShowsIndicators() = noncollapsibleCardHeaderIndicators(false)
+    @Test fun cupertinoNoncollapsibleCardHeaderShowsIndicators() = noncollapsibleCardHeaderIndicators(true)
     @Test fun materialCardRegionsWrapAtNarrowWidth() = cardRegionsWrap(false)
     @Test fun cupertinoCardRegionsWrapAtNarrowWidth() = cardRegionsWrap(true)
+    @Test fun materialCardRegionsRemainWhenBodyChildHidden() = cardWithHiddenBody(false)
+    @Test fun cupertinoCardRegionsRemainWhenBodyChildHidden() = cardWithHiddenBody(true)
     @Test fun materialRegionRulesAndNestedDataPaths() = regionRulesAndNestedDataPaths(false)
     @Test fun cupertinoRegionRulesAndNestedDataPaths() = regionRulesAndNestedDataPaths(true)
     @Test fun materialGroupReadonlyReachesRegions() = groupReadonlyReachesRegions(false)
@@ -616,6 +620,66 @@ class GroupRegionsAndAdornmentsUiTest {
           "cover":"x","header":"x","body":"x","footer":"x"
         }""") }
         assertEquals("1 error", heading()[SemanticsProperties.Error])
+        assertEquals(0, writes)
+    }
+
+    private fun noncollapsibleCardHeaderIndicators(cupertino: Boolean) = runComposeUiTest {
+        val regionSchema = JsonSchema(Json.parseToJsonElement("""{
+          "type":"object","required":["body"],"properties":{"body":{"type":"string"}}
+        }""").jsonObject)
+        val ui = Json.parseToJsonElement("""{
+          "type":"Group","label":"Unused title",
+          "options":{"showDataIndicator":true,"showValidationIndicator":true,
+            "showValidationIndicatorCount":true},
+          "header":[{"type":"Label","text":"Authored heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/body"}]
+        }""").jsonObject.toUiSchemaElement()
+        var data by mutableStateOf(Json.parseToJsonElement("{}"))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = regionSchema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("Authored heading").assertExists()
+        onNodeWithText("Unused title").assertDoesNotExist()
+        onNodeWithContentDescription("1 error").assertExists()
+        onNodeWithContentDescription("Contains data").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"body":"ready"}""") }
+        onNodeWithContentDescription("1 error").assertDoesNotExist()
+        onNodeWithContentDescription("Contains data").assertExists()
+        assertEquals(0, writes)
+    }
+
+    private fun cardWithHiddenBody(cupertino: Boolean) = runComposeUiTest {
+        val conditionalSchema = JsonSchema(Json.parseToJsonElement("""{
+          "type":"object","properties":{"show":{"type":"boolean"},"name":{"type":"string"}}
+        }""").jsonObject)
+        val ui = Json.parseToJsonElement("""{
+          "type":"Group","label":"Unused title",
+          "cover":{"type":"Label","text":"Cover"},
+          "header":[{"type":"Label","text":"Visible heading"}],
+          "elements":[{"type":"Control","scope":"#/properties/name","label":"Conditional name",
+            "rule":{"effect":"SHOW","condition":{"scope":"#/properties/show",
+              "schema":{"const":true}}}}],
+          "footer":[{"type":"Label","text":"Footer"}]
+        }""").jsonObject.toUiSchemaElement()
+        var data by mutableStateOf(Json.parseToJsonElement("""{"show":false,"name":"Ada"}"""))
+        var writes = 0
+        setContent {
+            JsonForms(data = data, schema = conditionalSchema, uischema = ui,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        listOf("Cover", "Visible heading", "Footer")
+            .forEach { onNodeWithText(it).assertExists() }
+        onNodeWithText("Conditional name").assertDoesNotExist()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":true,"name":"Ada"}""") }
+        onNodeWithText("Conditional name").assertExists()
+        runOnIdle { data = Json.parseToJsonElement("""{"show":false,"name":"Ada"}""") }
+        onNodeWithText("Conditional name").assertDoesNotExist()
+        listOf("Cover", "Visible heading", "Footer")
+            .forEach { onNodeWithText(it).assertExists() }
         assertEquals(0, writes)
     }
 

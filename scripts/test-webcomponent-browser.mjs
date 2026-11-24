@@ -93,8 +93,9 @@ class DevTools {
   }
 
   async click(point) {
+    const { x, y } = point;
     for (const type of ['mousePressed', 'mouseReleased']) {
-      await this.send('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 });
+      await this.send('Input.dispatchMouseEvent', { type, x, y, button: 'left', clickCount: 1 });
     }
   }
 
@@ -108,7 +109,7 @@ class DevTools {
   }
 }
 
-test('mounted web component waits for host action completion', { timeout: 120_000 }, async () => {
+test('mounted web component preserves host actions and narrow duration popups', { timeout: 120_000 }, async () => {
   await access(join(bundle, 'jsonforms-kotlin-webcomponent.js'));
   await access(chromePath);
   const server = serveBundle();
@@ -434,7 +435,7 @@ test('mounted web component waits for host action completion', { timeout: 120_00
     await until(() => devtools.evaluate(`(() => {
       const form=document.querySelector('#contact-form');
       return form.shadowRoot===window.__retainedShadow &&
-        form.shadowRoot.childElementCount===1;
+        form.shadowRoot.childElementCount===2;
     })()`), Boolean, 'single ShadowRoot viewport after reconnect');
     const reconnectedField = await until(async () => {
       const tree = await devtools.send('Accessibility.getFullAXTree');
@@ -491,7 +492,7 @@ test('mounted web component waits for host action completion', { timeout: 120_00
     assert.equal(resetChanges.at(-1).dataProvided, true);
     assert.equal(await devtools.evaluate(`(() => {
       const form=document.querySelector('#contact-form');
-      return form.shadowRoot===window.__retainedShadow && form.shadowRoot.childElementCount===1;
+      return form.shadowRoot===window.__retainedShadow && form.shadowRoot.childElementCount===2;
     })()`), true);
 
     await devtools.evaluate(`(() => {
@@ -731,6 +732,104 @@ test('mounted web component waits for host action completion', { timeout: 120_00
       values => values.some(change => change.data?.name === 'Ada'),
       'enum popup selection in ShadowRoot');
     assert.equal(popupChanges.at(-1).dataProvided, true);
+    await devtools.send('Input.dispatchKeyEvent', {
+      type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27,
+    });
+    await devtools.send('Input.dispatchKeyEvent', {
+      type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27,
+    });
+
+    await devtools.evaluate(`(() => {
+      const style=document.createElement('style');
+      style.textContent='header,main section+section{display:none} main{display:block;max-width:none;margin:0;padding:0} main section{padding:0;border:0}';
+      document.head.append(style);
+    })()`);
+    for (const height of [720, 240]) {
+      await devtools.send('Emulation.setDeviceMetricsOverride', {
+        width: 240, height, deviceScaleFactor: 1, mobile: false,
+      });
+      for (const family of ['material', 'cupertino']) {
+        await devtools.evaluate(`(() => {
+          const form=document.querySelector('#contact-form');
+          const parent=form.parentNode;
+          form.remove();
+          form.setAttribute('renderer-family',${JSON.stringify(family)});
+          form.setAttribute('dir','ltr');
+          form.setAttribute('lang','en');
+          form.setAttribute('data',JSON.stringify({duration:'PT1H30M'}));
+          form.setAttribute('schema',JSON.stringify({type:'object',properties:{duration:{type:'string',format:'duration'}}}));
+          form.setAttribute('uischema',JSON.stringify({type:'Control',scope:'#/properties/duration'}));
+          form.style.minHeight=${JSON.stringify(height + 'px')};
+          parent.appendChild(form);
+        })()`);
+        await sleep(500);
+        const readViewportHeights = () => devtools.evaluate(`(() => {
+          const form=document.querySelector('#contact-form');
+          const host=form.shadowRoot.firstElementChild;
+          return {form:form.getBoundingClientRect().height,
+            host:host.getBoundingClientRect().height,
+            compose:host.firstElementChild.getBoundingClientRect().height,
+            hostStyle:host.getAttribute('style'),
+            composeStyle:host.firstElementChild.getAttribute('style')};
+        })()`);
+        const viewportHeights = await until(readViewportHeights,
+          heights => Math.abs(heights.form - heights.compose) <= 2,
+          `${family} Compose resize after reconnect`, 5_000);
+        assert.ok(Math.abs(viewportHeights.form - viewportHeights.compose) <= 2,
+          `${family} Compose viewport does not fill ${height}px Web Component: ${JSON.stringify(viewportHeights)}`);
+        const oldPopupTree = await devtools.send('Accessibility.getFullAXTree');
+        const oldPopupIds = new Set(oldPopupTree.nodes.filter(node =>
+          ['Years to seconds', 'Weeks', 'Remove Hours', 'Remove Minutes', 'Cancel', 'Apply']
+            .includes(node.name?.value)).map(node => node.backendDOMNodeId));
+        const rect = await devtools.evaluate(`(() => {
+          const {x,y,width}=document.querySelector('#contact-form').getBoundingClientRect();
+          return {x,y,width};
+        })()`);
+        await devtools.click({ x: rect.x + rect.width - (family === 'cupertino' ? 34 : 24),
+          y: rect.y + (family === 'cupertino' ? 60 : 36) });
+        const popupNodes = await until(async () => {
+          const tree = await devtools.send('Accessibility.getFullAXTree');
+          const names = ['Years to seconds', 'Weeks', 'Remove Hours', 'Remove Minutes', 'Cancel', 'Apply'];
+          const nodes = names.map(name => tree.nodes.find(node =>
+            node.name?.value === name && node.backendDOMNodeId));
+          return nodes.every(node => node && !oldPopupIds.has(node.backendDOMNodeId)) ? nodes : null;
+        }, Boolean, `${family} duration popup`, 10_000);
+        const checkVisible = async nodes => {
+          for (const node of nodes) {
+            const model = await until(async () => {
+              const { model } = await devtools.send('DOM.getBoxModel',
+                { backendNodeId: node.backendDOMNodeId });
+              return model.border[2] > model.border[0] ? model : null;
+            }, Boolean, `${family} ${node.name.value} layout at ${height}`, 5_000);
+            const centerY = (model.border[1] + model.border[5]) / 2;
+            assert.ok(model.border[0] >= -2 && model.border[2] <= 242 &&
+              centerY >= 0 && centerY <= height,
+            `${family} duration popup action ${node.name.value} is unreachable at 240x${height}: ${model.border}`);
+          }
+        };
+        if (height === 240) {
+          await checkVisible(popupNodes.slice(0, 2));
+          await devtools.send('Input.dispatchMouseEvent', {
+            type: 'mouseWheel', x: 120, y: 180, deltaX: 0, deltaY: 320,
+          });
+          await sleep(300);
+          await checkVisible(popupNodes.slice(2));
+        } else {
+          await checkVisible(popupNodes);
+        }
+        assert.ok(await devtools.evaluate('document.documentElement.scrollWidth <= innerWidth'),
+          `${family} duration popup widens the document`);
+        const apply = popupNodes.at(-1);
+        const { model: applyModel } = await devtools.send('DOM.getBoxModel',
+          { backendNodeId: apply.backendDOMNodeId });
+        const changesBefore = await devtools.evaluate('window.__presenceChanges.length');
+        await devtools.click({ x: (applyModel.border[0] + applyModel.border[2]) / 2,
+          y: (applyModel.border[1] + applyModel.border[5]) / 2 });
+        assert.equal(await devtools.evaluate('window.__presenceChanges.length'), changesBefore,
+          `${family} untouched duration Apply wrote data`);
+      }
+    }
+
 
   } finally {
     devtools?.socket.close();

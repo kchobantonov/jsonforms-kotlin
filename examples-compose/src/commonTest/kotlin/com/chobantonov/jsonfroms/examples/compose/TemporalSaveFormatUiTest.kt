@@ -14,6 +14,7 @@ import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporter
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnosticReporterConfigKey
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
+import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.cupertino.renderers.cupertinoRenderers
 import com.chobantonov.jsonfroms.material.renderers.materialRenderers
 import kotlinx.serialization.json.Json
@@ -32,6 +33,37 @@ class TemporalSaveFormatUiTest {
     @Test fun cupertinoTimeRejectsShortSaveFormat() = verify(true, "time")
     @Test fun materialDateTimeRejectsUnzonedSaveFormat() = verify(false, "date-time")
     @Test fun cupertinoDateTimeRejectsUnzonedSaveFormat() = verify(true, "date-time")
+    @Test fun materialSaveFormatWarningFollowsLocale() = verifyLocaleChange(false)
+    @Test fun cupertinoSaveFormatWarningFollowsLocale() = verifyLocaleChange(true)
+
+    private fun verifyLocaleChange(cupertino: Boolean) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement("""{
+          "type":"object","properties":{"value":{"type":"string","format":"date"}}
+        }""").jsonObject)
+        val diagnostics = mutableListOf<UiDiagnostic>()
+        var locale by mutableStateOf("en-US")
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""), schema = schema,
+                uischema = ControlElement("#/properties/value", options = mapOf(
+                    "dateSaveFormat" to JsonPrimitive("YYYY-MM"),
+                )),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                i18n = JsonFormsI18nState(locale = locale),
+                config = mapOf(UiDiagnosticReporterConfigKey to UiDiagnosticReporter(diagnostics::add)),
+                onChange = { writes++ })
+        }
+        waitForIdle()
+        assertEquals("Custom save format is incompatible with the schema format; the default save format is used.",
+            diagnostics.single().message)
+        runOnIdle { locale = "bg-BG" }
+        waitForIdle()
+        assertEquals(listOf("temporal.saveFormatIncompatible", "temporal.saveFormatIncompatible"),
+            diagnostics.map { it.code })
+        assertEquals("Потребителският формат за запис е несъвместим с формата на схемата; използва се стандартният формат за запис.",
+            diagnostics.last().message)
+        assertEquals(0, writes)
+    }
 
     private fun verify(cupertino: Boolean, format: String) = runComposeUiTest {
         val (displayKey, saveKey, displayFormat, rejectedFormat, input) = when (format) {

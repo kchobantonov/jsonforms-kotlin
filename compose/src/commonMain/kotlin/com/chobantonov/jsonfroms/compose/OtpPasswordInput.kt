@@ -2,6 +2,7 @@ package com.chobantonov.jsonfroms.compose
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
@@ -59,7 +62,7 @@ fun OtpPasswordInput(
     focusColor: Color,
     errorColor: Color,
     storedValueStatus: String? = null,
-    trailingContent: @Composable () -> Unit,
+    trailingContent: @Composable (Boolean) -> Unit,
     onChange: (String) -> Boolean,
 ) {
     if (!props.visible) return
@@ -67,6 +70,8 @@ fun OtpPasswordInput(
         mutableStateOf(TextFieldValue(value, TextRange(value.length)))
     }
     var focused by remember(props.path) { mutableStateOf(false) }
+    var controlFocused by remember(props.path) { mutableStateOf(false) }
+    var hovered by remember(props.path) { mutableStateOf(false) }
     var touched by remember(props.path) { mutableStateOf(false) }
     val requester = remember(props.path) { FocusRequester() }
     LaunchedEffect(value) {
@@ -93,7 +98,15 @@ fun OtpPasswordInput(
     val selectedBox = jsonStringLength(editor.text.take(editor.selection.start))
         .coerceIn(0, boxCount - 1)
     val boxShape = RoundedCornerShape(8.dp)
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(modifier = Modifier.onFocusChanged { controlFocused = it.hasFocus }
+        .focusGroup().pointerInput(props.path) {
+            awaitPointerEventScope {
+                while (true) when (awaitPointerEvent().type) {
+                    PointerEventType.Enter -> hovered = true
+                    PointerEventType.Exit -> hovered = false
+                }
+            }
+        }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (label.isNotBlank()) Text(label, color = mutedColor,
             style = MaterialTheme.typography.bodyMedium)
         BasicTextField(
@@ -141,7 +154,7 @@ fun OtpPasswordInput(
                             "+${characters.size - boxCount}", color = errorColor,
                             style = MaterialTheme.typography.bodySmall)
                         Spacer(Modifier.size(4.dp))
-                        trailingContent()
+                        trailingContent(focused || controlFocused || hovered)
                     }
                     Box(Modifier.size(1.dp).alpha(0f)) { inner() }
                 }

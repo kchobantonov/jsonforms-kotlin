@@ -14,6 +14,14 @@ fun strictControlBooleanOption(options: Map<String, Any?>, key: String): Boolean
     else -> null
 }
 
+/** Invalid local values do not shadow a valid form-wide Boolean default. */
+fun resolvedControlBooleanOption(
+    localOptions: Map<String, Any?>,
+    config: Map<String, Any?>,
+    key: String,
+): Boolean? = strictControlBooleanOption(localOptions, key)
+    ?: strictControlBooleanOption(config, key)
+
 fun initialControlFocusRequested(options: Map<String, Any?>): Boolean =
     strictControlBooleanOption(options, "focus") == true
 

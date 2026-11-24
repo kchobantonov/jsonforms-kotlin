@@ -57,18 +57,21 @@ fun isAllowedTemporalInput(value: String, format: String, mask: Boolean = true):
     val literalCharacters = parts.filterIsInstance<FormatPart.Literal>()
         .flatMap { it.text.toList() }.toSet()
     val allowsPeriod = parts.any { it is FormatPart.Token && (it.text == "A" || it.text == "a") }
+    val allowsOffset = parts.any { it is FormatPart.Token && it.text == "Z" }
     val maximumLength = parts.sumOf { part -> when (part) {
         is FormatPart.Literal -> part.text.length
         is FormatPart.Token -> when (part.text) {
             "YYYY" -> 4
             "YY", "MM", "DD", "HH", "hh", "mm", "ss", "M", "D", "H", "h", "m", "s", "A", "a" -> 2
+            "Z" -> 6
             else -> part.text.length
         }
     } }
     return value.length <= maximumLength && value.all { character ->
         character.isDigit() ||
             character in literalCharacters ||
-            (allowsPeriod && character.uppercaseChar() in setOf('A', 'P', 'M'))
+            (allowsPeriod && character.uppercaseChar() in setOf('A', 'P', 'M')) ||
+            (allowsOffset && character in setOf('Z', '+', '-', ':'))
     }
 }
 
@@ -77,7 +80,7 @@ fun isAllowedTemporalEdit(previous: String, next: String, format: String, mask: 
 
 fun parseDateValue(value: String, formats: List<String>, timeZone: TimeZone = TimeZone.currentSystemDefault()): TemporalValue? {
     parseIsoInstant(value, timeZone)?.let { return it }
-    return formats.firstNotNullOfOrNull { parseTemporal(value, it) }
+    return formats.firstNotNullOfOrNull { parseTemporal(value, it, timeZone) }
 }
 
 fun parseTimeValue(value: String, formats: List<String>): TemporalValue? {
@@ -85,12 +88,12 @@ fun parseTimeValue(value: String, formats: List<String>): TemporalValue? {
         .getOrNull()?.let { time ->
             return TemporalValue(hour = time.hour, minute = time.minute, second = time.second)
         }
-    return formats.firstNotNullOfOrNull { parseTemporal(value, it) }
+    return formats.firstNotNullOfOrNull { parseTemporal(value, it, TimeZone.UTC) }
 }
 
 fun parseDateTimeValue(value: String, formats: List<String>, timeZone: TimeZone = TimeZone.currentSystemDefault()): TemporalValue? {
     parseIsoInstant(value, timeZone)?.let { return it }
-    return formats.firstNotNullOfOrNull { parseTemporal(value, it) }
+    return formats.firstNotNullOfOrNull { parseTemporal(value, it, timeZone) }
 }
 
 private fun parseIsoInstant(value: String, timeZone: TimeZone): TemporalValue? = runCatching {
@@ -98,6 +101,8 @@ private fun parseIsoInstant(value: String, timeZone: TimeZone): TemporalValue? =
 }.getOrNull()
 
 fun formatTemporal(value: TemporalValue, format: String, timeZone: TimeZone = TimeZone.currentSystemDefault()): String {
+    if (format == DEFAULT_TIME_SAVE_FORMAT)
+        return "${value.hour.pad()}:${value.minute.pad()}:${value.second.pad()}Z"
     if (format == DEFAULT_DATE_TIME_SAVE_FORMAT) {
         val utc = value.dateTime.toInstant(timeZone).toLocalDateTime(TimeZone.UTC)
         return buildString {
@@ -107,6 +112,15 @@ fun formatTemporal(value: TemporalValue, format: String, timeZone: TimeZone = Ti
     }
 
     val hour12 = ((value.hour + 11) % 12) + 1
+    val formatTokens = temporalFormatTokens(format)
+    // A time-only value has already been normalized to UTC by parseTimeValue.
+    val offsetZone = if (formatTokens.any { it in setOf("YYYY", "YY", "MM", "M", "DD", "D") })
+        timeZone else TimeZone.UTC
+    val offsetSeconds = if ("Z" in formatTokens)
+        (value.dateTime.toInstant(TimeZone.UTC) - value.dateTime.toInstant(offsetZone))
+            .inWholeSeconds.toInt() else 0
+    val offsetMinutes = kotlin.math.abs(offsetSeconds) / 60
+    val offsetText = "${if (offsetSeconds < 0) "-" else "+"}${(offsetMinutes / 60).pad()}:${(offsetMinutes % 60).pad()}"
     val replacements = mapOf(
         "YYYY" to value.year.pad(4), "YY" to (value.year % 100).pad(),
         "MM" to value.month.pad(), "M" to value.month.toString(),
@@ -117,6 +131,7 @@ fun formatTemporal(value: TemporalValue, format: String, timeZone: TimeZone = Ti
         "ss" to value.second.pad(), "s" to value.second.toString(),
         "A" to if (value.hour < 12) "AM" else "PM",
         "a" to if (value.hour < 12) "am" else "pm",
+        "Z" to offsetText,
     )
     return replaceTokens(format, replacements)
 }
@@ -129,7 +144,7 @@ fun pickerMillisToDate(millis: Long): LocalDate =
 fun currentTemporalValue(timeZone: TimeZone = TimeZone.currentSystemDefault()): TemporalValue =
     Clock.System.now().toLocalDateTime(timeZone).toTemporalValue()
 
-private val tokens = listOf("YYYY", "YY", "MM", "DD", "HH", "hh", "M", "D", "H", "h", "mm", "ss", "m", "s", "A", "a")
+private val tokens = listOf("YYYY", "YY", "MM", "DD", "HH", "hh", "M", "D", "H", "h", "mm", "ss", "m", "s", "A", "a", "Z")
 
 private sealed interface FormatPart {
     data class Token(val text: String) : FormatPart
@@ -162,7 +177,7 @@ private fun formatParts(format: String): List<FormatPart> = buildList {
 internal fun temporalFormatTokens(format: String): List<String> =
     formatParts(format).mapNotNull { (it as? FormatPart.Token)?.text }
 
-private fun parseTemporal(value: String, format: String): TemporalValue? {
+private fun parseTemporal(value: String, format: String, timeZone: TimeZone): TemporalValue? {
     val captures = mutableListOf<String>()
     val pattern = buildString {
         append('^')
@@ -174,6 +189,7 @@ private fun parseTemporal(value: String, format: String): TemporalValue? {
                         "YYYY" -> "(\\d{4})"
                         "YY" -> "(\\d{2})"
                         "A", "a" -> "([AaPp][Mm])"
+                        "Z" -> "(Z|[+-]\\d{2}:\\d{2})"
                         else -> "(\\d{1,2})"
                     })
                 }
@@ -190,6 +206,7 @@ private fun parseTemporal(value: String, format: String): TemporalValue? {
     var minute = 0
     var second = 0
     var period: String? = null
+    var offset: String? = null
     captures.forEachIndexed { index, token ->
         val captured = match.groupValues[index + 1]
         when (token) {
@@ -201,13 +218,19 @@ private fun parseTemporal(value: String, format: String): TemporalValue? {
             "mm", "m" -> minute = captured.toInt()
             "ss", "s" -> second = captured.toInt()
             "A", "a" -> period = captured.uppercase()
+            "Z" -> offset = captured
         }
     }
     if (period != null) {
         if (hour !in 1..12) return null
         hour = (hour % 12) + if (period == "PM") 12 else 0
     }
-    return runCatching { TemporalValue(year, month, day, hour, minute, second).also { it.dateTime } }.getOrNull()
+    return runCatching {
+        val local = TemporalValue(year, month, day, hour, minute, second).also { it.dateTime }
+        if (offset == null) local else Instant.parse(
+            "${year.pad(4)}-${month.pad()}-${day.pad()}T${hour.pad()}:${minute.pad()}:${second.pad()}$offset",
+        ).toLocalDateTime(timeZone).toTemporalValue()
+    }.getOrNull()
 }
 
 private fun replaceTokens(format: String, replacements: Map<String, String>): String = buildString {

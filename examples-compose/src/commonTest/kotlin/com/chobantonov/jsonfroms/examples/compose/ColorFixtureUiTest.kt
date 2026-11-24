@@ -27,8 +27,18 @@ import kotlin.test.assertEquals
 class ColorFixtureUiTest {
     @Test fun materialAuthoredUiAndSchemaFormatsSelectColor() = fixture(false)
     @Test fun cupertinoAuthoredUiAndSchemaFormatsSelectColor() = fixture(true)
-    @Test fun materialAuthoredStorageAndPickerModes() = storageModes(false)
-    @Test fun cupertinoAuthoredStorageAndPickerModes() = storageModes(true)
+    @Test fun materialAuthoredRgbStorage() = storageMode(false, "accentColor")
+    @Test fun cupertinoAuthoredRgbStorage() = storageMode(true, "accentColor")
+    @Test fun materialAuthoredHsbStorage() = storageMode(false, "chartSeries")
+    @Test fun cupertinoAuthoredHsbStorage() = storageMode(true, "chartSeries")
+    @Test fun materialAuthoredHslNormalization() = storageMode(false, "highlight")
+    @Test fun cupertinoAuthoredHslNormalization() = storageMode(true, "highlight")
+    @Test fun materialAuthoredAlphaClose() = storageMode(false, "watermark")
+    @Test fun cupertinoAuthoredAlphaClose() = storageMode(true, "watermark")
+    @Test fun materialAuthoredHex3Storage() = storageMode(false, "legacyBadge")
+    @Test fun cupertinoAuthoredHex3Storage() = storageMode(true, "legacyBadge")
+    @Test fun materialPickerOnlyStorage() = storageMode(false, "printSpot")
+    @Test fun cupertinoPickerOnlyStorage() = storageMode(true, "printSpot")
 
     private fun controls(root: UiSchemaElement?): List<ControlElement> = when (root) {
         is ControlElement -> listOf(root)
@@ -72,11 +82,10 @@ class ColorFixtureUiTest {
         assertEquals(2, changes)
     }
 
-    private fun storageModes(cupertino: Boolean) = runComposeUiTest {
+    private fun storageMode(cupertino: Boolean, name: String) = runComposeUiTest {
         val example = getBuiltInExamples().first { it.name == "spec-color-control" }
         val authored = controls(example.uischema)
-        fun control(name: String) = authored.first { it.scope == "#/properties/$name" }
-        var selected by mutableStateOf(control("accentColor"))
+        val selected = authored.first { it.scope == "#/properties/$name" }
         var data by mutableStateOf(example.data)
         var changes = 0
         setContent {
@@ -84,44 +93,35 @@ class ColorFixtureUiTest {
                 renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
                 onChange = { data = it.data; changes++ })
         }
-        fun show(name: String) { runOnIdle { selected = control(name) } }
-        fun choosePreset() {
-            onNodeWithContentDescription("Choose color").performClick()
+        val initial = when (name) {
+            "accentColor" -> "rgb(237, 80, 80)"
+            "chartSeries" -> "hsb(154, 76%, 71%)"
+            "highlight" -> "hsl(48, 96%, 53%)"
+            "watermark" -> "#3a7bd540"
+            "legacyBadge" -> "#ed5050"
+            else -> "#8c4a9e"
+        }
+        assertEquals(JsonPrimitive(initial), data.jsonObject[name])
+        assertEquals(0, changes)
+        if (name == "printSpot") onAllNodes(hasSetTextAction()).assertCountEquals(0)
+        onNodeWithContentDescription("Choose color").performClick()
+        if (name == "watermark") {
+            onNodeWithText("Close").performClick()
+            assertEquals(JsonPrimitive(initial), data.jsonObject[name])
+            assertEquals(0, changes)
+        } else {
             onNodeWithContentDescription("Color #ef4444").performClick()
             waitForIdle()
+            when (name) {
+                "accentColor" -> assertEquals(JsonPrimitive("rgb(239, 68, 68)"), data.jsonObject[name])
+                "chartSeries" -> {
+                    val hsb = (data.jsonObject[name] as JsonPrimitive).content
+                    kotlin.test.assertTrue(hsb.startsWith("hsb(") && hsb.endsWith(")"))
+                }
+                "legacyBadge" -> assertEquals(JsonPrimitive("#e44"), data.jsonObject[name])
+                else -> assertEquals(JsonPrimitive("#ef4444"), data.jsonObject[name])
+            }
+            assertEquals(1, changes)
         }
-        assertEquals(JsonPrimitive("rgb(237, 80, 80)"), data.jsonObject["accentColor"])
-        assertEquals(0, changes)
-        choosePreset()
-        assertEquals(JsonPrimitive("rgb(239, 68, 68)"), data.jsonObject["accentColor"])
-
-        show("chartSeries")
-        assertEquals(JsonPrimitive("hsb(154, 76%, 71%)"), data.jsonObject["chartSeries"])
-        choosePreset()
-        val hsb = (data.jsonObject["chartSeries"] as JsonPrimitive).content
-        kotlin.test.assertTrue(hsb.startsWith("hsb(") && hsb.endsWith(")"))
-
-        show("highlight")
-        assertEquals(JsonPrimitive("hsl(48, 96%, 53%)"), data.jsonObject["highlight"])
-        choosePreset()
-        assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["highlight"])
-
-        show("watermark")
-        assertEquals(JsonPrimitive("#3a7bd540"), data.jsonObject["watermark"])
-        onNodeWithContentDescription("Choose color").performClick()
-        onNodeWithText("Close").performClick()
-        assertEquals(JsonPrimitive("#3a7bd540"), data.jsonObject["watermark"])
-
-        show("legacyBadge")
-        assertEquals(JsonPrimitive("#ed5050"), data.jsonObject["legacyBadge"])
-        choosePreset()
-        assertEquals(JsonPrimitive("#e44"), data.jsonObject["legacyBadge"])
-
-        show("printSpot")
-        onAllNodes(hasSetTextAction()).assertCountEquals(0)
-        assertEquals(JsonPrimitive("#8c4a9e"), data.jsonObject["printSpot"])
-        choosePreset()
-        assertEquals(JsonPrimitive("#ef4444"), data.jsonObject["printSpot"])
-        assertEquals(5, changes)
     }
 }

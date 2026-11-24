@@ -3,6 +3,7 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import com.chobantonov.jsonfroms.core.i18n.translateBooleanNotSet
 import com.chobantonov.jsonfroms.core.i18n.translateBooleanInvalidValue
 import com.chobantonov.jsonfroms.core.i18n.translateControlClear
@@ -85,7 +87,7 @@ fun MaterialBooleanControl(
     val enabled = controlProps.enabled && !controlProps.readonly
     val focusRequester = rememberInitialControlFocusRequester(controlProps.path, appliedOptions, enabled)
     val canClear = booleanState.hasValue && enabled &&
-        (appliedOptions["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(controlProps.uischema.options, controlProps.config, "clearable") != false
     val clearLabel = translateControlClear(props.state.jsonforms.i18n)
     val notSetLabel = translateBooleanNotSet(props.state.jsonforms.i18n)
     val statusLabel = booleanState.invalidValue?.let {
@@ -95,6 +97,7 @@ fun MaterialBooleanControl(
     val accessibleState = listOfNotNull(requiredState,
         statusLabel, visibleDescription).joinToString(". ")
     val clearAffordance = rememberClearAffordanceState(controlProps.path)
+    val clearVisible = clearAffordance.isVisible()
     val label = if (compact) "" else computeLabel(controlProps.label, controlProps.required, hideRequiredAsterisk)
 
     Column(modifier = if (compact) Modifier.testTag("material-boolean-cell") else Modifier) {
@@ -108,17 +111,18 @@ fun MaterialBooleanControl(
             accessibleState = accessibleState,
             visibleError = visibleError,
             onCheckedChange = {
+                focusRequester.requestFocus()
+                clearAffordance.selectField()
                 bindings.dispatchProps.handleChange(bindings.stateProps.path,
                     JsonPrimitive(booleanState.value != true))
             },
             clear = if (canClear) {
                 {
-                    IconButton(
+                    if (clearVisible) IconButton(
                         onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path, booleanState.clearValue) },
                         modifier = clearAffordance.clearModifier(32.dp),
-                    ) {
-                        Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp))
-                    }
+                    ) { Icon(JsonFormsActionIcons.Clear, clearLabel, modifier = Modifier.size(16.dp)) }
+                    else Spacer(Modifier.size(32.dp))
                 }
             } else null,
         )

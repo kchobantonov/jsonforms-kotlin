@@ -10,6 +10,8 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
@@ -66,11 +68,13 @@ class ChoiceCellReadonlyUiTest {
         else onNodeWithTag(tag, useUnmergedTree = true).assertIsNotEnabled()
         onNodeWithContentDescription("Clear value").assertDoesNotExist()
         runOnIdle { assertEquals(0, writes); readonly = false }
+        if (!radio) onNodeWithTag(tag, useUnmergedTree = true).assertIsEnabled().performClick()
+        else onNodeWithContentDescription("1 (\"1\")")
+            .performMouseInput { moveTo(Offset(-100f, -100f)); moveTo(center) }
         onNodeWithContentDescription("Clear value").assertExists()
         if (radio) {
             onNodeWithContentDescription("1 (\"1\")").assertIsEnabled().performClick()
         } else {
-            onNodeWithTag(tag, useUnmergedTree = true).assertIsEnabled().performClick()
             onNodeWithContentDescription("1 (\"1\")").performClick()
         }
         runOnIdle {

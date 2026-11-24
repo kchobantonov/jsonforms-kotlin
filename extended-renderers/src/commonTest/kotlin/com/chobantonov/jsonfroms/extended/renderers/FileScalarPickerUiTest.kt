@@ -15,9 +15,12 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.geometry.Offset
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
@@ -38,8 +41,55 @@ class FileScalarPickerUiTest {
 
     @Test fun materialPickerShowsFilenameAndClear() = pickerValue(false)
     @Test fun cupertinoPickerShowsFilenameAndClear() = pickerValue(true)
+    @Test fun materialPickerClearFollowsFocusAndHover() = clearFollowsFocusAndHover(false)
+    @Test fun cupertinoPickerClearFollowsFocusAndHover() = clearFollowsFocusAndHover(true)
+
+    private fun clearFollowsFocusAndHover(cupertino: Boolean) = runComposeUiTest {
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement(
+                """{"file":"data:text/plain;filename=old.txt;base64,b2xk"}"""),
+                schema = schema,
+                uischema = VerticalLayout(elements = listOf(
+                    ControlElement("#/properties/file"), ControlElement("#/properties/other"))),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                config = mapOf(ExtendedFilePickerEventsConfigKey to ExtendedFilePickerEvents { _, _, _ -> }),
+                onChange = { writes++ })
+        }
+        onNodeWithText("Clear").assertDoesNotExist()
+        val choose = onNodeWithText("Choose file")
+        choose.performSemanticsAction(SemanticsActions.RequestFocus)
+        onNodeWithText("Clear").assertExists()
+        onAllNodes(hasSetTextAction()).onFirst()
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+        onNodeWithText("Clear").assertDoesNotExist()
+        choose.performMouseInput { moveTo(center) }
+        onNodeWithText("Clear").assertExists()
+        onRoot().performMouseInput { moveTo(Offset(-10f, -10f)) }
+        onNodeWithText("Clear").assertDoesNotExist()
+        assertEquals(0, writes)
+    }
+    @Test fun materialQuotedClearableKeepsFileClear() = quotedClearable(false)
+    @Test fun cupertinoQuotedClearableKeepsFileClear() = quotedClearable(true)
     @Test fun materialPickerShowsInvalidImportedValue() = invalidImported(false)
     @Test fun cupertinoPickerShowsInvalidImportedValue() = invalidImported(true)
+
+    private fun quotedClearable(cupertino: Boolean) = runComposeUiTest {
+        var changes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement(
+                """{"file":"data:text/plain;filename=old.txt;base64,b2xk"}"""),
+                schema = schema,
+                uischema = ControlElement("#/properties/file", options = mapOf(
+                    "clearable" to JsonPrimitive("false"))),
+                renderers = if (cupertino) cupertinoExtendedRenderers else materialExtendedRenderers,
+                config = mapOf(ExtendedFilePickerEventsConfigKey to ExtendedFilePickerEvents { _, _, _ -> }),
+                onChange = { changes++ })
+        }
+        onNodeWithText("Choose file").performSemanticsAction(SemanticsActions.RequestFocus)
+        onNodeWithText("Clear").assertIsEnabled()
+        assertEquals(0, changes)
+    }
 
     private fun invalidImported(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(Json.parseToJsonElement("""{"file":{"raw":true}}"""))
@@ -64,6 +114,7 @@ class FileScalarPickerUiTest {
             data = Json.parseToJsonElement("""{"file":null}""")
         }
         onNodeWithText("Невалидна стойност: null").assertExists()
+        onNodeWithText("Избери файл").performSemanticsAction(SemanticsActions.RequestFocus)
         onNodeWithText("Изчисти").performClick()
         runOnIdle {
             assertEquals(Json.parseToJsonElement("{}"), data)
@@ -115,13 +166,14 @@ class FileScalarPickerUiTest {
                 onChange = { changes++ })
         }
         onNodeWithText("Choose file").assertIsEnabled()
+        onNodeWithText("Choose file").performSemanticsAction(SemanticsActions.RequestFocus)
         onNodeWithText("Clear").assertIsEnabled()
         runOnIdle { readonly = JsonPrimitive(true) }
         onNodeWithText("Choose file").assertIsNotEnabled()
-        onNodeWithText("Clear").assertIsNotEnabled()
+        onNodeWithText("Clear").assertDoesNotExist()
         runOnIdle { readonly = JsonPrimitive(false); clearable = JsonPrimitive(false) }
         onNodeWithText("Choose file").assertIsEnabled()
-        onNodeWithText("Clear").assertIsNotEnabled()
+        onNodeWithText("Clear").assertDoesNotExist()
         assertEquals(0, changes)
     }
 

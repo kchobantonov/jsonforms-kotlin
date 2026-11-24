@@ -105,13 +105,15 @@ class UnsupportedTemplateLayoutTest {
     private fun noCatalogLocale(renderers: List<JsonFormsRendererRegistryEntry<ComposeJsonFormsRenderer>>) = runComposeUiTest {
         val locale = mutableStateOf("en-US")
         val changes = mutableListOf<JsonFormsChange>()
+        val diagnostics = mutableListOf<UiDiagnostic>()
         setContent {
             JsonForms(
                 data = Json.parseToJsonElement("""{"name":"Ada"}"""),
                 schema = JsonSchema(),
                 uischema = authored.toUiSchemaElement(),
                 renderers = renderers,
-                config = mapOf("jsonformsExtended" to mapOf(
+                config = mapOf(UiDiagnosticReporterConfigKey to UiDiagnosticReporter(diagnostics::add),
+                    "jsonformsExtended" to mapOf(
                     "security" to mapOf("allowScriptEvaluation" to true),
                 )),
                 i18n = JsonFormsI18nState(locale = locale.value),
@@ -119,9 +121,12 @@ class UnsupportedTemplateLayoutTest {
             )
         }
         onNodeWithText("Template engine is unavailable on this host: jsx").assertExists()
+        waitForIdle()
+        assertEquals("Template engine is unavailable on this host: jsx", diagnostics.last().message)
         runOnIdle { locale.value = "bg-BG" }
         onNodeWithText("Шаблонният двигател не е наличен на този хост: jsx").assertExists()
         waitForIdle()
+        assertEquals("Шаблонният двигател не е наличен на този хост: jsx", diagnostics.last().message)
         assertTrue(changes.isEmpty())
     }
 }

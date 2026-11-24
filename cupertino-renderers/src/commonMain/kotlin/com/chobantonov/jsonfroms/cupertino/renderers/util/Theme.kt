@@ -108,7 +108,8 @@ fun CupertinoTheme(
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalCupertinoColors provides colors) {
-        LibraryCupertinoTheme(
+        ProvideCupertinoUIViewControllerIfMissing {
+            LibraryCupertinoTheme(
             colorScheme = if (darkTheme) {
                 libraryDarkColorScheme(
                     accent = colors.accent,
@@ -136,8 +137,9 @@ fun CupertinoTheme(
                     tertiarySystemBackground = colors.tertiaryBackground,
                 )
             },
-            content = content,
-        )
+                content = content,
+            )
+        }
     }
 }
 

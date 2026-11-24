@@ -1,8 +1,12 @@
 package com.chobantonov.jsonfroms.extended.renderers
 
+import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -179,7 +184,8 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
     fun label(key: String, fallback: String, values: Map<String, Any?> = emptyMap()): String =
         translateRendererText(i18n.translate, i18n.locale, key, fallback,
             mapOf("bg" to durationBulgarian), values)
-    val showActions = (control.options["showActions"] as? JsonPrimitive)?.booleanOrNull != false
+    val showActions = (strictControlBooleanOption(control.options, "showActions")
+        ?: strictControlBooleanOption(props.config, "showActions")) != false
     var textDraft by remember(path, props.schema, control) { mutableStateOf(current) }
     var observedCurrent by remember(path, props.schema, control) { mutableStateOf(current) }
     var textDraftDirty by remember(path, props.schema, control) { mutableStateOf(false) }
@@ -282,7 +288,10 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
             if (!showPicker) resetPicker()
             showPicker = !showPicker
         }
-        Box {
+        BoxWithConstraints {
+        val popupWidth = minOf(320.dp, maxWidth)
+        // Reserve panel padding, the remove action, row gaps and a readable unit label.
+        val quantityWidth = minOf(120.dp, maxOf(72.dp, popupWidth - 152.dp))
         if (cupertino) CupertinoInputControl(inputProps, textDraft,
             localError = localError, storedValueStatus = invalidStatus,
             compact = compact,
@@ -305,7 +314,7 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
             @Composable fun numberField(
                 value: String, fieldLabel: String, key: String, onValueChange: (String) -> Unit,
             ) {
-                if (cupertino) Column(Modifier.width(120.dp)) {
+                if (cupertino) Column(Modifier.width(quantityWidth)) {
                     CupertinoInputControl(
                         props = inputProps.copy(
                             config = inputProps.config - "focus",
@@ -324,10 +333,11 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
                 } else OutlinedTextField(value, onValueChange = onValueChange,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true, isError = value.toExactComponent() == null,
-                    modifier = Modifier.width(120.dp).semantics { contentDescription = fieldLabel })
+                    modifier = Modifier.width(quantityWidth).semantics { contentDescription = fieldLabel })
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     @Composable fun modeButton(weeks: Boolean, text: String) {
                         val active = weeksMode == weeks
                         val select = {
@@ -411,7 +421,7 @@ internal fun DurationControl(props: ComposeJsonFormsRendererProps, cupertino: Bo
         }
         DropdownMenu(expanded = showPicker && stateProps.enabled && !stateProps.readonly,
             onDismissRequest = ::dismissPicker,
-            modifier = Modifier.width(320.dp)) {
+            modifier = Modifier.width(popupWidth).testTag("duration-picker-panel")) {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 pickerFields()
                 if (showActions) Row(Modifier.fillMaxWidth(),

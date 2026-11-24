@@ -35,11 +35,11 @@ internal actual fun WebComponentOverlay(
         bar.style.cssText = "height:48px;display:flex;align-items:center;gap:16px;padding:0 16px;background:#f1e9f7;font:14px sans-serif"
         bar.setAttribute("data-jsonforms-demo-bar", "")
         val back: dynamic = js("document.createElement('button')")
-        back.textContent = "← Compose form"
+        back.textContent = demoChromeText(DemoTextKey.BackToComposeForm, DemoLocale.English)
         back.style.cssText = "border:0;border-radius:6px;padding:8px 12px;background:#6750a4;color:white;cursor:pointer"
         bar.appendChild(back)
         val title: dynamic = js("document.createElement('span')")
-        title.textContent = "Web component"
+        title.textContent = demoChromeText(DemoTextKey.WebComponentTitle, DemoLocale.English)
         bar.appendChild(title)
         val registryNotice: dynamic = js("document.createElement('span')")
         registryNotice.style.cssText = "font:12px sans-serif;color:#5f4b73;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
@@ -54,7 +54,7 @@ internal actual fun WebComponentOverlay(
 
         val frame: dynamic = js("document.createElement('iframe')")
         frame.style.cssText = "display:block;flex:1;min-height:0;width:100%;border:0"
-        frame.setAttribute("title", "Web component form")
+        frame.setAttribute("title", demoChromeText(DemoTextKey.WebComponentFormFrame, DemoLocale.English))
         frame.src = "webcomponent/embed.html"
         root.appendChild(frame)
         arrayOf(root, bar, back, exit, title, registryNotice, frame)
@@ -113,13 +113,13 @@ internal actual fun WebComponentOverlay(
     }
     SideEffect {
         root.dataset.formOnly = input.formOnly.toString()
-        val bulgarian = input.locale == DemoLocale.Bulgarian
-        back.textContent = if (bulgarian) "← Compose формуляр" else "← Compose form"
-        title.textContent = if (bulgarian) "Уеб компонент" else "Web component"
+        back.textContent = demoChromeText(DemoTextKey.BackToComposeForm, input.locale)
+        title.textContent = demoChromeText(DemoTextKey.WebComponentTitle, input.locale)
+        frame.setAttribute("title", demoChromeText(DemoTextKey.WebComponentFormFrame, input.locale))
         val notice = webComponentRegistryTesterNotice(input.locale, input.unavailableRegistryTesters)
         registryNotice.textContent = notice ?: ""
         registryNotice.style.display = if (notice != null) "inline" else "none"
-        exit.textContent = if (bulgarian) "Покажи целия интерфейс" else "Show full UI"
+        exit.textContent = demoChromeText(DemoTextKey.ShowFullUi, input.locale)
         bar.style.display = if (input.formOnly) "none" else "flex"
         exit.style.display = if (input.formOnly) "block" else "none"
         val direction = if (input.direction == DemoDirection.Rtl) "rtl" else "ltr"

@@ -7,6 +7,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.v2.runComposeUiTest
@@ -44,7 +45,8 @@ class RadioClearVisibilityJvmTest {
                     options = mapOf("format" to JsonPrimitive("radio"))),
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers)
         }
-        val clear = onNodeWithContentDescription("Clear value")
+        val clear = onNodeWithTag("radio-clear-slot", useUnmergedTree = true)
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
         val hidden = clear.captureToImage().toPixelMap()
         onNodeWithText(choice).performMouseInput { moveTo(center) }
         waitForIdle()
@@ -64,7 +66,11 @@ class RadioClearVisibilityJvmTest {
         assertTrue((0 until afterExit.width).all { x ->
             (0 until afterExit.height).all { y -> hidden[x, y] == afterExit[x, y] }
         })
-        clear.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithContentDescription(choice)
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        onNodeWithContentDescription("Clear value").assertExists()
+        onNodeWithContentDescription("Clear value")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
         waitForIdle()
         val focused = clear.captureToImage().toPixelMap()
         assertTrue((0 until focused.width).any { x ->

@@ -29,15 +29,16 @@ fun rememberAccordionSelectionState(
     config: Map<String, Any?>,
     path: String,
 ): AccordionSelectionState {
-    val initial = remember(path) { resolveInitialCategorySelection(categorization, visible) }
+    val version = rememberCategorySetVersion(categorization, path)
+    val initial = remember(path, version) { resolveInitialCategorySelection(categorization, visible) }
     val explicitInitial = (categorization.options["initial"] as? JsonPrimitive)
         ?.takeIf { it.isString && it.content.isNotEmpty() } != null
     val first = categorization.elements.getOrNull(initial.originalIndex) as? CategoryElement
-    var openKey by remember(path) {
+    var openKey by remember(path, version) {
         mutableStateOf<Any?>(if (collapsed && !explicitInitial) null else first?.let { categorySelectionKey(categorization, it) })
     }
-    var userClosed by remember(path) { mutableStateOf(collapsed && !explicitInitial) }
-    var previousCollapsed by remember(path) { mutableStateOf(collapsed) }
+    var userClosed by remember(path, version) { mutableStateOf(collapsed && !explicitInitial) }
+    var previousCollapsed by remember(path, version) { mutableStateOf(collapsed) }
     val matchingIndex = visible.indexOfFirst { categorySelectionKey(categorization, it) == openKey }
     val openIndex = when {
         userClosed || visible.isEmpty() -> -1
@@ -56,7 +57,7 @@ fun rememberAccordionSelectionState(
     }
     val reporter = config[UiDiagnosticReporterConfigKey] as? UiDiagnosticReporter
     val currentReporter by rememberUpdatedState(reporter)
-    LaunchedEffect(initial.diagnostic, reporter != null, path) {
+    LaunchedEffect(initial.diagnostic, reporter != null, path, version) {
         initial.diagnostic?.let {
             currentReporter?.report(it.copy(details = it.details + ("path" to path)))
         }

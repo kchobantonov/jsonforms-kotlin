@@ -26,6 +26,7 @@ import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.core.models.LabelElement
 import com.chobantonov.jsonfroms.core.store.JsonFormsUISchemaRegistryEntry
 import com.chobantonov.jsonfroms.examples.ExampleDescription
+import com.chobantonov.jsonfroms.examples.ExampleAction
 import com.russhwolf.settings.MapSettings
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,6 +59,37 @@ class DemoEditorLifecycleUiTest {
     @Test fun cupertinoEditorActionsAndInputAreKeyboardReachable() = editorKeyboard(true)
     @Test fun materialBulgarianEditorExplainsInvalidApply() = bulgarianInvalidApply(false)
     @Test fun cupertinoBulgarianEditorExplainsInvalidApply() = bulgarianInvalidApply(true)
+    @Test fun materialActionRefreshesCleanSchemaButPreservesDraft() = actionRefreshesSchema(false)
+    @Test fun cupertinoActionRefreshesCleanSchemaButPreservesDraft() = actionRefreshesSchema(true)
+
+    private fun actionRefreshesSchema(cupertino: Boolean) = runComposeUiTest {
+        val alternateSchema = JsonSchema(Json.parseToJsonElement(
+            """{"type":"object","title":"From action","properties":{"name":{"type":"string"}}}"""
+        ).jsonObject)
+        val actionable = example.copy(actions = listOf(ExampleAction("Change schema") { state ->
+            state.copy(schema = if (state.schema == example.schema) alternateSchema else example.schema)
+        }))
+        var view by mutableStateOf(DemoUrlViewState(drawer = false, activePane = DemoPane.Schema))
+        val store = MapSettings()
+        DemoPreferences(store).save(DemoSettings(
+            uiStyle = if (cupertino) DemoUiStyle.Cupertino else DemoUiStyle.Material))
+        setContent { ExamplesComposeApp(examples = listOf(actionable), settingsStore = store,
+            browserViewState = view, onBrowserViewStateChange = { view = it }) }
+
+        onNodeWithText("From action", substring = true).assertDoesNotExist()
+        runOnIdle { view = view.copy(activePane = DemoPane.Demo) }
+        onNodeWithText("Change schema").performClick()
+        runOnIdle { view = view.copy(activePane = DemoPane.Schema) }
+        onNodeWithText("From action", substring = true).assertExists()
+
+        onAllNodes(hasSetTextAction()).onFirst().performTextReplacement(
+            """{"type":"object","title":"Unapplied draft"}""")
+        runOnIdle { view = view.copy(activePane = DemoPane.Demo) }
+        onNodeWithText("Change schema").performClick()
+        runOnIdle { view = view.copy(activePane = DemoPane.Schema) }
+        onNodeWithText("Unapplied draft", substring = true).assertExists()
+        onNodeWithText("From action", substring = true).assertDoesNotExist()
+    }
 
     private fun bulgarianInvalidApply(cupertino: Boolean) = runComposeUiTest {
         val store = MapSettings()

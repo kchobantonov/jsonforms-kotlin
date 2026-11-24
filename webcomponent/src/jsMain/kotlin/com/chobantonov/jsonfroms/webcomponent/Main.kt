@@ -77,10 +77,16 @@ private fun mountForm(element: dynamic) {
     val resolvedTheme: dynamic = js("window.jsonFormsKotlinResolvedTheme")
     val shadowRoot: dynamic = element.shadowRoot ?: element.attachShadow(js("({mode: 'open'})"))
     val host: dynamic = js("document.createElement('div')")
+    val viewportStyle: dynamic = js("document.createElement('style')")
+    viewportStyle.textContent = ":host { display: block; position: relative; min-height: 240px; }"
+    host.style.position = "absolute"
+    host.style.inset = "0"
     host.style.width = "100%"
     host.style.height = "100%"
-    host.style.minHeight = "240px"
     shadowRoot.appendChild(host)
+    shadowRoot.appendChild(viewportStyle)
+    val resizeObserver: dynamic = js("typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => window.dispatchEvent(new Event('resize')))")
+    resizeObserver?.observe(host)
 
     var lastDataAttribute = element.getAttribute("data") as String?
     var lastDataProvidedAttribute = element.getAttribute("data-provided") as String?
@@ -141,6 +147,7 @@ private fun mountForm(element: dynamic) {
     }
     element._jsonformsConnectionChange = { isConnected: Boolean ->
         connected = isConnected
+        if (isConnected) resizeObserver?.observe(host) else resizeObserver?.disconnect()
     }
     val actionHandler = ExtendedActionEventHandler { event ->
         val dispatchAction: dynamic = js("window.jsonFormsKotlinDispatchAction")

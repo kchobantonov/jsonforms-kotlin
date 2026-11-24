@@ -479,6 +479,19 @@ test('form-only Web Component mode preserves its mounted form through history',
         'provided edit after reopening Web Component');
       assert.equal(await devtools.evaluate(`document.querySelector('${overlay} iframe')
         .contentDocument.querySelector('jsonforms-kotlin-compose').hasAttribute('data-provided')`), false);
+      await devtools.evaluate(`localStorage.setItem('jsonforms-kotlin-demo-settings',
+        JSON.stringify({version:1,locale:'Bulgarian'}))`);
+      await devtools.evaluate('location.reload()');
+      await until(async () => {
+        try {
+          return await devtools.evaluate(`document.querySelector('${overlay} iframe')
+            ?.getAttribute('title')`);
+        } catch { return null; }
+      }, value => value === 'Формуляр с уеб компонент', 'Bulgarian Web Component frame title');
+      assert.equal(await devtools.evaluate(`document.querySelector('${bar} button')?.textContent`),
+        '← Compose формуляр');
+      assert.equal(await devtools.evaluate(`document.querySelector('${bar} span')?.textContent`),
+        'Уеб компонент');
     } finally {
       devtools?.socket.close();
       chrome.kill('SIGTERM');

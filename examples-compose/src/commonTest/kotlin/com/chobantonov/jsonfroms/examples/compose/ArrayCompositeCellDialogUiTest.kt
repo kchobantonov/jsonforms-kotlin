@@ -55,6 +55,8 @@ class ArrayCompositeCellDialogUiTest {
 
     @Test fun materialCellCancelAndApplyStayScoped() = cell(false)
     @Test fun cupertinoCellCancelAndApplyStayScoped() = cell(true)
+    @Test fun materialDetailElementDialogSetsCellGeometry() = detailElementDialog(false)
+    @Test fun cupertinoDetailElementDialogSetsCellGeometry() = detailElementDialog(true)
     @Test fun materialLabelSummariesUseDeclaredRowContext() = labels(false)
     @Test fun cupertinoLabelSummariesUseDeclaredRowContext() = labels(true)
     @Test fun materialGeneratedSummaryFollowsLocaleAndValue() = generatedSummary(false)
@@ -316,6 +318,7 @@ class ArrayCompositeCellDialogUiTest {
         var data by mutableStateOf(initial)
         val labelUi = ui.copy(options = ui.options + ("cells" to Json.parseToJsonElement("""{
           "contact":{"summary":{"type":"Label","text":"{city} · {phone}","options":{"interpolate":true,"textParams":{"city":"{item.contact.city}","phone":"{item.contact.phone}"}}}},
+          "experience":{"summary":{"type":"Label","text":"Static {word}","options":{"interpolate":true,"textParams":{"word":"summary"}}}},
           "fullName":{"summary":{"type":"Label","text":"{first} {last}","options":{"interpolate":true,"textParams":{"first":"{item.firstName}","last":"{item.lastName}"}}}}
         }""")))
         setContent {
@@ -325,6 +328,7 @@ class ArrayCompositeCellDialogUiTest {
         }
         onNodeWithText("{city} · {phone}").assertDoesNotExist()
         onNodeWithText("Boston · 555").assertDoesNotExist()
+        onNodeWithText("Static summary").assertExists()
         runOnIdle { enabled = true }
         onNodeWithText("Boston · 555").assertExists()
         onNodeWithText("Ada Lovelace").assertExists()
@@ -341,6 +345,21 @@ class ArrayCompositeCellDialogUiTest {
         onNodeWithText("Boston · 555").assertDoesNotExist()
         onNodeWithContentDescription("Edit Contact").assertDoesNotExist()
         onNodeWithContentDescription("Clear Contact").assertDoesNotExist()
+    }
+
+    private fun detailElementDialog(cupertino: Boolean) = runComposeUiTest {
+        val detailDialogUi = ui.copy(options = ui.options + ("cells" to Json.parseToJsonElement("""
+          {"contact":{"summary":{"type":"Control","scope":"#/properties/city"},
+            "detail":{"type":"Control","scope":"#","options":{"dialog":{"width":640}}}}}
+        """)))
+        setContent {
+            JsonForms(data = initial, schema = schema, uischema = detailDialogUi,
+                config = mapOf("jsonformsExtended" to mapOf("dialog" to mapOf("width" to 400))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithContentDescription("Edit Contact").performClick()
+        val width = onNodeWithTag("row-detail-dialog-frame").fetchSemanticsNode().boundsInRoot.width
+        assertTrue(width > 620f && width < 660f, "detail dialog width=$width")
     }
 
     private fun cell(cupertino: Boolean) = runComposeUiTest {

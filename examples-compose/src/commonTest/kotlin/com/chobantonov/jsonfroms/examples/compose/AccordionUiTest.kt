@@ -5,11 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.diagnostics.UiDiagnostic
@@ -62,6 +70,12 @@ class AccordionUiTest {
     @Test fun cupertinoLocalFalseOverridesGlobalCollapse() = localOverride(true)
     @Test fun materialIgnoresStepperAndOrientationOptions() = ignoresOtherNavigationOptions(false)
     @Test fun cupertinoIgnoresStepperAndOrientationOptions() = ignoresOtherNavigationOptions(true)
+    @Test fun materialKeyboardOpensAndClosesPanel() = keyboardDisclosure(false)
+    @Test fun cupertinoKeyboardOpensAndClosesPanel() = keyboardDisclosure(true)
+    @Test fun materialNewCategorySetUsesItsInitialSelection() = newCategorySet(false)
+    @Test fun cupertinoNewCategorySetUsesItsInitialSelection() = newCategorySet(true)
+    @Test fun materialAddingCategoryKeepsOpenPanel() = addingCategoryKeepsSelection(false)
+    @Test fun cupertinoAddingCategoryKeepsOpenPanel() = addingCategoryKeepsSelection(true)
 
     private val schema = JsonSchema(Json.parseToJsonElement(
         """{"type":"object","properties":{"a":{"type":"string"},"b":{"type":"string"},"show":{"type":"boolean"}}}"""
@@ -107,6 +121,69 @@ class AccordionUiTest {
         onNodeWithText("B").assertExists()
         onNodeWithText("A").assertDoesNotExist()
         assertEquals(0, changes)
+    }
+
+    private fun keyboardDisclosure(cupertino: Boolean) = runComposeUiTest {
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{"show":true}"""), schema = schema,
+                uischema = ui(initial = false),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        val first = onAllNodes(hasClickAction() and hasText("First")).onFirst()
+        onNodeWithText("A").assertExists()
+        first.performSemanticsAction(SemanticsActions.RequestFocus)
+        first.assertIsFocused()
+        first.performKeyInput { keyDown(Key.Enter); keyUp(Key.Enter) }
+        onNodeWithText("A").assertDoesNotExist()
+        first.performKeyInput { keyDown(Key.Spacebar); keyUp(Key.Spacebar) }
+        onNodeWithText("A").assertExists()
+    }
+
+    private fun newCategorySet(cupertino: Boolean) = runComposeUiTest {
+        val replacement = CategorizationElement(
+            options = mapOf("variant" to JsonPrimitive("accordion"),
+                "initial" to JsonPrimitive("fourth")),
+            elements = listOf(
+                CategoryElement(label = "Third", name = "third",
+                    elements = listOf(ControlElement(scope = "#/properties/a"))),
+                CategoryElement(label = "Fourth", name = "fourth",
+                    elements = listOf(ControlElement(scope = "#/properties/b"))),
+            ),
+        )
+        var current by mutableStateOf(ui())
+        var writes = 0
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""), schema = schema,
+                uischema = current,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { writes++ })
+        }
+        onNodeWithText("B").assertExists()
+        onNodeWithText("Second").performClick()
+        onNodeWithText("B").assertDoesNotExist()
+        runOnIdle { current = replacement }
+        onNodeWithText("Fourth").assertExists()
+        onNodeWithText("B").assertExists()
+        onNodeWithText("A").assertDoesNotExist()
+        assertEquals(0, writes)
+    }
+
+    private fun addingCategoryKeepsSelection(cupertino: Boolean) = runComposeUiTest {
+        val original = ui()
+        val extra = CategoryElement(label = "Third", name = "third",
+            elements = listOf(ControlElement(scope = "#/properties/a")))
+        var current by mutableStateOf(original)
+        setContent {
+            JsonForms(data = Json.parseToJsonElement("""{}"""), schema = schema,
+                uischema = current,
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithText("B").assertExists()
+        onNodeWithText("First").performClick()
+        onNodeWithText("A").assertExists()
+        runOnIdle { current = original.copy(elements = original.elements + extra) }
+        onNodeWithText("A").assertExists()
+        onNodeWithText("B").assertDoesNotExist()
     }
 
     private fun hidden(cupertino: Boolean) = runComposeUiTest {

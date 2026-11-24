@@ -140,6 +140,12 @@ class GroupAccessibleNameUiTest {
         onNodeWithText("Help").assertExists()
         onNodeWithText("Contact").assertDoesNotExist()
         onNodeWithContentDescription("Verified").assertExists()
+        val titleHeight = onNodeWithText("Verified", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.height
+        val supportingHeight = onNodeWithText("Supporting text", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.height
+        kotlin.test.assertTrue(supportingHeight < titleHeight,
+            "The second Label must use supporting typography even when a Button precedes it")
         runOnIdle { locale = "bg" }
         onNodeWithContentDescription("Verified").assertDoesNotExist()
         if (collapsible) onNodeWithContentDescription("Потвърдено").performClick()

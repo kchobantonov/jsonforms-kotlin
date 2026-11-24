@@ -71,18 +71,19 @@ private fun UnsupportedTemplateLayout(props: ComposeJsonFormsRendererProps) {
     if (!Runtime.isVisible(element, getData(props.state), getValidator(props.state), props.path, props.config)) return
     val unavailable = templateLayoutUnavailable(element, props.config)
     val reporter = props.config[UiDiagnosticReporterConfigKey] as? UiDiagnosticReporter
-    LaunchedEffect(reporter, element, unavailable, props.path) {
+    val message = translateRendererText(props.state.jsonforms.i18n.translate,
+        props.state.jsonforms.i18n.locale, unavailable.code, unavailable.fallback,
+        templateLayoutLocaleBundles(unavailable.language))
+    LaunchedEffect(reporter, element, unavailable, props.path, message) {
         reporter?.report(UiDiagnostic(
             code = unavailable.code,
             severity = UiDiagnosticSeverity.Error,
-            message = unavailable.fallback,
+            message = message,
             details = mapOf("path" to props.path, "language" to unavailable.language),
         ))
     }
     BasicText(
-        text = translateRendererText(props.state.jsonforms.i18n.translate,
-            props.state.jsonforms.i18n.locale, unavailable.code, unavailable.fallback,
-            templateLayoutLocaleBundles(unavailable.language)),
+        text = message,
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
 }

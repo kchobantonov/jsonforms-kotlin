@@ -35,6 +35,56 @@ class InputClearableOptionUiTest {
     @Test fun cupertinoRequiredTextClearableOption() = requiredText(true)
     @Test fun materialNumericClearableOption() = numeric(false)
     @Test fun cupertinoNumericClearableOption() = numeric(true)
+    @Test fun materialQuotedClearableIsNotBoolean() = quotedClearable(false)
+    @Test fun cupertinoQuotedClearableIsNotBoolean() = quotedClearable(true)
+    @Test fun materialInvalidLocalClearableUsesGlobalSetting() = globalClearable(false)
+    @Test fun cupertinoInvalidLocalClearableUsesGlobalSetting() = globalClearable(true)
+
+    private fun globalClearable(cupertino: Boolean) = runComposeUiTest {
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = initial, schema = schema,
+                uischema = ControlElement("#/properties/name",
+                    options = mapOf("clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+
+        runOnIdle { global = true }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onNodeWithContentDescription("Clear value").assertExists()
+
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onNodeWithContentDescription("Clear value").assertExists()
+    }
+
+    private fun quotedClearable(cupertino: Boolean) = runComposeUiTest {
+        var data by mutableStateOf(initial)
+        var changes = 0
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/name",
+                    options = mapOf("clearable" to JsonPrimitive("false"))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data; changes++ })
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onAllNodes(hasSetTextAction()).onFirst().performClick()
+        onNodeWithContentDescription("Clear value").performClick()
+        runOnIdle {
+            assertFalse("name" in data.jsonObject)
+            assertEquals(1, changes)
+        }
+    }
 
     private fun requiredText(cupertino: Boolean) = runComposeUiTest {
         var data by mutableStateOf(initial)

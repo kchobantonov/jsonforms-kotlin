@@ -50,6 +50,7 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRendererProps
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
 import com.chobantonov.jsonfroms.compose.useJsonForms
 import com.chobantonov.jsonfroms.core.actions.Actions
@@ -125,12 +126,8 @@ fun interface ExtendedFilePicker {
 }
 
 private fun fileBooleanOption(control: ControlElement, config: Map<String, Any?>, name: String, default: Boolean): Boolean =
-    (control.options[name] as? JsonPrimitive)?.booleanOrNull
-        ?: when (val value = config[name]) {
-            is Boolean -> value
-            is JsonPrimitive -> value.booleanOrNull
-            else -> null
-        }
+    strictControlBooleanOption(control.options, name)
+        ?: strictControlBooleanOption(config, name)
         ?: default
 
 /** File-size publication is opt-in; an authored element option overrides form-wide config. */
@@ -220,6 +217,9 @@ internal fun FileControl(
         (!restrict || schema.minItems?.let { it == 0 } != false) && canClearAll()
     val noncompactArray = multiple && !compact
     val ordinaryPickerScalar = !multiple && !compact && hasPicker
+    val clearAffordance = rememberClearAffordanceState(path)
+    val showScalarClear = !multiple && hasPicker && editable && clearable && current != null &&
+        clearAffordance.isVisible()
     val managedPresentation = noncompactArray || ordinaryPickerScalar
     val appliedOptions = stateProps.config + control.options
     val showUnfocusedDescription = strictControlBooleanOption(
@@ -437,7 +437,8 @@ internal fun FileControl(
         knownSizeViolations = emptyMap()
         publishKnownSizeErrors()
     }
-    Column(verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp),
+        modifier = if (!multiple && hasPicker) clearAffordance.fieldModifier else Modifier) {
         if (managedPresentation && stateProps.label.isNotBlank()) {
             Text(computeLabel(stateProps.label, stateProps.required, hideRequiredAsterisk))
         }
@@ -518,6 +519,7 @@ internal fun FileControl(
                 enabled = canAdd && activeRequest == null,
                 onClick = {
                     if (!canAdd) return@FileActionButton
+                    clearAffordance.selectField()
                     val snapshot = current
                     if (eventPicker != null) {
                         val request = ActiveFileRequest(++nextRequestId, snapshot)
@@ -587,8 +589,8 @@ internal fun FileControl(
                 if (multiple) {
                     FileActionButton(cupertino = cupertino, enabled = canClear,
                         onClick = ::clearAttachments, text = label("clearAll", "Clear all"))
-                } else {
-                    FileActionButton(cupertino = cupertino, enabled = editable && clearable && current != null,
+                } else if (showScalarClear) {
+                    FileActionButton(cupertino = cupertino, enabled = true,
                         onClick = {
                             val snapshot = current
                             props.dispatch(Actions.update(path = path, updater = { old ->

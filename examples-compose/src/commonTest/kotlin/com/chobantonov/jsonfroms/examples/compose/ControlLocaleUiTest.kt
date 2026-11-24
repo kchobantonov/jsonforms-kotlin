@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.chobantonov.jsonfroms.compose.JsonForms
 import com.chobantonov.jsonfroms.core.models.ControlElement
@@ -100,6 +101,7 @@ class ControlLocaleUiTest {
                 i18n = JsonFormsI18nState(locale = locale),
                 onChange = { data = it.data })
         }
+        onNodeWithText(if (oneOf) "Yes" else "red").performMouseInput { moveTo(center) }
         onAllNodesWithContentDescription("Clear value").assertCountEquals(1)
         runOnIdle { locale = "bg-BG" }
         onAllNodesWithContentDescription("Изчисти стойността").assertCountEquals(1)

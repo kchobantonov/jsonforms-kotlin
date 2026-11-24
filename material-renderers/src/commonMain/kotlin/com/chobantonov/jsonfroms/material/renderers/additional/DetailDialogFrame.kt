@@ -143,7 +143,8 @@ fun DetailDialogFrame(
                         }
                         Box(
                             Modifier.fillMaxWidth()
-                                .then(if (exactHeight != null) Modifier.weight(1f) else Modifier.heightIn(max = 420.dp))
+                                .weight(1f, fill = exactHeight != null)
+                                .then(if (exactHeight == null) Modifier.heightIn(max = 420.dp) else Modifier)
                                 .verticalScroll(rememberScrollState())
                                 .padding(horizontal = 20.dp)
                                 .testTag("row-detail-dialog-body"),

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import com.chobantonov.jsonfroms.core.i18n.translateBooleanNotSet
 import com.chobantonov.jsonfroms.core.i18n.translateBooleanInvalidValue
 import com.chobantonov.jsonfroms.core.i18n.translateControlClear
@@ -66,7 +68,7 @@ internal fun CupertinoBooleanControl(
     val enabled = control.enabled && !control.readonly
     val focusRequester = rememberInitialControlFocusRequester(control.path, appliedOptions, enabled)
     val canClear = booleanState.hasValue && enabled &&
-        (appliedOptions["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(control.uischema.options, control.config, "clearable") != false
     val clearLabel = translateControlClear(props.state.jsonforms.i18n)
     val notSetLabel = translateBooleanNotSet(props.state.jsonforms.i18n)
     val statusLabel = booleanState.invalidValue?.let {
@@ -74,6 +76,7 @@ internal fun CupertinoBooleanControl(
     } ?: notSetLabel.takeIf { booleanState.value == null }
     val requiredState = if (control.required) translateControlRequired(props.state.jsonforms.i18n) else null
     val clearAffordance = rememberClearAffordanceState(control.path)
+    val clearVisible = clearAffordance.isVisible()
     var touched by remember(control.path) { mutableStateOf(false) }
     var hasReceivedFocus by remember(control.path) { mutableStateOf(false) }
     var focused by remember(control.path) { mutableStateOf(false) }
@@ -89,6 +92,8 @@ internal fun CupertinoBooleanControl(
     val accessibleState = listOfNotNull(requiredState,
         statusLabel, visibleDescription).joinToString(". ")
     val change: (Boolean) -> Unit = { value ->
+        focusRequester.requestFocus()
+        clearAffordance.selectField()
         bindings.dispatchProps.handleChange(bindings.stateProps.path, JsonPrimitive(value))
     }
     Column(modifier = if (compact) Modifier.testTag(
@@ -119,13 +124,12 @@ internal fun CupertinoBooleanControl(
             else CupertinoCheckbox(booleanState.value == true, change,
                 modifier = fieldModifier, enabled = enabled)
             if (canClear) {
-                IconButton(
+                if (clearVisible) IconButton(
                     onClick = { bindings.dispatchProps.handleChange(bindings.stateProps.path, booleanState.clearValue) },
                     modifier = clearAffordance.clearModifier(28.dp),
-                ) {
-                    Icon(JsonFormsActionIcons.Clear, clearLabel,
-                        tint = colors.secondaryLabel, modifier = Modifier.size(15.dp))
-                }
+                ) { Icon(JsonFormsActionIcons.Clear, clearLabel,
+                    tint = colors.secondaryLabel, modifier = Modifier.size(15.dp)) }
+                else Spacer(Modifier.size(28.dp))
             }
         }
         if (visibleDescription != null) {

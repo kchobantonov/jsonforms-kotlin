@@ -151,6 +151,7 @@ fun temporalControlLocaleBundles(format: String): Map<String, JsonObject> = mapO
         "temporal.rangeExclusiveMaximum" to JsonPrimitive("Стойността трябва да е преди"),
         "temporal.invalidBoundType" to JsonPrimitive("Свързаната граница трябва да е низ."),
         "temporal.invalidBoundReference" to JsonPrimitive("Невалидна препратка към границата за дата или час."),
+        "temporal.saveFormatIncompatible" to JsonPrimitive("Потребителският формат за запис е несъвместим с формата на схемата; използва се стандартният формат за запис."),
         "temporal.date.outOfRange" to JsonPrimitive("Изберете дата в позволения диапазон."),
         "temporal.time.outOfRange" to JsonPrimitive("Изберете час в позволения диапазон."),
         "temporal.dateTime.outOfRange" to JsonPrimitive("Изберете дата и час в позволения диапазон."),

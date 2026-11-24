@@ -27,16 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
@@ -58,6 +55,8 @@ import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.initialControlFocusRequested
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.cupertino.renderers.ActionTooltip
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -96,7 +95,7 @@ internal fun CupertinoRadioGroup(
     val interactive = enabled && !readonly
     val vertical = radioChoiceVertical(config, optionsMap)
     val canClear = dataProvided && interactive &&
-        (optionsMap["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(optionsMap, config, "clearable") != false
     var groupFocused by remember { mutableStateOf(false) }
     val showUnfocusedDescription = strictControlBooleanOption(appliedOptions,
         "showUnfocusedDescription") == true
@@ -107,13 +106,10 @@ internal fun CupertinoRadioGroup(
     val accessibleState = listOfNotNull(requiredState, visibleDescription).joinToString(". ")
     var groupHovered by remember { mutableStateOf(false) }
     var clearFocused by remember { mutableStateOf(false) }
-    val inputModeManager = LocalInputModeManager.current
-    val clearModifier = Modifier.size(28.dp)
+    val clearAffordance = rememberClearAffordanceState(focusKey)
+    val clearVisible = groupFocused || groupHovered || clearFocused || clearAffordance.isVisible()
+    val clearModifier = Modifier.size(28.dp).testTag("radio-clear-slot")
         .onFocusChanged { clearFocused = it.isFocused }
-        .graphicsLayer {
-            alpha = if (groupFocused || groupHovered || clearFocused ||
-                inputModeManager.inputMode == InputMode.Touch) 1f else 0f
-        }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val focusRequesters = remember(focusKey, options.map { it.value }) {
         List(options.size) { FocusRequester() }
@@ -126,6 +122,7 @@ internal fun CupertinoRadioGroup(
     }
     Column(Modifier.then(if (compact) Modifier.testTag("cupertino-radio-cell") else Modifier).onFocusChanged {
             groupFocused = it.hasFocus
+            if (it.hasFocus) clearAffordance.selectField()
             onGroupFocusChanged(it.hasFocus)
         }.pointerInput(canClear) {
             awaitPointerEventScope {
@@ -133,6 +130,7 @@ internal fun CupertinoRadioGroup(
                     when (awaitPointerEvent().type) {
                         PointerEventType.Enter -> groupHovered = true
                         PointerEventType.Exit -> groupHovered = false
+                        PointerEventType.Press -> clearAffordance.selectField()
                     }
                 }
             }
@@ -143,16 +141,17 @@ internal fun CupertinoRadioGroup(
             if (!compact) Text(computeLabel(label, required, hideAsterisk), modifier = Modifier.weight(1f),
                 color = colors.label)
             if (canClear) ActionTooltip(clearLabel) {
-                IconButton(onClick = onClear, modifier = clearModifier) {
+                if (clearVisible) IconButton(onClick = onClear, modifier = clearModifier) {
                     Icon(JsonFormsActionIcons.Clear, clearLabel,
                         tint = colors.secondaryLabel, modifier = Modifier.size(15.dp))
-                }
+                } else Spacer(clearModifier)
             }
         }
         if (vertical) Column {
             options.forEachIndexed { index, option ->
                 CupertinoRadioChoice(index, option, options, focusRequesters, selectedValue,
-                    dataProvided, interactive, accessibleState, errors, vertical = true, rtl = rtl, onSelect = onSelect)
+                    dataProvided, interactive, accessibleState, errors, vertical = true, rtl = rtl,
+                    onSelect = { clearAffordance.selectField(); onSelect(it) })
             }
         } else FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -160,7 +159,8 @@ internal fun CupertinoRadioGroup(
         ) {
             options.forEachIndexed { index, option ->
                 CupertinoRadioChoice(index, option, options, focusRequesters, selectedValue,
-                    dataProvided, interactive, accessibleState, errors, vertical = false, rtl = rtl, onSelect = onSelect)
+                    dataProvided, interactive, accessibleState, errors, vertical = false, rtl = rtl,
+                    onSelect = { clearAffordance.selectField(); onSelect(it) })
             }
         }
         if (dataProvided && options.none { jsonSchemaChoiceEquals(it.value, selectedValue) }) {

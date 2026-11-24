@@ -30,8 +30,9 @@ fun rememberCategorySelectionState(
     config: Map<String, Any?>,
     path: String,
 ): CategorySelectionState {
-    val initial = resolveInitialCategorySelection(categorization, visible)
-    var selectedKey by remember(path) {
+    val version = rememberCategorySetVersion(categorization, path)
+    val initial = remember(path, version) { resolveInitialCategorySelection(categorization, visible) }
+    var selectedKey by remember(path, version) {
         val category = categorization.elements.getOrNull(initial.originalIndex) as? CategoryElement
         mutableStateOf<Any?>(category?.let { categorySelectionKey(categorization, it) })
     }
@@ -62,7 +63,7 @@ fun rememberCategorySelectionState(
             message = "The Category name is ambiguous within this Categorization.",
             details = mapOf("name" to name),
         ) }
-    LaunchedEffect(diagnostics, reporter != null, path) {
+    LaunchedEffect(diagnostics, reporter != null, path, version) {
         diagnostics.forEach {
             currentReporter?.report(it.copy(details = it.details + ("path" to path)))
         }

@@ -29,6 +29,31 @@ class DemoRuntimeSwitchUiTest {
         uischema = ControlElement("#/properties/name"),
     )
 
+    @Test fun materialHomeShowsSpecifiedTitleAndTagline() = homeCopy(
+        DemoUiStyle.Material, DemoLocale.English,
+        "JSON Forms Kotlin Material 3", "More Forms. Less Code.",
+    )
+
+    @Test fun cupertinoBulgarianHomeShowsSpecifiedTitleAndTagline() = homeCopy(
+        DemoUiStyle.Cupertino, DemoLocale.Bulgarian,
+        "JSON Forms Kotlin Cupertino", "Повече формуляри. По-малко код.",
+    )
+
+    private fun homeCopy(style: DemoUiStyle, locale: DemoLocale,
+        title: String, tagline: String,
+    ) = runComposeUiTest {
+        val store = MapSettings()
+        DemoPreferences(store).save(DemoSettings(uiStyle = style, locale = locale))
+        setContent {
+            ExamplesComposeApp(examples = listOf(example), settingsStore = store,
+                showLandingWhenUnselected = true, browserRuntime = DemoBrowserRuntime.Js)
+        }
+        onNodeWithText(title).assertExists()
+        onNodeWithText(tagline).assertExists()
+        onNodeWithText("Kotlin/JS").assertExists()
+        onNodeWithText("Kotlin/Wasm").assertExists()
+    }
+
     @Test fun welcomeOffersBothRuntimesAndOpensSelectedExample() = runComposeUiTest {
         val store = MapSettings()
         DemoPreferences(store).save(DemoSettings(uiStyle = DemoUiStyle.Material))
@@ -99,6 +124,7 @@ class DemoRuntimeSwitchUiTest {
         onNodeWithText("The browser could not preserve the current form data. Free browser storage and try again.")
             .assertExists()
         onNodeWithText("OK").performClick()
+        onNodeWithContentDescription("Close settings").performClick()
         onAllNodes(hasSetTextAction() and hasText("Ada")).onFirst().assertExists()
     }
 }

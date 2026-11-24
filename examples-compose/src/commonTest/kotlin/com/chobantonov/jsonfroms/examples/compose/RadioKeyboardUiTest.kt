@@ -14,6 +14,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performMouseInput
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.LayoutDirection
 import com.chobantonov.jsonfroms.compose.JsonForms
@@ -38,6 +45,67 @@ class RadioKeyboardUiTest {
     @Test fun cupertinoRtlRadioUsesLogicalLeftArrow() = navigate(true, false, rtl = true)
     @Test fun materialRadioClearActivatesWithEnter() = clearWithKeyboard(false)
     @Test fun cupertinoRadioClearActivatesWithEnter() = clearWithKeyboard(true)
+    @Test fun materialRadioUsesGlobalClearable() = globalClearable(false)
+    @Test fun cupertinoRadioUsesGlobalClearable() = globalClearable(true)
+    @Test fun materialEnumRadioClearFollowsTouchSelection() = touchClear(false, false)
+    @Test fun cupertinoEnumRadioClearFollowsTouchSelection() = touchClear(true, false)
+    @Test fun materialOneOfRadioClearFollowsTouchSelection() = touchClear(false, true)
+    @Test fun cupertinoOneOfRadioClearFollowsTouchSelection() = touchClear(true, true)
+
+    private fun touchClear(cupertino: Boolean, oneOf: Boolean) = runComposeUiTest {
+        val field = if (oneOf) "channel" else "choice"
+        val choice = if (oneOf) "Yes" else "Red"
+        val schema = JsonSchema(Json.parseToJsonElement("""{
+          "type":"object","properties":{
+            "choice":{"enum":["Red","Blue"]},
+            "channel":{"oneOf":[{"const":"yes","title":"Yes"},{"const":"no","title":"No"}]}
+          }
+        }""").jsonObject)
+        var data by mutableStateOf(Json.parseToJsonElement("""{"choice":"Red","channel":"yes"}"""))
+        var inputMode: InputModeManager? = null
+        setContent {
+            inputMode = LocalInputModeManager.current
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/$field", options = mapOf(
+                    "format" to JsonPrimitive("radio"))),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers,
+                onChange = { data = it.data })
+        }
+        runOnIdle { inputMode!!.requestInputMode(InputMode.Touch) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        onNodeWithContentDescription(choice).performTouchInput { click() }
+        onNodeWithContentDescription("Clear value").assertExists()
+        onNodeWithContentDescription("Clear value")
+            .performSemanticsAction(SemanticsActions.OnClick) { it() }
+        runOnIdle { assertFalse(field in data.jsonObject) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+    }
+
+    private fun globalClearable(cupertino: Boolean) = runComposeUiTest {
+        val schema = JsonSchema(Json.parseToJsonElement("""{
+          "type":"object","properties":{"choice":{"type":"string","enum":["Red","Blue"]}}
+        }""").jsonObject)
+        val data = Json.parseToJsonElement("""{"choice":"Red"}""")
+        var local by mutableStateOf(JsonPrimitive("false"))
+        var global by mutableStateOf(false)
+        setContent {
+            TestTouchInputMode()
+            JsonForms(data = data, schema = schema,
+                uischema = ControlElement("#/properties/choice", options = mapOf(
+                    "format" to JsonPrimitive("radio"), "clearable" to local)),
+                config = mapOf("clearable" to JsonPrimitive(global)),
+                renderers = if (cupertino) cupertinoRenderers else materialRenderers)
+        }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = true }
+        onNodeWithText("Red").performMouseInput { moveTo(Offset(-100f, -100f)); moveTo(center) }
+        onNodeWithContentDescription("Clear value").assertExists()
+        runOnIdle { local = JsonPrimitive(false) }
+        onNodeWithContentDescription("Clear value").assertDoesNotExist()
+        runOnIdle { global = false; local = JsonPrimitive(true) }
+        onNodeWithText("Red").performMouseInput { moveTo(Offset(-100f, -100f)); moveTo(center) }
+        onNodeWithContentDescription("Clear value").assertExists()
+    }
 
     private fun clearWithKeyboard(cupertino: Boolean) = runComposeUiTest {
         val schema = JsonSchema(Json.parseToJsonElement("""{
@@ -51,6 +119,8 @@ class RadioKeyboardUiTest {
                 renderers = if (cupertino) cupertinoRenderers else materialRenderers,
                 onChange = { data = it.data })
         }
+        onNodeWithContentDescription("Red")
+            .performSemanticsAction(SemanticsActions.RequestFocus) { it() }
         val clear = onNodeWithContentDescription("Clear value")
         clear.performSemanticsAction(SemanticsActions.RequestFocus) { it() }
         clear.assertIsFocused()

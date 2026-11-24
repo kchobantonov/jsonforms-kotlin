@@ -76,6 +76,8 @@ data class JsonFormsCoreState(
 data class JsonFormsRendererRegistryEntry<T>(
     val tester: RankedTester,
     val renderer: T,
+    /** The renderer evaluates an authored Label's interpolation options itself. */
+    val handlesLabelInterpolation: Boolean = false,
 )
 
 data class JsonFormsUISchemaRegistryEntry(

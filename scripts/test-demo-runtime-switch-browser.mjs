@@ -159,6 +159,12 @@ test('JS and Wasm switch preserves working data and cleans one-time transfer',
 
       await devtools.click('Go to welcome page');
       await until(() => devtools.namedNode('Choose a web runtime'), Boolean, 'welcome runtime choice');
+      const welcomeTree = await devtools.send('Accessibility.getFullAXTree');
+      const welcomeNames = welcomeTree.nodes.map(node => node.name?.value).filter(Boolean);
+      assert.ok(welcomeNames.includes('JSON Forms Kotlin Material 3'),
+        `Renderer title missing from accessibility tree: ${welcomeNames.slice(0, 100).join(' | ')}`);
+      assert.ok(welcomeNames.includes('More Forms. Less Code.'),
+        `Welcome tagline missing from accessibility tree: ${welcomeNames.slice(0, 100).join(' | ')}`);
       await devtools.click('Kotlin/Wasm');
       await until(() => devtools.evaluate('location.pathname'),
         path => path === `${sitePrefix}/wasm/`, 'Wasm welcome choice');

@@ -30,6 +30,8 @@ class AgGridFallbackUiTest {
     @Test fun cupertinoReportsAndShowsPortableTable() = scenario(true)
     @Test fun materialNoCatalogFallbackFollowsLocale() = localizedFallback(false)
     @Test fun cupertinoNoCatalogFallbackFollowsLocale() = localizedFallback(true)
+    @Test fun materialBulgarianFallbackDiagnostic() = localizedFallback(false, "bg-BG")
+    @Test fun cupertinoBulgarianFallbackDiagnostic() = localizedFallback(true, "bg-BG")
 
     @Test fun nativePaginationOverridesPortableValuesInFallback() = runComposeUiTest {
         val schema = JsonSchema(Json.parseToJsonElement(
@@ -93,11 +95,11 @@ class AgGridFallbackUiTest {
         assertEquals(0, changes)
     }
 
-    private fun localizedFallback(cupertino: Boolean) = runComposeUiTest {
+    private fun localizedFallback(cupertino: Boolean, initialLocale: String = "en-US") = runComposeUiTest {
         val schema = JsonSchema(Json.parseToJsonElement(
             """{"type":"array","items":{"type":"string"}}"""
         ).jsonObject)
-        var locale by mutableStateOf("en-US")
+        var locale by mutableStateOf(initialLocale)
         val diagnostics = mutableListOf<UiDiagnostic>()
         var changes = 0
         setContent {
@@ -111,10 +113,15 @@ class AgGridFallbackUiTest {
                 onChange = { changes++ },
             )
         }
-        onNodeWithText("AG Grid is unavailable here; showing an array table.").assertExists()
+        val english = "AG Grid is unavailable here; showing an array table."
+        val bulgarian = "AG Grid не е наличен тук; показва се таблица за масив."
+        val initialMessage = if (initialLocale == "bg-BG") bulgarian else english
+        onNodeWithText(initialMessage).assertExists()
         onNodeWithText("Ada").assertExists()
-        runOnIdle { locale = "bg-BG" }
-        onNodeWithText("AG Grid не е наличен тук; показва се таблица за масив.").assertExists()
+        waitForIdle()
+        assertEquals(initialMessage, diagnostics.single().message)
+        runOnIdle { locale = if (initialLocale == "bg-BG") "en-US" else "bg-BG" }
+        onNodeWithText(if (initialLocale == "bg-BG") english else bulgarian).assertExists()
         onNodeWithText("Ada").assertExists()
         waitForIdle()
         assertEquals(listOf("variant.unsupported"), diagnostics.map { it.code })

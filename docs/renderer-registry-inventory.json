@@ -464,7 +464,8 @@
       },
       {
         "tester": "markupLabelTester",
-        "implementation": "markupLabelRenderer(cupertino)"
+        "implementation": "markupLabelRenderer(cupertino)",
+        "handlesLabelInterpolation": true
       }
     ],
     "cells": [

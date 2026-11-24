@@ -44,10 +44,12 @@ fun resolveArrayTableCellOptions(options: JsonOptions, field: String): ArrayTabl
     val cell = ((options["cells"] as? JsonObject)?.get(field) as? JsonObject) ?: return null
     fun element(name: String) = (cell[name] as? JsonObject)
         ?.let { runCatching { it.toUiSchemaElement() }.getOrNull() }
+    val detail = element("detail")
     return ArrayTableCellOptions(
         summary = element("summary"),
-        detail = element("detail"),
-        dialog = cell["dialog"] as? JsonObject,
+        detail = detail,
+        dialog = cell["dialog"] as? JsonObject
+            ?: detail?.options?.get("dialog") as? JsonObject,
     )
 }
 

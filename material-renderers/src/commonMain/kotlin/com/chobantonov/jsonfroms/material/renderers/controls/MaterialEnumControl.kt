@@ -47,10 +47,8 @@ import androidx.compose.ui.semantics.requestFocus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
@@ -60,6 +58,8 @@ import com.chobantonov.jsonfroms.compose.asRendererProps
 import com.chobantonov.jsonfroms.compose.rememberPendingEditOwner
 import com.chobantonov.jsonfroms.compose.rememberInitialControlFocusRequester
 import com.chobantonov.jsonfroms.compose.strictControlBooleanOption
+import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
+import com.chobantonov.jsonfroms.compose.rememberClearAffordanceState
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
 import com.chobantonov.jsonfroms.core.mappers.OwnPropsOfControl
@@ -144,7 +144,7 @@ fun MaterialEnumControl(
         stateProps.config + stateProps.uischema.options, stateProps.enabled && !stateProps.readonly)
     val canClear = JsonPath.get(props.state.jsonforms.core.data, stateProps.path) != null &&
         stateProps.enabled && !stateProps.readonly &&
-        (stateProps.uischema.options["clearable"] as? JsonPrimitive)?.booleanOrNull != false
+        resolvedControlBooleanOption(stateProps.uischema.options, stateProps.config, "clearable") != false
     val clearLabel = translateControlClear(props.state.jsonforms.i18n)
     val requiredState = translateControlRequired(props.state.jsonforms.i18n)
         .takeIf { stateProps.required }
@@ -170,13 +170,13 @@ fun MaterialEnumControl(
     var observedCommittedValue by remember(stateProps.path) { mutableStateOf(stateProps.data) }
     val setPending = rememberPendingEditOwner("enum:${stateProps.path}:${props.id}")
     var selectorFocused by remember(stateProps.path) { mutableStateOf(false) }
+    val clearAffordance = rememberClearAffordanceState(stateProps.path)
     var selectorHovered by remember(stateProps.path) { mutableStateOf(false) }
     var clearFocused by remember(stateProps.path) { mutableStateOf(false) }
     var clearHovered by remember(stateProps.path) { mutableStateOf(false) }
     val clearFocusRequester = remember(stateProps.path) { FocusRequester() }
-    val inputModeManager = LocalInputModeManager.current
     fun clearVisible() = selectorFocused || selectorHovered || clearFocused || clearHovered ||
-        inputModeManager.inputMode == InputMode.Touch
+        clearAffordance.isVisible()
     val clearModifier = Modifier.size(32.dp)
         .onFocusChanged { clearFocused = it.isFocused }
         .pointerInput(stateProps.path) {
@@ -293,6 +293,7 @@ fun MaterialEnumControl(
     ExposedDropdownMenuBox(
         expanded = expanded && filteredOptions.isNotEmpty() && stateProps.enabled && !stateProps.readonly,
         onExpandedChange = { shouldExpand ->
+            clearAffordance.selectField()
             if (!shouldExpand && expanded) touched = true
             expanded = shouldExpand && filteredOptions.isNotEmpty()
         },
@@ -301,7 +302,9 @@ fun MaterialEnumControl(
             .focusRequester(focusRequester).semantics {
             if (accessibleState.isNotBlank()) stateDescription = accessibleState
             if (accessibleError.isNotBlank()) error(accessibleError)
+            requestFocus { clearAffordance.selectField(); focusRequester.requestFocus(); true }
         }.onFocusChanged { focusState ->
+            if (focusState.isFocused) clearAffordance.selectField()
             selectorFocused = focusState.isFocused
             if (focusState.isFocused) hasReceivedFocus = true
             else if (hasReceivedFocus) touched = true
@@ -309,6 +312,7 @@ fun MaterialEnumControl(
             awaitPointerEventScope {
                 while (true) {
                     when (awaitPointerEvent().type) {
+                        PointerEventType.Press -> clearAffordance.selectField()
                         PointerEventType.Enter -> selectorHovered = true
                         PointerEventType.Exit -> selectorHovered = false
                     }

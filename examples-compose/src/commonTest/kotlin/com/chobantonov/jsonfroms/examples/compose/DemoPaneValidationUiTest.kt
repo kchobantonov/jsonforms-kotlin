@@ -1,20 +1,29 @@
 package com.chobantonov.jsonfroms.examples.compose
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.SemanticsActions
 import com.chobantonov.jsonfroms.core.models.ControlElement
 import com.chobantonov.jsonfroms.core.models.JsonSchema
 import com.chobantonov.jsonfroms.examples.ExampleAction
 import com.chobantonov.jsonfroms.examples.StateProps
+import com.chobantonov.jsonfroms.material.renderers.util.MaterialThemePreset
+import com.chobantonov.jsonfroms.cupertino.renderers.util.CupertinoThemePreset
 import com.chobantonov.jsonfroms.core.store.JsonFormsI18nState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,6 +37,26 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class DemoPaneValidationUiTest {
+    @Test
+    fun cupertinoTabsScrollAndSelectInNarrowBulgarianView() = runComposeUiTest {
+        var selected by mutableStateOf(DemoPane.Demo)
+        setContent {
+            DemoAppTheme(DemoUiStyle.Cupertino, DemoLocale.Bulgarian, DemoDirection.Ltr,
+                false, MaterialThemePreset.Purple, CupertinoThemePreset.Blue) {
+                Box(Modifier.width(320.dp)) {
+                    DemoPaneSelector(selected, 0, false) { selected = it }
+                }
+            }
+        }
+        onNodeWithTag("cupertino-demo-tabs").assertExists()
+        onNodeWithTag("cupertino-tab-Demo").assertIsSelected()
+        onNodeWithTag("cupertino-tab-Config").performScrollTo().performClick()
+        onNodeWithTag("cupertino-tab-Config").assertIsSelected()
+        runOnIdle { assertEquals(DemoPane.Config, selected) }
+        onNodeWithTag("cupertino-tab-Demo").performScrollTo().performClick()
+        onNodeWithTag("cupertino-tab-Demo").assertIsSelected()
+    }
+
     @Test fun materialDemoAdditionalPropertyOverrideRemovesAddAction() = demoAdditionalPropertyOverride(false)
     @Test fun cupertinoDemoAdditionalPropertyOverrideRemovesAddAction() = demoAdditionalPropertyOverride(true)
 

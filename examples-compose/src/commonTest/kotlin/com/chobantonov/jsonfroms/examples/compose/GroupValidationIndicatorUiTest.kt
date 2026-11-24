@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -363,6 +364,7 @@ class GroupValidationIndicatorUiTest {
                 }),
             )
         }
+        onNodeWithText(if (oneOf) "Yes" else "red").performMouseInput { moveTo(center) }
         onNodeWithContentDescription("1 error").assertDoesNotExist()
         onNodeWithContentDescription("Clear value").performClick()
         onNodeWithContentDescription("1 error").assertExists()
