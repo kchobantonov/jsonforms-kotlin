@@ -6,6 +6,7 @@ import com.chobantonov.jsonfroms.compose.resolvedControlBooleanOption
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import com.chobantonov.jsonfroms.compose.asRendererProps
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.OtpPasswordInput
+import com.chobantonov.jsonfroms.compose.OtpTextRole
 import com.chobantonov.jsonfroms.core.i18n.translatePasswordActionText
 import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
 import com.chobantonov.jsonfroms.core.mappers.invalidStringStoredValue
@@ -95,6 +97,13 @@ fun MaterialPasswordControl(
             textColor = colors.onSurface, mutedColor = colors.onSurfaceVariant,
             borderColor = colors.outline, focusColor = colors.primary, errorColor = colors.error,
             storedValueStatus = invalidStatus,
+            renderText = { text, color, role ->
+                Text(text, color = color, style = when (role) {
+                    OtpTextRole.Label -> MaterialTheme.typography.bodyMedium
+                    OtpTextRole.Value -> MaterialTheme.typography.bodyLarge
+                    OtpTextRole.Supporting -> MaterialTheme.typography.bodySmall
+                })
+            },
             trailingContent = { clearVisible ->
                 val canClear = clearable && current.isNotEmpty() && controlProps.enabled && !controlProps.readonly
                 if (canClear && clearVisible)

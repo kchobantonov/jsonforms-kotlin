@@ -12,6 +12,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -25,6 +27,7 @@ import com.chobantonov.jsonfroms.compose.ComposeJsonFormsRenderer
 import com.chobantonov.jsonfroms.compose.JsonFormsActionIcons
 import com.chobantonov.jsonfroms.compose.LocalPreserveEmptyValue
 import com.chobantonov.jsonfroms.compose.OtpPasswordInput
+import com.chobantonov.jsonfroms.compose.OtpTextRole
 import com.chobantonov.jsonfroms.core.i18n.translatePasswordActionText
 import com.chobantonov.jsonfroms.core.i18n.translateControlInvalidValue
 import com.chobantonov.jsonfroms.core.mappers.invalidStringStoredValue
@@ -36,6 +39,7 @@ import com.chobantonov.jsonfroms.core.util.acceptsRestrictedStringEdit
 import com.chobantonov.jsonfroms.core.util.resolveRestrict
 import com.chobantonov.jsonfroms.cupertino.renderers.ActionTooltip
 import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
+import com.slapps.cupertino.CupertinoText
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -82,6 +86,13 @@ fun CupertinoPasswordControl(props: ComposeJsonFormsRendererProps, compact: Bool
             borderColor = colors.controlBorder, focusColor = colors.accent,
             errorColor = colors.destructive,
             storedValueStatus = invalidStatus,
+            renderText = { text, color, role ->
+                CupertinoText(text, color = color, style = TextStyle(fontSize = when (role) {
+                    OtpTextRole.Label -> 16.sp
+                    OtpTextRole.Value -> 20.sp
+                    OtpTextRole.Supporting -> 12.sp
+                }))
+            },
             trailingContent = { clearVisible ->
                 val canClear = clearable && current.isNotEmpty() && controlProps.enabled && !controlProps.readonly
                 if (canClear && clearVisible)

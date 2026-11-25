@@ -4,6 +4,7 @@ package com.chobantonov.jsonfroms.material.renderers.controls
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Arrangement
@@ -14,14 +15,15 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.CalendarLocale
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -34,8 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.graphics.Color
@@ -47,22 +52,58 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
 import com.chobantonov.jsonfroms.material.renderers.ActionTooltip
+import com.chobantonov.jsonfroms.material.renderers.ActionText
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.offsetAt
+import kotlin.time.Instant
 
-/** Compose's desktop month formatter uses the Julian calendar before 1582, while its grid is Gregorian. */
-private class ProlepticDatePickerFormatter : DatePickerFormatter {
+/** Keep UTC dates on the same local day for platform formatters, clear of midnight offset rounding. */
+private fun dateFormatterMillis(utcMillis: Long): Long {
+    val offsetSeconds = TimeZone.currentSystemDefault()
+        .offsetAt(Instant.fromEpochMilliseconds(utcMillis)).totalSeconds
+    return utcMillis + maxOf(0, -offsetSeconds).toLong() * 1000L + 2 * 60 * 60 * 1000L
+}
+
+/** Uses the same proleptic Gregorian date as the picker grid on every target. */
+internal fun gregorianPickerDateText(date: LocalDate, language: String, verbose: Boolean): String {
+    val bulgarian = language.startsWith("bg", ignoreCase = true)
+    val monthIndex = date.month.ordinal
+    val month = if (bulgarian) bulgarianPickerMonths[monthIndex] else englishPickerMonths[monthIndex]
+    val year = date.year
+    if (bulgarian) {
+        val text = "${date.day} $month $year г."
+        return if (verbose) "${bulgarianPickerWeekdays[date.dayOfWeek.ordinal]}, $text" else text
+    }
+    val text = "${if (verbose) month else englishPickerShortMonths[monthIndex]} ${date.day}, $year"
+    return if (verbose) "${englishPickerWeekdays[date.dayOfWeek.ordinal]}, $text" else text
+}
+
+private val englishPickerMonths = listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+private val englishPickerShortMonths = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+private val englishPickerWeekdays = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+private val bulgarianPickerMonths = listOf("януари", "февруари", "март", "април", "май", "юни", "юли", "август", "септември", "октомври", "ноември", "декември")
+private val bulgarianPickerWeekdays = listOf("понеделник", "вторник", "сряда", "четвъртък", "петък", "събота", "неделя")
+
+/** Compose's platform formatters differ for ancient dates and for form-level Bulgarian on iOS. */
+private class ProlepticDatePickerFormatter(private val language: String) : DatePickerFormatter {
     private val delegate = DatePickerDefaults.dateFormatter()
+    private val bulgarian = language.startsWith("bg", ignoreCase = true)
 
     override fun formatMonthYear(monthMillis: Long?, locale: CalendarLocale): String? {
         if (monthMillis == null) return null
         val date = pickerMillisToDate(monthMillis)
-        if (date.year > 1582) return delegate.formatMonthYear(monthMillis, locale)
-        val reference = LocalDate(2000, date.month.ordinal + 1, 1).toPickerMillis()
-        return delegate.formatMonthYear(reference, locale)?.replace("2000", date.year.toString())
+        if (date.year > 1582 && !bulgarian) return delegate.formatMonthYear(dateFormatterMillis(monthMillis), locale)
+        val month = if (bulgarian) bulgarianPickerMonths[date.month.ordinal] else englishPickerMonths[date.month.ordinal]
+        return "$month ${date.year}"
     }
 
-    override fun formatDate(dateMillis: Long?, locale: CalendarLocale, forContentDescription: Boolean): String? =
-        delegate.formatDate(dateMillis, locale, forContentDescription)
+    override fun formatDate(dateMillis: Long?, locale: CalendarLocale, forContentDescription: Boolean): String? {
+        if (dateMillis == null) return null
+        val date = pickerMillisToDate(dateMillis)
+        return if (date.year <= 1582 || bulgarian) gregorianPickerDateText(date, language, forContentDescription)
+            else delegate.formatDate(dateFormatterMillis(dateMillis), locale, forContentDescription)
+    }
 }
 
 @Composable
@@ -89,9 +130,22 @@ internal fun TemporalPickerIcon(
 
 internal enum class TemporalPickerType { Date, Time, DateTime }
 
+internal data class MaterialDatePickerText(
+    val selectDate: String,
+    val enterDate: String,
+    val selectedDate: String,
+    val noDateSelected: String,
+    val enteredDate: String,
+    val noDateEntered: String,
+    val switchToInputMode: ActionText,
+    val switchToCalendarMode: ActionText,
+)
+
 @Composable
 internal fun MaterialDatePickerDialog(
     initialDateMillis: Long?,
+    language: String,
+    pickerText: MaterialDatePickerText,
     cancelLabel: String,
     okLabel: String,
     isSelectableDate: (Long) -> Boolean = { true },
@@ -105,15 +159,18 @@ internal fun MaterialDatePickerDialog(
 ) {
     key(initialDateMillis) {
         val currentSelectable = rememberUpdatedState(isSelectableDate)
-        val state = rememberDatePickerState(
-            initialSelectedDateMillis = initialDateMillis,
-            initialDisplayedMonthMillis = initialDateMillis,
-            yearRange = 1..9999,
-            selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean =
-                    currentSelectable.value(utcTimeMillis)
-            },
-        )
+        val state = remember(language, initialDateMillis) {
+            DatePickerState(
+                locale = pickerCalendarLocale(language),
+                initialSelectedDateMillis = initialDateMillis,
+                initialDisplayedMonthMillis = initialDateMillis,
+                yearRange = 1..9999,
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                        currentSelectable.value(utcTimeMillis)
+                },
+            )
+        }
         val selected = state.selectedDateMillis
         val canConfirm = selected?.let(isSelectableDate) == true
         var observed by remember(initialDateMillis) { mutableStateOf(initialDateMillis) }
@@ -139,7 +196,53 @@ internal fun MaterialDatePickerDialog(
             dismissButton = { if (showDismissAction) TextButton(onClick = onDismiss) { Text(cancelLabel) } },
         ) {
             Column {
-                DatePicker(state = state, dateFormatter = remember { ProlepticDatePickerFormatter() })
+                val formatter = remember(language) { ProlepticDatePickerFormatter(language) }
+                val inputMode = state.displayMode == DisplayMode.Input
+                val headlineLabel = if (inputMode) pickerText.enteredDate else pickerText.selectedDate
+                val emptyLabel = if (inputMode) pickerText.noDateEntered else pickerText.noDateSelected
+                val headline = formatter.formatDate(selected, state.locale)
+                val verboseDate = formatter.formatDate(selected, state.locale, forContentDescription = true)
+                DatePicker(
+                    state = state,
+                    dateFormatter = formatter,
+                    title = {
+                        Text(
+                            text = if (inputMode) pickerText.enterDate else pickerText.selectDate,
+                            modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 16.dp),
+                            color = DatePickerDefaults.colors().titleContentColor,
+                        )
+                    },
+                    headline = {
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = headline ?: headlineLabel,
+                                modifier = Modifier.weight(1f)
+                                    .padding(start = 24.dp, end = 12.dp, bottom = 12.dp)
+                                    .semantics {
+                                        liveRegion = LiveRegionMode.Polite
+                                        contentDescription = verboseDate?.let { "$headlineLabel: $it" } ?: emptyLabel
+                                    },
+                                color = DatePickerDefaults.colors().headlineContentColor,
+                                maxLines = 1,
+                            )
+                            val switchText = if (inputMode) pickerText.switchToCalendarMode else pickerText.switchToInputMode
+                            ActionTooltip(switchText.tooltip) {
+                                IconButton(
+                                    modifier = Modifier.padding(end = 12.dp, bottom = 12.dp),
+                                    onClick = {
+                                        state.displayMode = if (inputMode) DisplayMode.Picker else DisplayMode.Input
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = if (inputMode) CalendarIcon else PencilIcon,
+                                        contentDescription = switchText.ariaLabel,
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    showModeToggle = false,
+                )
                 if (showRangeFeedback && invalidSelectionMessage != null) {
                     Text(invalidSelectionMessage, Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                 }
@@ -381,6 +484,12 @@ internal fun MaterialTimeViewsDialog(
             onClick = { selected?.takeIf(canConfirm)?.let(onConfirm) }) { Text(okLabel) } },
         dismissButton = { if (showActions) TextButton(onClick = onDismiss) { Text(cancelLabel) } },
     )
+}
+
+private val PencilIcon = lineIcon("Edit") {
+    moveTo(4f, 20f); lineTo(8.5f, 19f); lineTo(20f, 7.5f)
+    lineTo(16.5f, 4f); lineTo(5f, 15.5f); close()
+    moveTo(14.5f, 6f); lineTo(18f, 9.5f)
 }
 
 private val CalendarIcon = lineIcon("Calendar") {

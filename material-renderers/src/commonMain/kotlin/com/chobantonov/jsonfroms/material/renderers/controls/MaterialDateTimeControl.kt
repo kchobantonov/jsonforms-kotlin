@@ -193,7 +193,24 @@ fun MaterialDateTimeControl(props: ComposeJsonFormsRendererProps, compact: Boole
                     pickerStep = PickerStep.Time
                 },
             ) else MaterialDatePickerDialog(
+                language = props.state.jsonforms.i18n.locale ?: "en",
                 initialDateMillis = initial.date.toPickerMillis(),
+                pickerText = MaterialDatePickerText(
+                    selectDate = selectDateText,
+                    enterDate = text("enterDate", "Enter date"),
+                    selectedDate = text("selectedDate", "Selected date"),
+                    noDateSelected = text("noDateSelected", "No date selected"),
+                    enteredDate = text("enteredDate", "Entered date"),
+                    noDateEntered = text("noDateEntered", "No date entered"),
+                    switchToInputMode = ActionText(
+                        text("switchToInputModeTooltip", "Switch to text input mode"),
+                        text("switchToInputModeAriaLabel", "Switch to text input mode"),
+                    ),
+                    switchToCalendarMode = ActionText(
+                        text("switchToCalendarModeTooltip", "Switch to calendar mode"),
+                        text("switchToCalendarModeAriaLabel", "Switch to calendar mode"),
+                    ),
+                ),
                 cancelLabel = cancelText,
                 okLabel = nextText,
                 invalidSelectionMessage = pickerRangeText,

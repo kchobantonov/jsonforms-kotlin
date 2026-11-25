@@ -14,10 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,10 +37,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.chobantonov.jsonfroms.core.i18n.translateControlRequired
 import com.chobantonov.jsonfroms.core.mappers.ControlProps
 import com.chobantonov.jsonfroms.core.mappers.computeLabel
@@ -50,6 +51,19 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 
 /** One editable password field with independently drawn character boxes. */
+enum class OtpTextRole { Label, Value, Supporting }
+
+/** Foundation-only fallback for hosts that call the shared editor directly. */
+@Composable
+private fun DefaultOtpText(text: String, color: Color, role: OtpTextRole) {
+    val size = when (role) {
+        OtpTextRole.Label -> 16.sp
+        OtpTextRole.Value -> 20.sp
+        OtpTextRole.Supporting -> 12.sp
+    }
+    BasicText(text, style = TextStyle(color = color, fontSize = size))
+}
+
 @Composable
 fun OtpPasswordInput(
     props: ControlProps,
@@ -62,6 +76,9 @@ fun OtpPasswordInput(
     focusColor: Color,
     errorColor: Color,
     storedValueStatus: String? = null,
+    renderText: @Composable (String, Color, OtpTextRole) -> Unit = { text, color, role ->
+        DefaultOtpText(text, color, role)
+    },
     trailingContent: @Composable (Boolean) -> Unit,
     onChange: (String) -> Boolean,
 ) {
@@ -107,8 +124,7 @@ fun OtpPasswordInput(
                 }
             }
         }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        if (label.isNotBlank()) Text(label, color = mutedColor,
-            style = MaterialTheme.typography.bodyMedium)
+        if (label.isNotBlank()) renderText(label, mutedColor, OtpTextRole.Label)
         BasicTextField(
             value = editor,
             onValueChange = { next ->
@@ -145,14 +161,13 @@ fun OtpPasswordInput(
                                         otpOffsetOf(editor.text, index)))
                                     requester.requestFocus()
                                 }, contentAlignment = Alignment.Center) {
-                                    Text(if (character == null) "" else if (revealed) character else "•",
-                                        color = textColor, style = MaterialTheme.typography.bodyLarge)
+                                    renderText(if (character == null) "" else if (revealed) character else "•",
+                                        textColor, OtpTextRole.Value)
                                 }
                             }
                         }
-                        if (characters.size > boxCount) Text(
-                            "+${characters.size - boxCount}", color = errorColor,
-                            style = MaterialTheme.typography.bodySmall)
+                        if (characters.size > boxCount) renderText(
+                            "+${characters.size - boxCount}", errorColor, OtpTextRole.Supporting)
                         Spacer(Modifier.size(4.dp))
                         trailingContent(focused || controlFocused || hovered)
                     }
@@ -160,12 +175,9 @@ fun OtpPasswordInput(
                 }
             },
         )
-        if (visibleError.isNotBlank()) Text(visibleError, color = errorColor,
-            style = MaterialTheme.typography.bodySmall)
-        if (storedValueStatus != null) Text(storedValueStatus, color = errorColor,
-            style = MaterialTheme.typography.bodySmall)
-        if (description != null) Text(description, color = mutedColor,
-            style = MaterialTheme.typography.bodySmall)
+        if (visibleError.isNotBlank()) renderText(visibleError, errorColor, OtpTextRole.Supporting)
+        if (storedValueStatus != null) renderText(storedValueStatus, errorColor, OtpTextRole.Supporting)
+        if (description != null) renderText(description, mutedColor, OtpTextRole.Supporting)
     }
 }
 

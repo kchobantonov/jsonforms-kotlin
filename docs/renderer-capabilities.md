@@ -1,6 +1,6 @@
 # Kotlin renderer capability declaration
 
-This declaration describes the current Compose registries. Registration means a tester and renderer are present; it does not certify every option or target interaction. The [registry inventory](renderer-registry-inventory.json) records every entry and its order, and `node scripts/check-renderer-registry.mjs` detects registry drift. Requirement-level evidence and open behavior are in the [spec ledger](spec-requirement-ledger.json) and [behavior catalog](renderer-behavior-catalog.md).
+This declaration describes the current Compose registries. Registration means a tester and renderer are present; it does not certify every option or target interaction. The [registry inventory](renderer-registry-inventory.json) records every entry and its order, the [registration guide](renderer-registration.md) documents ranks and escape-hatch namespaces, and `node scripts/check-renderer-registry.mjs` detects registry drift. Requirement-level evidence and open behavior are in the [spec ledger](spec-requirement-ledger.json) and [behavior catalog](renderer-behavior-catalog.md).
 
 ## Contract provenance
 

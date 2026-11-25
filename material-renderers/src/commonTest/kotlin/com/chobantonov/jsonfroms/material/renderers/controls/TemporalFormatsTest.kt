@@ -6,9 +6,35 @@ import kotlin.test.assertNotNull
 import kotlinx.datetime.FixedOffsetTimeZone
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.atTime
+import kotlinx.datetime.toInstant
 import kotlinx.serialization.json.JsonPrimitive
 
 class TemporalFormatsTest {
+    @Test fun ancientDatePickerMillisRoundTrips() {
+        for (date in listOf(LocalDate(1220, 2, 29), LocalDate(1220, 3, 1), LocalDate(1220, 3, 12))) {
+            assertEquals(date, pickerMillisToDate(date.toPickerMillis()))
+            assertEquals(date.toPickerMillis(), date.atTime(LocalTime(0, 0)).toInstant(TimeZone.UTC).toEpochMilliseconds())
+        }
+        assertEquals(LocalDate(1220, 3, 12), assertNotNull(parseDateValue("1220-03-12", listOf(DEFAULT_DATE_SAVE_FORMAT))).date)
+    }
+
+    @Test fun ancientPickerLabelsUseGregorianEnglishAndBulgarianDates() {
+        val date = LocalDate(1220, 3, 12)
+        assertEquals("Mar 12, 1220", gregorianPickerDateText(date, "en", verbose = false))
+        assertEquals("Thursday, March 12, 1220", gregorianPickerDateText(date, "en", verbose = true))
+        assertEquals("12 март 1220 г.", gregorianPickerDateText(date, "bg-BG", verbose = false))
+        assertEquals("четвъртък, 12 март 1220 г.", gregorianPickerDateText(date, "bg-BG", verbose = true))
+    }
+
+    @Test fun modernBulgarianPickerLabelUsesFormLocale() {
+        val date = LocalDate(2026, 3, 12)
+        assertEquals("12 март 2026 г.", gregorianPickerDateText(date, "bg-BG", verbose = false))
+        assertEquals("четвъртък, 12 март 2026 г.", gregorianPickerDateText(date, "bg-BG", verbose = true))
+    }
+
     @Test fun stringOptionsRequireJsonStrings() {
         assertEquals("Hint", mapOf("placeholder" to JsonPrimitive("Hint")).stringOption("placeholder"))
         assertEquals(null, mapOf("placeholder" to JsonPrimitive(42)).stringOption("placeholder"))

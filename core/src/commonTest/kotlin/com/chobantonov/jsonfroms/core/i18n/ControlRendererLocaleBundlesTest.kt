@@ -12,6 +12,22 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ControlRendererLocaleBundlesTest {
+    @Test fun datePickerModeTooltipsUseFormLocaleAndHostOverride() {
+        val english = JsonFormsI18nState(locale = "en")
+        val bulgarian = JsonFormsI18nState(locale = "bg-BG")
+        val inputKey = "switchToInputModeTooltip"
+        val calendarKey = "switchToCalendarModeTooltip"
+        assertEquals("Switch to text input mode", translateTemporalControlText(
+            english, null, inputKey, "Switch to text input mode", "MM/DD/YYYY"))
+        assertEquals("Превключи към въвеждане на дата", translateTemporalControlText(
+            bulgarian, null, inputKey, "Switch to text input mode", "MM/DD/YYYY"))
+        assertEquals("Превключи към календар", translateTemporalControlText(
+            bulgarian, null, calendarKey, "Switch to calendar mode", "MM/DD/YYYY"))
+        val host = JsonFormsI18nState(locale = "bg", translate = { _, _, _ -> "Host mode tooltip" })
+        assertEquals("Host mode tooltip", translateTemporalControlText(
+            host, null, inputKey, "Switch to text input mode", "MM/DD/YYYY"))
+    }
+
     @Test fun emptyEnumLabelIsLocalizedWithoutChangingItsValue() {
         assertEquals("Empty value", translateControlEmptyOption(JsonFormsI18nState(locale = "en")))
         assertEquals("Празна стойност", translateControlEmptyOption(JsonFormsI18nState(locale = "bg-BG")))

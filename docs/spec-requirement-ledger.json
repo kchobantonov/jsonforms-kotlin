@@ -800,10 +800,11 @@
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PresentationSelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalControlsFixtureUiTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalPrefixItemsUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalAncientDatePickerUiTest.kt",
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/testers/PlainTemporalCellTesterTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalCellUiTest.kt"
       ],
-      "next": "The imported schema-selected date and UI-selected month controls pass Material/Cupertino JVM, iOS, JS browser and Wasm browser UI tests, including a YYYY.MM edit saved as YYYY-MM. Referenced object dates, authored tuple positions and a mixed string/null date also pass. A separate 2020-12 prefixItems date tuple proves date editor selection and positional storage on all four targets. Verify more picker bounds and device accessibility."
+      "next": "The imported schema-selected date and UI-selected month controls pass Material/Cupertino JVM, iOS, JS browser and Wasm browser UI tests, including a YYYY.MM edit saved as YYYY-MM. Referenced object dates, authored tuple positions and a mixed string/null date also pass. A separate 2020-12 prefixItems date tuple proves date editor selection and positional storage on all four targets. Material date picker tests now verify typed years 1220 and 2026 reopen on the selected Gregorian day with correct month and accessible day text on JVM, iOS, JS and Wasm; mounted historical and modern cases verify Bulgarian month and selected-day labels from the form locale on all four targets; the modern case also verifies the localized picker title, selected-date announcement and mode-toggle action. Separate locale tests cover English/Bulgarian toggle tooltips and host override. Cupertino year-1220 date/date-time wheel centering also passes on JVM, iOS, JS and Wasm. The Cupertino wheel range now clamps to years 1–9999; mounted boundary tests exclude 0 and 10000 across all four targets. Material mounted tests select the stored January 2 date in years 1 and 9999 on JVM, iOS, JS and Wasm. Verify other picker bounds and device accessibility."
     },
     {
       "id": "S5-11",
@@ -833,9 +834,10 @@
         "core/src/commonTest/kotlin/com/chobantonov/jsonfroms/core/TestersTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/PresentationSelectionTest.kt",
         "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalControlsFixtureUiTest.kt",
-        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalCellUiTest.kt"
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalCellUiTest.kt",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/TemporalAncientDatePickerUiTest.kt"
       ],
-      "next": "Imported schema-selected date-time mounts without a write and UI-selected date-time retains its authored save format in Material/Cupertino JVM, iOS, JS browser and Wasm browser UI tests. The seconds-bearing date-time picker exposes a seconds column without views and saves its edit. Verify remaining range constraints and device accessibility."
+      "next": "Imported schema-selected date-time mounts without a write and UI-selected date-time retains its authored save format in Material/Cupertino JVM, iOS, JS browser and Wasm browser UI tests. The seconds-bearing date-time picker exposes a seconds column without views and saves its edit. Material date-time tests now verify a typed year-1220 date reopens on the selected Gregorian day with correct month and accessible day text on all four targets. Cupertino year-1220 date-time wheel centering passes on JVM, iOS, JS and Wasm. Verify remaining range constraints and device accessibility."
     },
     {
       "id": "S5-13",
@@ -6577,9 +6579,13 @@
       "statement": "Document registration ranks and escape-hatch namespaces for each renderer family.",
       "strength": "normative",
       "applicability": "all renderer families",
-      "status": "not-verified",
-      "evidence": [],
-      "next": "Audit registry ranks and vendor namespaces."
+      "status": "supported",
+      "evidence": [
+        "docs/renderer-registration.md",
+        "docs/renderer-registry-inventory.json",
+        "examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/RendererRegistrationUiTest.kt"
+      ],
+      "next": "Keep the rank tables synchronized when registry testers or namespaces change."
     },
     {
       "id": "S28-03",
@@ -6602,9 +6608,12 @@
       "statement": "Keep serialized spec and examples independent of component libraries, share core logic, and isolate component rendering and props in adapters.",
       "strength": "normative",
       "applicability": "portable architecture",
-      "status": "not-verified",
-      "evidence": [],
-      "next": "Audit dependencies and adapter boundaries."
+      "status": "partial",
+      "evidence": [
+        "core and examples commonMain Gradle dependencies exclude Compose and component libraries; the shared OTP editor accepts a family text slot, and Material/Cupertino adapters supply their own text components",
+        "The mounted OtpPasswordUiTest suite passes on JVM, JS browser, Wasm browser and iOS simulator after the OTP text split"
+      ],
+      "next": "Move the remaining Material3 UI in shared MixedTreeEditor and UnknownRenderer behind family adapters, then audit other shared component imports and verify actual family styling on all targets."
     },
     {
       "id": "S29-01",

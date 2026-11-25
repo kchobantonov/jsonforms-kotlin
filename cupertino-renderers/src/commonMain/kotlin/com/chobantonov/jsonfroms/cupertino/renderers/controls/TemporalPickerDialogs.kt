@@ -63,7 +63,8 @@ internal fun CupertinoDatePickerDialog(
     onSelectionChange: (Long) -> Unit = {},
 ) {
     val initialYear = pickerMillisToDate(initialDateMillis).year
-    val state = rememberCupertinoDatePickerState(initialDateMillis, (initialYear - 100)..(initialYear + 100))
+    val yearRange = (initialYear - 100).coerceAtLeast(1)..(initialYear + 100).coerceAtMost(9999)
+    val state = rememberCupertinoDatePickerState(initialDateMillis, yearRange)
     val canConfirm = isSelectableDate(state.selectedDateMillis)
     var observed by remember(initialDateMillis) { mutableStateOf(initialDateMillis) }
     LaunchedEffect(state.selectedDateMillis, commitOnSelection) {
