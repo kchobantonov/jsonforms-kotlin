@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.*
 import com.chobantonov.jsonfroms.core.actions.UpdateAction
@@ -45,6 +46,7 @@ import com.chobantonov.jsonfroms.cupertino.renderers.util.LocalCupertinoColors
 import com.slapps.cupertino.CupertinoButton
 import com.slapps.cupertino.CupertinoAlertDialog
 import com.slapps.cupertino.CupertinoText
+import com.slapps.cupertino.CupertinoTextField
 import com.slapps.cupertino.cancel
 import com.slapps.cupertino.destructive
 import com.slapps.cupertino.CupertinoButtonDefaults
@@ -366,6 +368,26 @@ private fun CupertinoMixedTree(
         MixedTreeColors(
             Color.Transparent, colors.controlBorder, colors.tertiaryBackground,
             colors.label, colors.secondaryLabel, colors.destructive,
+        ),
+        MixedTreeComponents(
+            text = { value, modifier, color, maxLines ->
+                CupertinoText(value, modifier = modifier, color = color, maxLines = maxLines,
+                    overflow = TextOverflow.Ellipsis)
+            },
+            input = { value, onChange, modifier, enabled, placeholder ->
+                Box(modifier) {
+                    CupertinoTextField(value = value, onValueChange = onChange,
+                        modifier = Modifier.fillMaxWidth(), enabled = enabled, singleLine = true,
+                        placeholder = placeholder?.let { { CupertinoText(it) } })
+                }
+            },
+            action = { icon, label, tint, onClick ->
+                ActionTooltip(label) {
+                    IconButton(onClick = onClick, modifier = Modifier.size(30.dp)) {
+                        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(15.dp))
+                    }
+                }
+            },
         ),
         text("rename", "Rename"), text("remove", "Delete"), text("confirm", "Confirm"), text("cancel", "Cancel"), interactive, searchLabel, clearSearchLabel,
         showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives,

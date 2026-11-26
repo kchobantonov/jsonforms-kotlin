@@ -6611,9 +6611,10 @@
       "status": "partial",
       "evidence": [
         "core and examples commonMain Gradle dependencies exclude Compose and component libraries; the shared OTP editor accepts a family text slot, and Material/Cupertino adapters supply their own text components",
-        "The mounted OtpPasswordUiTest suite passes on JVM, JS browser, Wasm browser and iOS simulator after the OTP text split"
+        "The mounted OtpPasswordUiTest suite passes on JVM, JS browser, Wasm browser and iOS simulator after the OTP text split",
+        "Shared MixedTreeEditor now accepts family text, input and action slots; Material and Cupertino adapters supply those components. The 14 focused mixed-tree tests, including the paired MixedTreeFamilyUiTest search, clear and rename cases, pass on JVM, JS browser, Wasm browser and iOS simulator with zero failures or skips."
       ],
-      "next": "Move the remaining Material3 UI in shared MixedTreeEditor and UnknownRenderer behind family adapters, then audit other shared component imports and verify actual family styling on all targets."
+      "next": "Move the remaining Material3 UI in shared UnknownRenderer behind family adapters, then audit other shared component imports and verify actual family styling on all targets."
     },
     {
       "id": "S29-01",

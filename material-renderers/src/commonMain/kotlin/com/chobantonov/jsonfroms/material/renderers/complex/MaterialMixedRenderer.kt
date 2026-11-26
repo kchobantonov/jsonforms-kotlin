@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.compose.*
 import com.chobantonov.jsonfroms.core.actions.UpdateAction
@@ -358,6 +359,24 @@ private fun MaterialMixedTree(
         MixedTreeColors(
             Color.Transparent, scheme.outlineVariant, scheme.secondaryContainer,
             scheme.onSurface, scheme.onSurfaceVariant, scheme.error,
+        ),
+        MixedTreeComponents(
+            text = { value, modifier, color, maxLines ->
+                Text(value, modifier = modifier, color = color, maxLines = maxLines,
+                    overflow = TextOverflow.Ellipsis)
+            },
+            input = { value, onChange, modifier, enabled, placeholder ->
+                OutlinedTextField(value = value, onValueChange = onChange, modifier = modifier,
+                    enabled = enabled, singleLine = true,
+                    placeholder = placeholder?.let { { Text(it) } })
+            },
+            action = { icon, label, tint, onClick ->
+                ActionTooltip(label) {
+                    IconButton(onClick = onClick, modifier = Modifier.size(30.dp)) {
+                        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(15.dp))
+                    }
+                }
+            },
         ),
         text("rename", "Rename"), text("remove", "Delete"), text("confirm", "Confirm"), text("cancel", "Cancel"), interactive, searchLabel, clearSearchLabel,
         showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives,

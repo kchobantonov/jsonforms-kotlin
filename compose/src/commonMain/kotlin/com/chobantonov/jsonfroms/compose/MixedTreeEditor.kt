@@ -1,6 +1,9 @@
 package com.chobantonov.jsonfroms.compose
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,17 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -35,12 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalInputModeManager
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import com.chobantonov.jsonfroms.core.mappers.MixedTreeNode
@@ -62,11 +58,23 @@ data class MixedTreeColors(
     val danger: Color,
 )
 
+/** Family-owned text, input and action widgets; tree state and traversal remain shared. */
+data class MixedTreeComponents(
+    val text: @Composable (String, Modifier, Color, Int) -> Unit,
+    val input: @Composable (String, (String) -> Unit, Modifier, Boolean, String?) -> Unit,
+    val action: @Composable (ImageVector, String, Color, () -> Unit) -> Unit,
+)
+
+private val LocalMixedTreeComponents = compositionLocalOf<MixedTreeComponents> {
+    error("MixedTreeEditor requires family components")
+}
+
 @Composable
 fun MixedTreeEditor(
     root: MixedTreeNode,
     selectedPath: String,
     colors: MixedTreeColors,
+    components: MixedTreeComponents,
     renameLabel: String,
     deleteLabel: String,
     confirmLabel: String,
@@ -84,22 +92,24 @@ fun MixedTreeEditor(
     detail: @Composable (MixedTreeNode) -> Unit,
 ) {
     val selected = root.find(selectedPath) ?: root
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        if (maxWidth < 640.dp) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, interactive, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
-                DetailPane(selected, colors, detail)
-            }
-        } else {
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Top,
-            ) {
-                Box(Modifier.width(280.dp)) {
+    CompositionLocalProvider(LocalMixedTreeComponents provides components) {
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            if (maxWidth < 640.dp) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, interactive, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
+                    DetailPane(selected, colors, detail)
                 }
-                Box(Modifier.weight(1f)) { DetailPane(selected, colors, detail) }
+            } else {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Box(Modifier.width(280.dp)) {
+                        TreePane(root, selected.path, colors, renameLabel, deleteLabel, confirmLabel, cancelLabel, interactive, searchLabel, clearSearchLabel, showPrimitives, showPrimitivesLabel, hidePrimitivesLabel, onTogglePrimitives, onSelect, onRename, onDelete)
+                    }
+                    Box(Modifier.weight(1f)) { DetailPane(selected, colors, detail) }
+                }
             }
         }
     }
@@ -125,29 +135,22 @@ private fun TreePane(
     onRename: (MixedTreeNode, String) -> Unit,
     onDelete: (MixedTreeNode) -> Unit,
 ) {
+    val components = LocalMixedTreeComponents.current
     val expanded = remember(root.path) { mutableStateMapOf(root.path to true) }
     var query by remember(root.path) { mutableStateOf("") }
     val filtered = remember(root, query) { root.filter(query) }
-    Surface(
-        color = colors.container,
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, colors.border),
-    ) {
+    MixedTreeSurface(colors.container, colors.border, 10.dp) {
         Column(
             Modifier.fillMaxWidth().heightIn(min = 220.dp, max = 560.dp).padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text(searchLabel) },
-                leadingIcon = { Icon(JsonFormsActionIcons.Search, contentDescription = null, modifier = Modifier.size(17.dp)) },
-                trailingIcon = if (query.isNotEmpty()) {{
-                    ActionIcon(JsonFormsActionIcons.Clear, clearSearchLabel, colors.secondaryText) { query = "" }
-                }} else null,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(JsonFormsActionIcons.Search, contentDescription = null,
+                    colorFilter = ColorFilter.tint(colors.secondaryText), modifier = Modifier.size(17.dp))
+                components.input(query, { query = it }, Modifier.weight(1f), true, searchLabel)
+                if (query.isNotEmpty()) ActionIcon(JsonFormsActionIcons.Clear, clearSearchLabel,
+                    colors.secondaryText) { query = "" }
+            }
             Column(
                 Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -200,6 +203,7 @@ private fun TreeNodeRow(
     onRename: (MixedTreeNode, String) -> Unit,
     onDelete: (MixedTreeNode) -> Unit,
 ) {
+    val components = LocalMixedTreeComponents.current
     var editing by remember(node.path) { mutableStateOf(false) }
     var draft by remember(node.path, node.label) { mutableStateOf(node.label) }
     val hasChildren = node.children.isNotEmpty()
@@ -208,7 +212,8 @@ private fun TreeNodeRow(
     val alwaysShowActions = LocalInputModeManager.current.inputMode == InputMode.Touch
     val showActions = alwaysShowActions || hovered
     Row(
-        Modifier.fillMaxWidth().padding(start = (depth * 14).dp)
+        Modifier.fillMaxWidth().testTag("mixed-tree-row-${node.path}")
+            .padding(start = (depth * 14).dp)
             .pointerInput(node.path) {
                 awaitPointerEventScope {
                     while (true) {
@@ -223,34 +228,27 @@ private fun TreeNodeRow(
             .padding(horizontal = 7.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(
-            color = if (node.path == selectedPath) colors.selectedContainer else Color.Transparent,
-            shape = RoundedCornerShape(7.dp),
-            modifier = Modifier.weight(1f),
+        MixedTreeSurface(
+            if (node.path == selectedPath) colors.selectedContainer else Color.Transparent,
+            null, 7.dp, Modifier.weight(1f),
         ) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (hasChildren) {
-                    Icon(
+                    Image(
                         JsonFormsActionIcons.ChevronRight,
                         contentDescription = null,
-                        tint = colors.secondaryText,
+                        colorFilter = ColorFilter.tint(colors.secondaryText),
                         modifier = Modifier.size(22.dp).rotate(if (isExpanded) 90f else 0f)
                             .clickable { expanded[node.path] = !isExpanded },
                     )
                 } else {
-                    Text("•", Modifier.width(22.dp), color = colors.secondaryText)
+                    components.text("•", Modifier.width(22.dp), colors.secondaryText, 1)
                 }
                 if (editing) {
-                    OutlinedTextField(
-                        value = draft,
-                        onValueChange = { if (interactive) draft = it },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        enabled = interactive,
-                    )
+                    components.input(draft, { if (interactive) draft = it }, Modifier.weight(1f), interactive, null)
                     ActionIcon(JsonFormsActionIcons.Confirm, confirmLabel, colors.text) {
                         if (interactive) onRename(node, draft)
                         editing = false
@@ -260,18 +258,8 @@ private fun TreeNodeRow(
                         editing = false
                     }
                 } else {
-                    Text(
-                        node.type.treeGlyph(),
-                        modifier = Modifier.width(26.dp),
-                        color = colors.secondaryText,
-                    )
-                    Text(
-                        node.label,
-                        modifier = Modifier.weight(1f),
-                        color = colors.text,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    components.text(node.type.treeGlyph(), Modifier.width(26.dp), colors.secondaryText, 1)
+                    components.text(node.label, Modifier.weight(1f), colors.text, 1)
                     if (depth == 0) {
                         ActionIcon(
                             if (showPrimitives) JsonFormsActionIcons.Visibility else JsonFormsActionIcons.VisibilityOff,
@@ -324,13 +312,10 @@ private fun DetailPane(
     colors: MixedTreeColors,
     detail: @Composable (MixedTreeNode) -> Unit,
 ) {
-    Surface(
-        color = colors.container,
-        shape = RoundedCornerShape(10.dp),
-        border = BorderStroke(1.dp, colors.border),
-    ) {
+    val components = LocalMixedTreeComponents.current
+    MixedTreeSurface(colors.container, colors.border, 10.dp) {
         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(node.label, color = colors.text)
+            components.text(node.label, Modifier, colors.text, Int.MAX_VALUE)
             detail(node)
         }
     }
@@ -363,21 +348,25 @@ private fun com.chobantonov.jsonfroms.core.models.JsonSchemaType.treeGlyph(): St
     com.chobantonov.jsonfroms.core.models.JsonSchemaType.Null -> "∅"
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActionIcon(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     label: String,
     tint: Color,
     onClick: () -> Unit,
 ) {
-    TooltipBox(
-        positionProvider = androidx.compose.material3.TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-        tooltip = { PlainTooltip { Text(label) } },
-        state = rememberTooltipState(),
-    ) {
-        IconButton(onClick = onClick, modifier = Modifier.size(30.dp)) {
-            Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(15.dp))
-        }
-    }
+    LocalMixedTreeComponents.current.action(icon, label, tint, onClick)
+}
+
+@Composable
+private fun MixedTreeSurface(
+    color: Color,
+    borderColor: Color?,
+    radius: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val shape = RoundedCornerShape(radius)
+    val border = if (borderColor == null) Modifier else Modifier.border(BorderStroke(1.dp, borderColor), shape)
+    Box(modifier.background(color, shape).then(border), content = { content() })
 }
