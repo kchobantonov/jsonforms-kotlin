@@ -4,7 +4,7 @@ This declaration describes the current Compose registries. Registration means a 
 
 ## Contract provenance
 
-The contract is pinned to extended-spec commit `4d368072be7d3d94bba30227c9d57108d2c50029` in the [source inventory](spec-source-inventory.json). That spec reconciles a neighboring React renderer fork at commit `e931e46c237f371dc283c291746640d653a32190`; the sibling spec's `provenance.json` records which reference documents were used. A behavior appearing in that fork or in the sibling Svelte implementation is not, by itself, an upstream JSON Forms guarantee. The Kotlin capability claims below refer to this pinned extended contract and executed Kotlin evidence.
+The contract uses `@chobantonov/jsonforms-extended-spec` version `0.2.0`, pinned by the root `package-lock.json` and [source inventory](spec-source-inventory.json). Its `v0.2.0` source tag is commit `e0b23861ca0c47d17309202c5dbb2111364b3286`. That spec reconciles a neighboring React renderer fork at commit `e931e46c237f371dc283c291746640d653a32190`; the spec package's `provenance.json` records which reference documents were used. A behavior appearing in that fork or in the sibling Svelte implementation is not, by itself, an upstream JSON Forms guarantee. The Kotlin capability claims below refer to this pinned extended contract and executed Kotlin evidence.
 
 | Contract surface | Origin under spec §5.2 | Kotlin declaration |
 | --- | --- | --- |

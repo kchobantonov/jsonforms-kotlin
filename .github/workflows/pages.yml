@@ -28,7 +28,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - uses: gradle/actions/setup-gradle@v4
+      - name: Verify pinned specification and examples
+        run: |
+          npm ci --ignore-scripts --registry=https://registry.npmjs.org
+          npm run spec:check
       - uses: actions/configure-pages@v5
         if: github.event_name != 'pull_request'
       - name: Test renderer and example modules

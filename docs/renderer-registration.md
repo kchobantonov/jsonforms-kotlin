@@ -4,6 +4,8 @@ These are the ranks declared by the current Kotlin registries. A tester returns 
 
 Hosts should supply one family registry: `materialRenderers` or `cupertinoRenderers`, or its matching extended registry. A host renderer can override a built-in entry by using a higher rank. At the same rank, prepend the host entry. Appending an equal-rank entry leaves the built-in entry selected. The explicit tuple variant has rank **1000** in either family, so an unconditional host override of it needs a higher rank. A mounted [registration test](../examples-compose/src/commonTest/kotlin/com/chobantonov/jsonfroms/examples/compose/RendererRegistrationUiTest.kt) exercises high-rank append and equal-rank prepend with both families and verifies that selection makes no form write.
 
+The built-in Mixed Control entry in each family also supplies `ComposeUnknownRenderer` for visible unavailable-renderer, cell and scope messages. Dispatch uses the first entry in the supplied renderer list that implements this hook for those fallback paths. A custom registry can implement the hook on one of its renderers to keep fallback typography in its own family; without a provider, shared Compose uses a plain Foundation text fallback. The hook changes presentation only: existing localized messages and diagnostics still come from dispatch.
+
 ## Base renderer ranks
 
 The two registry lists have the same entry order. A range means the tester chooses a rank based on the schema or authored option; it does not make every rank in that range applicable to every Control. The Cupertino entries marked *shared* intentionally reuse the Material tester without a 100-point offset.

@@ -1,8 +1,9 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
+import { assertPinnedSpecPackage, inventory, specRoot } from './spec-package-source.mjs';
 
-const root = resolve(process.env.JSONFORMS_SPEC_EXAMPLES_DIR ?? '../jsonforms-extended-spec/examples');
+assertPinnedSpecPackage();
+const root = resolve(process.env.JSONFORMS_SPEC_EXAMPLES_DIR ?? join(specRoot, 'examples'));
 const destination = resolve('examples/spec');
 const catalog = JSON.parse(readFileSync(join(root, 'catalog.json'), 'utf8'));
 const coverage = JSON.parse(readFileSync(resolve('docs/spec-example-coverage.json'), 'utf8'));
@@ -70,8 +71,7 @@ const fixtures = catalog.flatMap(({ id, title }) => {
   }
   return [fixture];
 });
-const commit = process.env.JSONFORMS_SPEC_COMMIT ??
-  execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+const commit = inventory.specCommit;
 if (adaptationCatalog.specCommit !== commit) throw new Error('Adaptation manifest targets a different spec revision');
 const catalogText = `${JSON.stringify({ commit, examples: fixtures.map(({ id, title }) => ({ id, title })) }, null, 2)}\n`;
 if (process.argv.includes('--check')) {

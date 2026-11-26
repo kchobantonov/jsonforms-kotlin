@@ -1,5 +1,5 @@
 {
-  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
+  "specCommit": "e0b23861ca0c47d17309202c5dbb2111364b3286",
   "sourceCatalogCount": 50,
   "importedCount": 47,
   "rule": "Every source ID must have an explicit state; imports alone are unverified, and partial renderer evidence does not establish cross-platform conformance.",

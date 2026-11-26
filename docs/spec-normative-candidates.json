@@ -1,5 +1,5 @@
 {
-  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
+  "specCommit": "e0b23861ca0c47d17309202c5dbb2111364b3286",
   "rule": "Overinclusive keyword candidates, not an atomic normative ledger. Review table rows, amendments, proposals, wrapped clauses and requirements without capitalized keywords before assigning capability IDs.",
   "candidates": [
     {
@@ -385,7 +385,7 @@
       "keywords": [
         "MUST"
       ],
-      "text": "Compact object and array cells MUST expose eligible errors on the cell value\nand its descendants beside the summary, even while the detail editor is closed.\nThis is cell-level validation feedback, separate from an enclosing collection's\nheader indicator. Suppressing that header indicator does not suppress cell\nfeedback. The reference renderers use the existing single-error tooltip and\nmulti-error summary interaction, including the localized error count in the\nexpanded summary. A permanent numeric badge beside the cell is not required.",
+      "text": "Compact object and array cells MUST expose eligible errors on the cell value\nand its descendants beside the summary, even while the detail editor is closed.\nThis is cell-level validation feedback, separate from an enclosing collection's\nheader indicator. Suppressing that header indicator does not suppress cell\nfeedback. A single-error tooltip and multi-error summary interaction can\nprovide the explanation, including a localized error count in the expanded\nsummary. A permanent numeric badge beside the cell is not required.",
       "classification": "normative"
     },
     {
@@ -1261,7 +1261,7 @@
       "classification": "normative"
     },
     {
-      "line": 3773,
+      "line": 3768,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1273,7 +1273,7 @@
       "classification": "normative"
     },
     {
-      "line": 3797,
+      "line": 3792,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1283,7 +1283,7 @@
       "classification": "normative"
     },
     {
-      "line": 3805,
+      "line": 3800,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.4 Pending edits, commit timing and cancellation",
       "keywords": [
@@ -1293,7 +1293,7 @@
       "classification": "normative"
     },
     {
-      "line": 3973,
+      "line": 3968,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.5 Choice and suggested-string controls",
       "keywords": [
@@ -1303,7 +1303,7 @@
       "classification": "normative"
     },
     {
-      "line": 3997,
+      "line": 3992,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1313,7 +1313,7 @@
       "classification": "normative"
     },
     {
-      "line": 4007,
+      "line": 4002,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1323,7 +1323,7 @@
       "classification": "normative"
     },
     {
-      "line": 4013,
+      "line": 4008,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1333,7 +1333,7 @@
       "classification": "normative"
     },
     {
-      "line": 4017,
+      "line": 4012,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1344,7 +1344,7 @@
       "classification": "normative"
     },
     {
-      "line": 4023,
+      "line": 4018,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.6 Shared detail UI-schema selection",
       "keywords": [
@@ -1354,7 +1354,7 @@
       "classification": "normative"
     },
     {
-      "line": 4060,
+      "line": 4055,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.7 Array add-item initialization",
       "keywords": [
@@ -1366,7 +1366,7 @@
       "classification": "normative"
     },
     {
-      "line": 4089,
+      "line": 4084,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.9 Array-level errors and item summaries",
       "keywords": [
@@ -1377,7 +1377,7 @@
       "classification": "normative"
     },
     {
-      "line": 4102,
+      "line": 4097,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.9 Array-level errors and item summaries",
       "keywords": [
@@ -1387,7 +1387,7 @@
       "classification": "normative"
     },
     {
-      "line": 4125,
+      "line": 4120,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.10 Matching constraints: `contains`",
       "keywords": [
@@ -1397,7 +1397,7 @@
       "classification": "normative"
     },
     {
-      "line": 4176,
+      "line": 4171,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.11 Tuple control: positional array fields",
       "keywords": [
@@ -1407,7 +1407,7 @@
       "classification": "normative"
     },
     {
-      "line": 4434,
+      "line": 4429,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.11 Tuple control: positional array fields",
       "keywords": [
@@ -1417,7 +1417,7 @@
       "classification": "normative"
     },
     {
-      "line": 4869,
+      "line": 4864,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.14 Cells render through one frame",
       "keywords": [
@@ -1427,7 +1427,7 @@
       "classification": "normative"
     },
     {
-      "line": 5455,
+      "line": 5450,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.17 Selection that writes versus selection that displays",
       "keywords": [
@@ -1438,7 +1438,7 @@
       "classification": "normative"
     },
     {
-      "line": 5480,
+      "line": 5475,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1449,7 +1449,7 @@
       "classification": "normative"
     },
     {
-      "line": 5526,
+      "line": 5521,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1459,7 +1459,7 @@
       "classification": "normative"
     },
     {
-      "line": 5533,
+      "line": 5528,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1470,7 +1470,7 @@
       "classification": "normative"
     },
     {
-      "line": 5547,
+      "line": 5542,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1480,7 +1480,7 @@
       "classification": "normative"
     },
     {
-      "line": 5552,
+      "line": 5547,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1490,7 +1490,7 @@
       "classification": "normative"
     },
     {
-      "line": 5567,
+      "line": 5562,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1500,7 +1500,7 @@
       "classification": "normative"
     },
     {
-      "line": 5613,
+      "line": 5608,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1511,7 +1511,7 @@
       "classification": "normative"
     },
     {
-      "line": 5831,
+      "line": 5826,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.18 Extended renderer catalogue",
       "keywords": [
@@ -1521,7 +1521,7 @@
       "classification": "normative"
     },
     {
-      "line": 5920,
+      "line": 5915,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1533,7 +1533,7 @@
       "classification": "normative"
     },
     {
-      "line": 6194,
+      "line": 6189,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1543,7 +1543,7 @@
       "classification": "normative"
     },
     {
-      "line": 6199,
+      "line": 6194,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.19 Scalar controls and temporal editing",
       "keywords": [
@@ -1553,7 +1553,7 @@
       "classification": "normative"
     },
     {
-      "line": 6558,
+      "line": 6553,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21 Expandable arrays and list with detail",
       "keywords": [
@@ -1563,7 +1563,7 @@
       "classification": "normative"
     },
     {
-      "line": 6677,
+      "line": 6672,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21 Expandable arrays and list with detail",
       "keywords": [
@@ -1575,7 +1575,7 @@
       "classification": "normative"
     },
     {
-      "line": 6745,
+      "line": 6740,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1585,7 +1585,7 @@
       "classification": "normative"
     },
     {
-      "line": 6794,
+      "line": 6789,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1595,7 +1595,7 @@
       "classification": "normative"
     },
     {
-      "line": 6811,
+      "line": 6806,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1606,7 +1606,7 @@
       "classification": "normative"
     },
     {
-      "line": 6826,
+      "line": 6821,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1618,7 +1618,7 @@
       "classification": "normative"
     },
     {
-      "line": 6865,
+      "line": 6860,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.1 Collection pagination and whole-row details",
       "keywords": [
@@ -1633,7 +1633,7 @@
       "classification": "normative"
     },
     {
-      "line": 6937,
+      "line": 6932,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.2 Detail dialog geometry and interaction",
       "keywords": [
@@ -1643,7 +1643,7 @@
       "classification": "definition"
     },
     {
-      "line": 6988,
+      "line": 6983,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.21.3 Scroll regions and renderer styling",
       "keywords": [
@@ -1654,7 +1654,7 @@
       "classification": "normative"
     },
     {
-      "line": 7151,
+      "line": 7146,
       "section": "## 18. Renderer behaviour specifications",
       "subsection": "### 18.25 Cron control",
       "keywords": [
@@ -1664,7 +1664,7 @@
       "classification": "normative"
     },
     {
-      "line": 7589,
+      "line": 7584,
       "section": "## 19. Honest rendering of invalid and out-of-domain data",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1674,7 +1674,7 @@
       "classification": "normative"
     },
     {
-      "line": 7600,
+      "line": 7595,
       "section": "## 19. Honest rendering of invalid and out-of-domain data",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1684,7 +1684,7 @@
       "classification": "normative"
     },
     {
-      "line": 7616,
+      "line": 7611,
       "section": "## 20. Optional editor and tooling capability catalogues",
       "subsection": "### 18.29 Array choices and tokens",
       "keywords": [
@@ -1694,7 +1694,7 @@
       "classification": "normative"
     },
     {
-      "line": 7664,
+      "line": 7659,
       "section": "## 21. Diagnostics",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1704,7 +1704,7 @@
       "classification": "normative"
     },
     {
-      "line": 7693,
+      "line": 7688,
       "section": "## 22. Runtime state",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1714,7 +1714,7 @@
       "classification": "normative"
     },
     {
-      "line": 7697,
+      "line": 7692,
       "section": "## 22. Runtime state",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1724,7 +1724,7 @@
       "classification": "normative"
     },
     {
-      "line": 7711,
+      "line": 7706,
       "section": "## 23. Reserved portable names",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1734,7 +1734,7 @@
       "classification": "normative"
     },
     {
-      "line": 7716,
+      "line": 7711,
       "section": "## 24. Examples requirement",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1744,7 +1744,7 @@
       "classification": "normative"
     },
     {
-      "line": 7718,
+      "line": 7713,
       "section": "## 24. Examples requirement",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1754,7 +1754,7 @@
       "classification": "normative"
     },
     {
-      "line": 7742,
+      "line": 7737,
       "section": "## 25. Conformance suites",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1764,7 +1764,7 @@
       "classification": "normative"
     },
     {
-      "line": 7755,
+      "line": 7750,
       "section": "## 25. Conformance suites",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1774,7 +1774,7 @@
       "classification": "normative"
     },
     {
-      "line": 7760,
+      "line": 7755,
       "section": "## 26. Normative requirements summary",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1784,7 +1784,7 @@
       "classification": "definition"
     },
     {
-      "line": 7778,
+      "line": 7773,
       "section": "## 26. Normative requirements summary",
       "subsection": "### 20.1 Authoring the model in a typed language",
       "keywords": [
@@ -1794,7 +1794,7 @@
       "classification": "definition"
     },
     {
-      "line": 7983,
+      "line": 7978,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1804,7 +1804,7 @@
       "classification": "proposal"
     },
     {
-      "line": 7992,
+      "line": 7987,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1814,7 +1814,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8002,
+      "line": 7997,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1824,7 +1824,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8027,
+      "line": 8022,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1834,7 +1834,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8037,
+      "line": 8032,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1844,7 +1844,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8054,
+      "line": 8049,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1854,7 +1854,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8063,
+      "line": 8058,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1864,7 +1864,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8091,
+      "line": 8086,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Direct errors on arrays and objects",
       "keywords": [
@@ -1875,7 +1875,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8111,
+      "line": 8106,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1885,7 +1885,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8116,
+      "line": 8111,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1895,7 +1895,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8126,
+      "line": 8121,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1905,7 +1905,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8133,
+      "line": 8128,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [
@@ -1916,7 +1916,7 @@
       "classification": "proposal"
     },
     {
-      "line": 8154,
+      "line": 8149,
       "section": "## Appendix A. Proposals outside v1 conformance",
       "subsection": "### Choice cards",
       "keywords": [

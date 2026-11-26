@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { assertPinnedSpecPackage } from './spec-package-source.mjs';
 
 const read = (path) => readFileSync(resolve(path), 'utf8');
 const json = (path) => JSON.parse(read(path));
 const inventory = json('docs/spec-source-inventory.json');
 const root = process.env.JSONFORMS_SPEC_ROOT ?? inventory.sourceRoot;
+assertPinnedSpecPackage();
 const source = (path) => json(`${root}/${path}`);
 const catalog = source('examples/catalog.json');
 const authoring = source('conformance/authoring.json');
@@ -47,9 +48,8 @@ for (const [key, value] of Object.entries(expected)) {
   if (JSON.stringify(inventory[key]) !== JSON.stringify(value)) failures.push(`${key} changed: refresh and review the pinned inventory`);
 }
 const coverage = json('docs/spec-example-coverage.json');
-const checkoutCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: resolve(root), encoding: 'utf8' }).trim();
-if (inventory.specCommit !== coverage.specCommit || inventory.specCommit !== checkoutCommit) {
-  failures.push('Inventory, example coverage, and spec checkout revisions differ');
+if (inventory.specCommit !== coverage.specCommit) {
+  failures.push('Inventory and example coverage source revisions differ');
 }
 if (JSON.stringify(coverage.examples.map(({ id }) => id).sort()) !== JSON.stringify(inventory.exampleIds.toSorted())) {
   failures.push('Example IDs are not fully classified in coverage');

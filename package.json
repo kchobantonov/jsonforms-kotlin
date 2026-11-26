@@ -1,0 +1,14 @@
+{
+  "name": "jsonforms-kotlin-spec-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "spec:check": "node scripts/check-spec-inventory.mjs && node scripts/check-spec-candidates.mjs && node scripts/check-spec-coverage.mjs && node scripts/check-imported-authoring.mjs && node scripts/sync-spec-examples.mjs --check",
+    "spec:sync": "node scripts/sync-spec-examples.mjs"
+  },
+  "devDependencies": {
+    "@chobantonov/jsonforms-extended-spec": "0.2.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
+  }
+}

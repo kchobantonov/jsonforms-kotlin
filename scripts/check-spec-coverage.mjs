@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 const readJson = (path) => JSON.parse(readFileSync(resolve(path), 'utf8'));
 const coverage = readJson('docs/spec-example-coverage.json');
 const imported = readJson('examples/spec/catalog.json');
-const source = readJson(process.env.JSONFORMS_SPEC_CATALOG ?? '../jsonforms-extended-spec/examples/catalog.json');
+const source = readJson(process.env.JSONFORMS_SPEC_CATALOG ?? 'node_modules/@chobantonov/jsonforms-extended-spec/examples/catalog.json');
 const sourceIds = source.map(({ id }) => id);
 const importedIds = imported.examples.map(({ id }) => id);
 const rows = coverage.examples;

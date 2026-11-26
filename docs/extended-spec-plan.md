@@ -20,9 +20,9 @@ Reference checkouts (clean at planning inspection):
 | jsonforms-svelte | b0fb61ed002bf377108089bcc7f1251d6884ffc6 |
 | jsonforms-kotlin | ca3ce86580b92290b3ae11aacc3d35e953e4190c |
 
-The current source inventory and example catalog are pinned to sibling specification revision `4d368072be7d3d94bba30227c9d57108d2c50029`. The table above records the original planning inspection revisions.
+The current source inventory and example catalog use `@chobantonov/jsonforms-extended-spec` version `0.2.0`, pinned in the root `package-lock.json`. That release corresponds to spec tag `v0.2.0` and commit `e0b23861ca0c47d17309202c5dbb2111364b3286`. Run `npm ci` and `npm run spec:check` to verify the package, requirement inventory, conformance inputs, and checked-in example snapshot. The table above records the original planning inspection revisions.
 
-Primary reading under ../jsonforms-extended-spec: docs/spec.md, docs/renderer-and-demo.md, docs/renderer-selection.md, docs/implementation-guide.md, docs/implementation-pitfalls.md, docs/conditional-fields.md, docs/draft-07-visual-support.md; schemas; conformance/{authoring,behavior,config-consumption,expected-invalid}.json; examples/catalog.json.
+Primary reading under `node_modules/@chobantonov/jsonforms-extended-spec`: docs/spec.md, docs/renderer-and-demo.md, docs/renderer-selection.md, docs/implementation-guide.md, docs/implementation-pitfalls.md, docs/conditional-fields.md, docs/draft-07-visual-support.md; schemas; conformance/{authoring,behavior,config-consumption,expected-invalid}.json; examples/catalog.json.
 Reference lessons: ../jsonforms-react-renderers/docs/TODO.md and relevant changesets/tests; ../jsonforms-svelte/docs/{spec-upgrade-plan,renderer-porting-checklist,spec-section-evidence,renderer-parity-audit,renderer-owned-validation,rule-validation-isolation,dynamic-child-readers,localization-source-audit}.md and feature-specific native reviews.
 
 Planning reviewed the spec section inventory, i18n contract, demo layout/settings, implementation guidance and reference backlogs, plus Kotlin build files, registries, test inventory and selected runtime contracts. This is not an exhaustive source audit. Phase 0 explicitly finishes the atomic requirement audit before feature completion claims.

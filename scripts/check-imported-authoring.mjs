@@ -1,14 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { assertPinnedSpecPackage, specRoot } from './spec-package-source.mjs';
+import { validators, dataSchemaValidator, replacePointer } from './spec-package-validation.mjs';
 
 const json = (path) => JSON.parse(readFileSync(resolve(path), 'utf8'));
-const specRoot = resolve(process.env.JSONFORMS_SPEC_ROOT ?? json('docs/spec-source-inventory.json').sourceRoot);
-const { validators, dataSchemaValidator, replacePointer } = await import(
-  pathToFileURL(resolve(specRoot, 'scripts/validation.mjs')).href
-);
-const checks = await validators(specRoot);
+assertPinnedSpecPackage();
+const checks = validators(specRoot);
 const imported = json('examples/spec/catalog.json');
 const pinnedCommit = json('docs/spec-source-inventory.json').specCommit;
 const sourceCatalog = json(`${specRoot}/examples/catalog.json`);
@@ -23,8 +20,7 @@ let documents = 0;
 let draft07Schemas = 0;
 let schemasWithoutDialect = 0;
 
-if (imported.commit !== pinnedCommit ||
-  execFileSync('git', ['rev-parse', 'HEAD'], { cwd: specRoot, encoding: 'utf8' }).trim() !== pinnedCommit) {
+if (imported.commit !== pinnedCommit) {
   failures.push('Imported catalog revision differs from the pinned spec inventory');
 }
 for (const entry of sourceCatalog) {

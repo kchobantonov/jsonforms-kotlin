@@ -57,7 +57,15 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
-val CupertinoMixedRenderer = ComposeJsonFormsRenderer { CupertinoMixedRenderer(it) }
+val CupertinoMixedRenderer: ComposeJsonFormsRenderer = object : ComposeJsonFormsRenderer, ComposeUnknownRenderer {
+    @Composable
+    override fun Render(props: ComposeJsonFormsRendererProps) = CupertinoMixedRenderer(props)
+
+    @Composable
+    override fun RenderUnknown(message: String) {
+        CupertinoText(message, color = LocalCupertinoColors.current.label)
+    }
+}
 
 @OptIn(ExperimentalCupertinoApi::class)
 @Composable

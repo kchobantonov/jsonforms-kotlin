@@ -1,6 +1,10 @@
 {
-  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
-  "sourceRoot": "../jsonforms-extended-spec",
+  "specCommit": "e0b23861ca0c47d17309202c5dbb2111364b3286",
+  "sourceRoot": "node_modules/@chobantonov/jsonforms-extended-spec",
+  "packageName": "@chobantonov/jsonforms-extended-spec",
+  "packageVersion": "0.2.0",
+  "packageIntegrity": "sha512-D+dteucwSkv7yoJNk9W8eR4ZUmXvvzfY9oQnDa7s3qLjpqsQBoLEHeLzXk5SNsJVhfbRXBGbMNtZrTXwtwTjIQ==",
+  "sourceTag": "v0.2.0",
   "rule": "Pinned source identifiers only. An entry is not evidence of Kotlin support; map each to the requirement ledger and executed tests.",
   "sections": [
     {
@@ -76,51 +80,51 @@
       "text": "## 18. Renderer behaviour specifications"
     },
     {
-      "line": 7587,
+      "line": 7582,
       "text": "## 19. Honest rendering of invalid and out-of-domain data"
     },
     {
-      "line": 7608,
+      "line": 7603,
       "text": "## 20. Optional editor and tooling capability catalogues"
     },
     {
-      "line": 7662,
+      "line": 7657,
       "text": "## 21. Diagnostics"
     },
     {
-      "line": 7691,
+      "line": 7686,
       "text": "## 22. Runtime state"
     },
     {
-      "line": 7700,
+      "line": 7695,
       "text": "## 23. Reserved portable names"
     },
     {
-      "line": 7714,
+      "line": 7709,
       "text": "## 24. Examples requirement"
     },
     {
-      "line": 7740,
+      "line": 7735,
       "text": "## 25. Conformance suites"
     },
     {
-      "line": 7758,
+      "line": 7753,
       "text": "## 26. Normative requirements summary"
     },
     {
-      "line": 7786,
+      "line": 7781,
       "text": "## 27. Verification before implementation"
     },
     {
-      "line": 7804,
+      "line": 7799,
       "text": "## 28. Capability declarations"
     },
     {
-      "line": 7817,
+      "line": 7812,
       "text": "## 29. JSON schema artifacts and validation boundary"
     },
     {
-      "line": 7872,
+      "line": 7867,
       "text": "## 30. Host, demo and accessibility contracts"
     }
   ],

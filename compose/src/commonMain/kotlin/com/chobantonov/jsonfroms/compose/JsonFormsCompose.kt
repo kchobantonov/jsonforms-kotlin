@@ -556,7 +556,7 @@ fun JsonFormsDispatchRenderer() {
     val core = state.jsonforms.core
     val uischema = core.uischema ?: run {
         ReportUnavailableRenderer(getConfig(state), "renderer", "", null)
-        UnknownRenderer("renderer", unavailableRendererText(state, "renderer"))
+        UnknownRenderer("renderer", unavailableRendererText(state, "renderer"), state.jsonforms.renderers)
         return
     }
 
@@ -605,6 +605,7 @@ fun JsonFormsDispatchRenderer(
                 "No applicable scope found.",
                 scopeFallbackLocaleBundles,
             ),
+            props.renderers,
         )
         return
     }
@@ -640,7 +641,7 @@ fun JsonFormsDispatchRenderer(
     }
     if (rankedRenderer == null || rankedRenderer.rank == -1) {
         ReportUnavailableRenderer(props.config, "renderer", props.path, props.uischema.type)
-        UnknownRenderer("renderer", unavailableRendererText(props.state, "renderer"))
+        UnknownRenderer("renderer", unavailableRendererText(props.state, "renderer"), props.renderers)
         return
     }
 
@@ -673,7 +674,7 @@ fun DispatchCell(
     }
     if (rankedCell == null || rankedCell.rank == -1) {
         ReportUnavailableRenderer(props.config, "cell", props.path, props.uischema.type)
-        UnknownRenderer("cell", unavailableRendererText(props.state, "cell"))
+        UnknownRenderer("cell", unavailableRendererText(props.state, "cell"), props.renderers)
         return
     }
 

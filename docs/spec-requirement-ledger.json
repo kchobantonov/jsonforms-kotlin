@@ -1,5 +1,5 @@
 {
-  "specCommit": "4d368072be7d3d94bba30227c9d57108d2c50029",
+  "specCommit": "e0b23861ca0c47d17309202c5dbb2111364b3286",
   "rule": "A section scaffold is not atomic coverage. Only listed requirements have been extracted; all other clauses remain unaudited. Partial means observed behavior on the recorded target, not cross-platform conformance.",
   "sections": [
     {
@@ -113,73 +113,73 @@
     {
       "number": 19,
       "heading": "## 19. Honest rendering of invalid and out-of-domain data",
-      "line": 7587,
+      "line": 7582,
       "auditStatus": "partial"
     },
     {
       "number": 20,
       "heading": "## 20. Optional editor and tooling capability catalogues",
-      "line": 7608,
+      "line": 7603,
       "auditStatus": "not-audited"
     },
     {
       "number": 21,
       "heading": "## 21. Diagnostics",
-      "line": 7662,
+      "line": 7657,
       "auditStatus": "partial"
     },
     {
       "number": 22,
       "heading": "## 22. Runtime state",
-      "line": 7691,
+      "line": 7686,
       "auditStatus": "not-audited"
     },
     {
       "number": 23,
       "heading": "## 23. Reserved portable names",
-      "line": 7700,
+      "line": 7695,
       "auditStatus": "not-audited"
     },
     {
       "number": 24,
       "heading": "## 24. Examples requirement",
-      "line": 7714,
+      "line": 7709,
       "auditStatus": "not-audited"
     },
     {
       "number": 25,
       "heading": "## 25. Conformance suites",
-      "line": 7740,
+      "line": 7735,
       "auditStatus": "not-audited"
     },
     {
       "number": 26,
       "heading": "## 26. Normative requirements summary",
-      "line": 7758,
+      "line": 7753,
       "auditStatus": "summary-cross-reference"
     },
     {
       "number": 27,
       "heading": "## 27. Verification before implementation",
-      "line": 7786,
+      "line": 7781,
       "auditStatus": "partial"
     },
     {
       "number": 28,
       "heading": "## 28. Capability declarations",
-      "line": 7804,
+      "line": 7799,
       "auditStatus": "partial"
     },
     {
       "number": 29,
       "heading": "## 29. JSON schema artifacts and validation boundary",
-      "line": 7817,
+      "line": 7812,
       "auditStatus": "partial"
     },
     {
       "number": 30,
       "heading": "## 30. Host, demo and accessibility contracts",
-      "line": 7872,
+      "line": 7867,
       "auditStatus": "partial"
     }
   ],
@@ -3758,7 +3758,7 @@
     },
     {
       "id": "S18.28-placeholder-01",
-      "sourceLine": 7248,
+      "sourceLine": 7243,
       "sourceAnchor": "The string placeholder supplies",
       "statement": "A string placeholder is presentation only, explicit empty suppresses the fallback, and a date/time hint update leaves the active draft, parsing, focus, value and validation unchanged.",
       "strength": "normative",
@@ -3776,7 +3776,7 @@
     },
     {
       "id": "S18.28-01",
-      "sourceLine": 7449,
+      "sourceLine": 7444,
       "sourceAnchor": "#### Shared clear-control behavior",
       "statement": "Editable value controls expose Clear only for a stored value on focus or hover, with localized keyboard-accessible action; options.clearable defaults true, false disables Clear, and clearing follows the control's storage contract without a schema-default write.",
       "strength": "MUST",
@@ -3799,7 +3799,7 @@
     },
     {
       "id": "S18.29-01",
-      "sourceLine": 7492,
+      "sourceLine": 7487,
       "sourceAnchor": "restrict applies minItems/maxItems prevention",
       "statement": "Automatic enum-array checkbox selection prevents restricted count violations while preserving invalid incoming values and permitting repair.",
       "strength": "normative",
@@ -3813,7 +3813,7 @@
     },
     {
       "id": "S18.29-02",
-      "sourceLine": 7493,
+      "sourceLine": 7488,
       "sourceAnchor": "MultiSelectControlRenderer",
       "statement": "Explicit multi-select applies only to finite unique string arrays, stores chosen values rather than labels, blocks free entry and duplicate additions, and obeys restricted count boundaries.",
       "strength": "normative",
@@ -3830,7 +3830,7 @@
     },
     {
       "id": "S18.29-03",
-      "sourceLine": 7494,
+      "sourceLine": 7489,
       "sourceAnchor": "ChipsControlRenderer",
       "statement": "Explicit chips support finite string choices or free string tokens, preserve duplicates when uniqueItems is absent, remove the acted-on occurrence and enforce restricted array counts.",
       "strength": "normative",
@@ -3847,7 +3847,7 @@
     },
     {
       "id": "S18.11-01",
-      "sourceLine": 4176,
+      "sourceLine": 4171,
       "statement": "Declared tuple positions have no Add, Delete or Reorder action; equal bounds alone do not change a uniform array into a positional tuple.",
       "strength": "normative/SHOULD",
       "applicability": "portable",
@@ -3860,7 +3860,7 @@
     },
     {
       "id": "S18.11-03",
-      "sourceLine": 4360,
+      "sourceLine": 4355,
       "sourceAnchor": "Render all declared fields even when data is missing",
       "statement": "Missing tuple positions render without changing data; editing a later position initializes unambiguous preceding positions and commits the prefix and edit together without sparse or null padding.",
       "strength": "normative",
@@ -3874,7 +3874,7 @@
     },
     {
       "id": "S18.23-01",
-      "sourceLine": 7116,
+      "sourceLine": 7111,
       "sourceAnchor": "An inline `options.detail` layout on a tuple arranges its fixed positions.",
       "statement": "Inline tuple options.detail layouts arrange fixed positions through ordinary layout semantics; whole-position controls preserve their own labels and scopes, and invalid position scopes produce diagnostics.",
       "strength": "normative",
@@ -3889,7 +3889,7 @@
     },
     {
       "id": "S18.11-02",
-      "sourceLine": 4434,
+      "sourceLine": 4429,
       "statement": "Complex tuple positions use compact summaries and an edit dialog with ranked detail resolution, committed-draft semantics and discoverable errors.",
       "strength": "SHOULD",
       "applicability": "portable",
@@ -3903,7 +3903,7 @@
     },
     {
       "id": "S18.11-05",
-      "sourceLine": 4463,
+      "sourceLine": 4458,
       "sourceAnchor": "Disable Empty contents when the value is absent or already empty",
       "statement": "Tuple complex-position Clear preserves the fixed slot and is disabled for absent, empty, readonly, disabled or disableRemove states; under restrict it also guards required, minProperties, minItems and positive contains minima using the position schema.",
       "strength": "normative",
@@ -3919,7 +3919,7 @@
     },
     {
       "id": "S18.11-04",
-      "sourceLine": 4387,
+      "sourceLine": 4382,
       "sourceAnchor": "Apply the shared validation and pending-edit contracts to tuple fields",
       "statement": "Tuple array, position and nested errors remain at their respective scopes; complex positions expose an accessible closed-summary error indicator for validator and additional errors.",
       "strength": "normative",
@@ -3935,7 +3935,7 @@
     },
     {
       "id": "S18.18.2-01",
-      "sourceLine": 5526,
+      "sourceLine": 5521,
       "sourceAnchor": "Components are quantities, not clock fields",
       "statement": "Duration picker components accept non-negative exact integers without clock-field caps; years, months, days, hours, minutes, seconds and separate weeks-only values retain their stored duration-string type.",
       "strength": "MUST",
@@ -3950,7 +3950,7 @@
     },
     {
       "id": "S18.18.2-02",
-      "sourceLine": 5533,
+      "sourceLine": 5528,
       "sourceAnchor": "Equivalent spellings are not the same data",
       "statement": "Existing equivalent duration spellings and leading zeros survive mount, opening and cancellation; canonical serialization happens only after an explicit picker edit.",
       "strength": "MUST NOT",
@@ -3965,7 +3965,7 @@
     },
     {
       "id": "S18.18.2-05",
-      "sourceLine": 5524,
+      "sourceLine": 5519,
       "sourceAnchor": "Zero duration",
       "statement": "An explicit zero-duration edit serializes the canonical zero P0D, while Clear remains a separate operation and an untouched imported weeks-zero spelling remains unchanged.",
       "strength": "normative",
@@ -3980,7 +3980,7 @@
     },
     {
       "id": "S18.18.2-03",
-      "sourceLine": 5547,
+      "sourceLine": 5542,
       "sourceAnchor": "Allow partial prefixes as local drafts",
       "statement": "Incomplete or invalid non-empty duration drafts do not overwrite the last committed value; staged picker edits Cancel or confirm only when valid.",
       "strength": "MUST NOT",
@@ -3994,7 +3994,7 @@
     },
     {
       "id": "S18.18.2-04",
-      "sourceLine": 5552,
+      "sourceLine": 5547,
       "sourceAnchor": "Validate committed duration values through the JSON Schema validator",
       "statement": "Committed durations use schema format validation; uncommitted invalid drafts participate in pending validity without publishing additional errors, and UI format alone adds no schema constraint.",
       "strength": "MUST NOT",
@@ -4008,7 +4008,7 @@
     },
     {
       "id": "S18.18.2-06",
-      "sourceLine": 5520,
+      "sourceLine": 5515,
       "sourceAnchor": "showActions",
       "statement": "Duration picker changes stage in a dialog by default, Cancel discards, and OK on an untouched picker preserves the original string without a data write; showActions false commits valid component edits immediately.",
       "strength": "normative",
@@ -4023,7 +4023,7 @@
     },
     {
       "id": "S18.19-password-01",
-      "sourceLine": 5968,
+      "sourceLine": 5963,
       "sourceAnchor": "Start with the value obscured",
       "statement": "Password fields begin obscured and offer a localized, keyboard-operable reveal/hide action that changes presentation without writing data or changing validation.",
       "strength": "normative",
@@ -4038,7 +4038,7 @@
     },
     {
       "id": "S18.19-password-02",
-      "sourceLine": 5975,
+      "sourceLine": 5970,
       "sourceAnchor": "Keep reveal and clear actions distinct",
       "statement": "Password reveal and clear actions are distinct; clearing obeys ordinary string clear semantics, and restriction, readonly and disabled mutation rules still apply.",
       "strength": "normative",
@@ -4053,7 +4053,7 @@
     },
     {
       "id": "S18.24-01",
-      "sourceLine": 7133,
+      "sourceLine": 7128,
       "sourceAnchor": "A string password Control may request",
       "statement": "A password Control with variant otp and both minLength and maxLength renders maxLength character boxes; missing bounds fall back to the ordinary masked password field.",
       "strength": "normative",
@@ -4071,7 +4071,7 @@
     },
     {
       "id": "S18.24-02",
-      "sourceLine": 7136,
+      "sourceLine": 7131,
       "sourceAnchor": "Use separate character boxes",
       "statement": "OTP boxes preserve password masking, labels, readonly and string validation; keyboard navigation and paste retain leading zeros and commit partial strings.",
       "strength": "normative",
@@ -4085,7 +4085,7 @@
     },
     {
       "id": "S18.18.4-01",
-      "sourceLine": 5594,
+      "sourceLine": 5589,
       "sourceAnchor": "The file control also selects arrays",
       "statement": "Homogeneous file-string arrays use the file Control; array-owned schema and mapped host errors display inline, with configured pre-touch filtering independent of stored validity.",
       "strength": "normative",
@@ -4099,7 +4099,7 @@
     },
     {
       "id": "S18.18.4-scalar-10",
-      "sourceLine": 5583,
+      "sourceLine": 5578,
       "sourceAnchor": "The widget selects one local file",
       "statement": "A picker-backed scalar File Control selects one file and presents its stored filename with select and clear actions; it does not expose the encoded payload as an editable text field. Without a picker, a manual data or URL input remains available.",
       "strength": "project presentation contract inferred from spec and React/Svelte reference",
@@ -4113,7 +4113,7 @@
     },
     {
       "id": "S18.18.4-02",
-      "sourceLine": 5600,
+      "sourceLine": 5595,
       "sourceAnchor": "Array minItems and maxItems govern",
       "statement": "File-array count limits use minItems/maxItems under restrict; unrestricted edits can violate them; uniqueItems blocks duplicate encoded values and removal targets one index.",
       "strength": "normative",
@@ -4127,7 +4127,7 @@
     },
     {
       "id": "S18.18.4-03",
-      "sourceLine": 5643,
+      "sourceLine": 5638,
       "sourceAnchor": "Clear-all writes an empty array",
       "statement": "File-array clear-all writes an empty array, is disabled under restricted positive minItems, and individual removal and clear-all respect readonly and clearable with localized action text.",
       "strength": "normative",
@@ -4141,7 +4141,7 @@
     },
     {
       "id": "S18.18.4-04",
-      "sourceLine": 5613,
+      "sourceLine": 5608,
       "sourceAnchor": "A rejected selection that leaves",
       "statement": "Rejected file operations give localized, themed local feedback without adding schema or host errors; feedback clears on success or external replacement.",
       "strength": "SHOULD/MUST NOT",
@@ -4157,7 +4157,7 @@
     },
     {
       "id": "S18.18.4-05",
-      "sourceLine": 5656,
+      "sourceLine": 5651,
       "sourceAnchor": "Schema `contentEncoding: \"base64\"`",
       "statement": "Base64 and byte file schemas store payload-only base64; binary stores a data URL with percent-encoded filename across platform pickers.",
       "strength": "normative",
@@ -4176,7 +4176,7 @@
     },
     {
       "id": "S18.18.4-06",
-      "sourceLine": 5700,
+      "sourceLine": 5695,
       "sourceAnchor": "Use the selected file's byte-size metadata",
       "statement": "File-size UI bounds use original byte metadata before reading; restricted violations preserve stored data and produce local warning, while accepted unrestricted violations contribute owned validation errors and pending reads affect command validity.",
       "strength": "MUST/SHOULD",
@@ -4196,7 +4196,7 @@
     },
     {
       "id": "S18.18.4-07",
-      "sourceLine": 5721,
+      "sourceLine": 5716,
       "sourceAnchor": "Cancelling the file chooser leaves",
       "statement": "Chooser cancellation clears the scoped form value, stays distinct from rejected selection, and stale asynchronous callbacks cannot restore the cleared value.",
       "strength": "normative",
@@ -4212,7 +4212,7 @@
     },
     {
       "id": "S18.18.4-08",
-      "sourceLine": 5596,
+      "sourceLine": 5591,
       "sourceAnchor": "an array enables multiple selection",
       "statement": "Array file pickers select multiple files, retain accepted chooser order, apply per-file restrictions, and commit the accepted batch once; any read failure preserves previous attachments and a pending read cannot overwrite external data.",
       "strength": "normative",
@@ -4233,7 +4233,7 @@
     },
     {
       "id": "S18.18.4-09",
-      "sourceLine": 5587,
+      "sourceLine": 5582,
       "sourceAnchor": "A file cell should use a compact",
       "statement": "File table cells use bounded filename presentation and accessible select, replace, remove and clear actions without repeated labels or descriptions; compact validation and operation feedback remains available through a severity icon with hover, focus and activation access.",
       "strength": "SHOULD/normative",
@@ -4252,7 +4252,7 @@
     },
     {
       "id": "S18.18.7-01",
-      "sourceLine": 5826,
+      "sourceLine": 5821,
       "sourceAnchor": "Select a Control whose schema is",
       "statement": "A type-null property selects a legible null Control that presents required state and mapped errors; a multi-type schema merely including null does not select it.",
       "strength": "normative",
@@ -4266,7 +4266,7 @@
     },
     {
       "id": "S18.18.7-02",
-      "sourceLine": 5831,
+      "sourceLine": 5826,
       "statement": "Null Control distinguishes missing from explicit JSON null in status and storage; clearing writes absence rather than null.",
       "strength": "MUST NOT",
       "applicability": "portable",
@@ -4278,7 +4278,7 @@
     },
     {
       "id": "S18.18.7-03",
-      "sourceLine": 5838,
+      "sourceLine": 5833,
       "sourceAnchor": "Register the control in the cells registry",
       "statement": "Null Control is registered in renderer and cell registries so a table cell uses its null presentation.",
       "strength": "normative",
@@ -4550,7 +4550,7 @@
     },
     {
       "id": "S18.19-01",
-      "sourceLine": 6298,
+      "sourceLine": 6293,
       "sourceAnchor": "Use the existing translator for all temporal draft feedback",
       "statement": "Temporal draft feedback uses the translator, formats bounds for active locale/display format, associates feedback accessibly, updates with state/locale and clears after correction or discard.",
       "strength": "normative",
@@ -4568,7 +4568,7 @@
     },
     {
       "id": "S18.19-02",
-      "sourceLine": 6206,
+      "sourceLine": 6201,
       "sourceAnchor": "Incomplete edits should remain local while being",
       "statement": "Incomplete temporal edits remain local and do not overwrite committed data; unresolved drafts participate in pending-edit validity.",
       "strength": "SHOULD/shared pending policy",
@@ -4584,7 +4584,7 @@
     },
     {
       "id": "S18.19-03",
-      "sourceLine": 6207,
+      "sourceLine": 6202,
       "sourceAnchor": "Completed typed input",
       "statement": "Completed typed and picker edits use the same save-format contract and remain subject to schema validation.",
       "strength": "normative",
@@ -4603,7 +4603,7 @@
     },
     {
       "id": "S18.19-04",
-      "sourceLine": 6339,
+      "sourceLine": 6334,
       "sourceAnchor": "showActions",
       "statement": "Temporal showActions defaults false: false commits valid picker selections immediately, while true stages them until OK and lets Cancel discard the draft; typed input commits independently.",
       "strength": "normative",
@@ -4621,7 +4621,7 @@
     },
     {
       "id": "S18.19-05",
-      "sourceLine": 6338,
+      "sourceLine": 6333,
       "sourceAnchor": "ampm",
       "statement": "Time and date-time pickers use 24-hour interaction by default; ampm true requests 12-hour interaction without changing display or save formats.",
       "strength": "normative",
@@ -4637,7 +4637,7 @@
     },
     {
       "id": "S21-01",
-      "sourceLine": 7664,
+      "sourceLine": 7659,
       "statement": "Runtime author diagnostics carry stable machine-readable codes, severity, message and optional details.",
       "strength": "SHOULD",
       "applicability": "portable",
@@ -4650,7 +4650,7 @@
     },
     {
       "id": "S21-02",
-      "sourceLine": 7682,
+      "sourceLine": 7677,
       "sourceAnchor": "Diagnostics address the author",
       "statement": "Misconfiguration diagnostics go to the form author rather than becoming field errors for the form user.",
       "strength": "normative",
@@ -4663,7 +4663,7 @@
     },
     {
       "id": "S21-03",
-      "sourceLine": 7682,
+      "sourceLine": 7677,
       "sourceAnchor": "Diagnostics address the author",
       "statement": "A failure leaving visible content missing also provides an accessible in-place explanation.",
       "strength": "normative",
@@ -4679,7 +4679,7 @@
     },
     {
       "id": "S21-04",
-      "sourceLine": 7688,
+      "sourceLine": 7683,
       "sourceAnchor": "A declared diagnostic",
       "statement": "Every declared diagnostic code has an emitting condition and a test proving delivery.",
       "strength": "normative",
@@ -5281,7 +5281,7 @@
     },
     {
       "id": "S18.12-01",
-      "sourceLine": 4485,
+      "sourceLine": 4480,
       "sourceAnchor": "Shared array action options",
       "statement": "disableAdd and disableRemove default false, resolve element options over top-level config, suppress insertion or deletion without suppressing reorder or existing-value editing, and cannot override readonly or restricted counts.",
       "strength": "normative",
@@ -5298,7 +5298,7 @@
     },
     {
       "id": "S18.12-02",
-      "sourceLine": 4501,
+      "sourceLine": 4496,
       "sourceAnchor": "Hide or disable the affordance",
       "statement": "Array action handlers guard current permission, and a pending delete confirmation or asynchronous add cannot grant permission after flags change.",
       "strength": "normative",
@@ -5355,7 +5355,7 @@
     },
     {
       "id": "S18.6-01",
-      "sourceLine": 3997,
+      "sourceLine": 3992,
       "sourceAnchor": "If `options.detail` is",
       "statement": "Shared detail selection prefers inline UI schema, then case-insensitive GENERATE without registry lookup, then the highest ranked registered schema, then generated fallback.",
       "strength": "normative",
@@ -5370,7 +5370,7 @@
     },
     {
       "id": "S18.6-02",
-      "sourceLine": 4013,
+      "sourceLine": 4008,
       "sourceAnchor": "Rendering a generated form MUST NOT",
       "statement": "Generated detail forms dispatch nested elements normally and do not initialize or overwrite missing data during render.",
       "strength": "MUST NOT",
@@ -5384,7 +5384,7 @@
     },
     {
       "id": "S18.6-03",
-      "sourceLine": 4023,
+      "sourceLine": 4018,
       "sourceAnchor": "MUST guard against re-entering",
       "statement": "Object detail rendering guards against re-entering the same selected UI schema at the same data path.",
       "strength": "MUST",
@@ -5398,7 +5398,7 @@
     },
     {
       "id": "S18.6-04",
-      "sourceLine": 4017,
+      "sourceLine": 4012,
       "sourceAnchor": "Registry testers",
       "statement": "UI-schema registry testers are synchronous, side-effect-free selectors returning NOT_APPLICABLE or a nonnegative rank; highest rank wins and first registration wins ties.",
       "strength": "MUST",
@@ -5412,7 +5412,7 @@
     },
     {
       "id": "S18.6-05",
-      "sourceLine": 4007,
+      "sourceLine": 4002,
       "sourceAnchor": "Scopes inside a detail form",
       "statement": "Detail scopes resolve relative to the selected object or item schema while preserving its data path and root schema references; UI-schema and renderer registries remain distinct selection steps.",
       "strength": "MUST",
@@ -5428,7 +5428,7 @@
     },
     {
       "id": "S18.7-01",
-      "sourceLine": 4032,
+      "sourceLine": 4027,
       "sourceAnchor": "Explicit **Add** initializes",
       "statement": "Explicit Add initializes a new value from the item schema, deep-copying explicit JSON container defaults and preserving falsy defaults; object properties receive only declared defaults, not type placeholders.",
       "strength": "normative",
@@ -5443,7 +5443,7 @@
     },
     {
       "id": "S18.7-02",
-      "sourceLine": 4060,
+      "sourceLine": 4055,
       "sourceAnchor": "Rendering an existing item MUST NOT",
       "statement": "Rendering existing array items does not repeat initialization or overwrite data; explicit object/array defaults for successive additions have independent containers and leave the schema unchanged.",
       "strength": "MUST NOT",
@@ -5458,7 +5458,7 @@
     },
     {
       "id": "S18.8-01",
-      "sourceLine": 4072,
+      "sourceLine": 4067,
       "sourceAnchor": "Provide accessible feedback for object-level errors",
       "statement": "Object-level errors remain visible and accessible beside an object editor even when its generated or registered detail layout has no matching input.",
       "strength": "normative",
@@ -5475,7 +5475,7 @@
     },
     {
       "id": "S18.8-02",
-      "sourceLine": 4080,
+      "sourceLine": 4075,
       "sourceAnchor": "Hiding a control does not discard its errors",
       "statement": "A rule-hidden detail control remains subject to validation, and its eligible errors stay discoverable without making the control visible.",
       "strength": "normative",
@@ -5490,7 +5490,7 @@
     },
     {
       "id": "S18.9-01",
-      "sourceLine": 4089,
+      "sourceLine": 4084,
       "sourceAnchor": "Errors at the array's own path",
       "statement": "Array-level errors come from structured exact-path selection, remain separate from descendant summaries and stay accessible near an empty array even when child summaries are hidden.",
       "strength": "MUST",
@@ -5508,7 +5508,7 @@
     },
     {
       "id": "S18.9-02",
-      "sourceLine": 4102,
+      "sourceLine": 4097,
       "sourceAnchor": "Item badges and summaries associate errors by path segment",
       "statement": "Array item badges associate normalized schema and host errors by complete path segment, and count markers have an explanatory accessible name.",
       "strength": "MUST",
@@ -5524,7 +5524,7 @@
     },
     {
       "id": "S18.10-01",
-      "sourceLine": 4113,
+      "sourceLine": 4108,
       "sourceAnchor": "`contains` requires matching entries",
       "statement": "The validator applies contains and supported minContains/maxContains to matching entries across the full array, keeps tuple position validation separate, and exposes empty-array violations at the array path.",
       "strength": "normative",
@@ -5539,7 +5539,7 @@
     },
     {
       "id": "S18.10-02",
-      "sourceLine": 4125,
+      "sourceLine": 4120,
       "sourceAnchor": "Under `restrict`, a family SHOULD prevent",
       "statement": "Restricted discrete deletion should preserve a currently satisfied contains minimum when matching can be evaluated reliably, using current validator dialect without changing data.",
       "strength": "SHOULD",
@@ -5560,7 +5560,7 @@
     },
     {
       "id": "S18.13-01",
-      "sourceLine": 4705,
+      "sourceLine": 4700,
       "sourceAnchor": "Composite cell type indicators",
       "statement": "Object and array table cells show a decorative type marker only when showTypeIndicator resolves true, with cell options overriding collection options and the top-level config; explicit false wins, scalar cells have no marker, and summary text is unchanged.",
       "strength": "normative",
@@ -5576,7 +5576,7 @@
     },
     {
       "id": "S18.13-02",
-      "sourceLine": 4716,
+      "sourceLine": 4711,
       "sourceAnchor": "Extended dialog contract",
       "statement": "Composite-cell detail dialogs apply explicit or localized action labels, resolve optional Clear/Remove from cell, collection and global options, keep those actions private until Apply, cancel superseded drafts and honor clearable and structural restrict rules.",
       "strength": "normative",
@@ -5595,7 +5595,7 @@
     },
     {
       "id": "S18.14-01",
-      "sourceLine": 4869,
+      "sourceLine": 4864,
       "sourceAnchor": "the message MUST also be on the accessible name",
       "statement": "A compact table cell error marker includes its localized validation message in the accessible name when the inline message is suppressed.",
       "strength": "MUST",
@@ -5623,7 +5623,7 @@
     },
     {
       "id": "S18.15-scalar-01",
-      "sourceLine": 4881,
+      "sourceLine": 4876,
       "sourceAnchor": "when composition describes one unambiguous scalar editor",
       "statement": "A scalar with validation-only combinator branches renders one editor at the outer Control path and retains full composed-schema validation.",
       "strength": "normative renderer contract",
@@ -5641,7 +5641,7 @@
     },
     {
       "id": "S18.15-allof-01",
-      "sourceLine": 4988,
+      "sourceLine": 4983,
       "sourceAnchor": "The enclosing properties followed by all branch forms in schema order",
       "statement": "AllOfRenderer renders enclosing properties before every branch form at the same data path, without a branch selector; a matching registered UI schema may provide a combined form.",
       "strength": "normative renderer contract",
@@ -5656,7 +5656,7 @@
     },
     {
       "id": "S18.21-list-overflow-01",
-      "sourceLine": 6558,
+      "sourceLine": 6553,
       "sourceAnchor": "List overflow",
       "statement": "ListWithDetail navigation has a bounded scroll height only when needed, while short lists retain natural height and the selected detail remains independent.",
       "strength": "SHOULD",
@@ -5762,7 +5762,7 @@
     },
     {
       "id": "S18.4-01",
-      "sourceLine": 3773,
+      "sourceLine": 3768,
       "sourceAnchor": "An action that consumes form data MUST resolve pending edits",
       "statement": "Actions consuming form data resolve pending edits before reading the current data and validation; an unresolved draft does not silently dispatch an older snapshot, and Clear supersedes queued edits.",
       "strength": "SHOULD/MUST/MUST NOT",
@@ -5781,7 +5781,7 @@
     },
     {
       "id": "S18.4-02",
-      "sourceLine": 3797,
+      "sourceLine": 3792,
       "sourceAnchor": "The path alone is insufficient evidence",
       "statement": "Queued editors distinguish normal host echo of their own commit from an external value replacing the same path, and cancel obsolete writes after index shifts or target changes.",
       "strength": "MUST",
@@ -5796,7 +5796,7 @@
     },
     {
       "id": "S18.5-01",
-      "sourceLine": 3973,
+      "sourceLine": 3968,
       "sourceAnchor": "The selected value MUST retain its JSON type",
       "statement": "Finite choices preserve the selected value's JSON type and distinguish numeric 1 from string 1 independently of labels or widget identity; unsupported shapes and unknown existing values require a documented nonmutating fallback.",
       "strength": "MUST/MUST NOT",
@@ -5820,7 +5820,7 @@
     },
     {
       "id": "S18.5-02",
-      "sourceLine": 3881,
+      "sourceLine": 3876,
       "sourceAnchor": "Provide keyboard",
       "statement": "Radio groups support directional keyboard navigation consistent with orientation and RTL, Space activation, label activation, selected-radio stability and the shared Clear action for present values.",
       "strength": "normative",
@@ -5837,7 +5837,7 @@
     },
     {
       "id": "S19-01",
-      "sourceLine": 7589,
+      "sourceLine": 7584,
       "sourceAnchor": "A renderer MUST NOT silently replace existing form data",
       "statement": "Out-of-domain existing values remain in form data and visible for repair until an explicit edit; filtering finite choices does not substitute or clear them.",
       "strength": "MUST NOT",
@@ -5859,7 +5859,7 @@
     },
     {
       "id": "S19-02",
-      "sourceLine": 7600,
+      "sourceLine": 7595,
       "sourceAnchor": "The renderer MUST NOT select the first valid option",
       "statement": "An out-of-domain value must not be visually or structurally replaced by the first valid choice.",
       "strength": "MUST NOT",
@@ -5880,7 +5880,7 @@
     },
     {
       "id": "S19-03",
-      "sourceLine": 7605,
+      "sourceLine": 7600,
       "sourceAnchor": "The same rule governs repair",
       "statement": "Invalid existing data stays visible and editable without truncation, padding, normalization or a mount write.",
       "strength": "normative",
@@ -5930,7 +5930,7 @@
     },
     {
       "id": "S18.25-01",
-      "sourceLine": 7158,
+      "sourceLine": 7153,
       "sourceAnchor": "The cron control MUST NOT",
       "statement": "The six-field cron format is validated through normal schema validation; the control does not republish schema failures as additional errors.",
       "strength": "MUST NOT",
@@ -5949,7 +5949,7 @@
     },
     {
       "id": "S18.25-02",
-      "sourceLine": 7161,
+      "sourceLine": 7156,
       "sourceAnchor": "The picker asks for a period first",
       "statement": "Cron picker periods expose only relevant fields, preserve the authored spelling when untouched, and pin only lower wildcard time fields after a valid upper-time selection.",
       "strength": "normative",
@@ -5967,7 +5967,7 @@
     },
     {
       "id": "S18.25-03",
-      "sourceLine": 7167,
+      "sourceLine": 7162,
       "sourceAnchor": "Keep raw text available",
       "statement": "Cron raw text stays editable and visible when invalid; staged Apply/Cancel and immediate mode obey permissions, Clear removes the value, and host replacement drops a stale picker draft.",
       "strength": "normative",
@@ -5983,7 +5983,7 @@
     },
     {
       "id": "S18.27-01",
-      "sourceLine": 7218,
+      "sourceLine": 7213,
       "sourceAnchor": "The color profile writes",
       "statement": "Color edits serialize to hex, hex3, rgb or hsb; alpha uses hex8, rgba or hsba, and transparent hex3 edits are refused.",
       "strength": "normative",
@@ -5999,7 +5999,7 @@
     },
     {
       "id": "S18.27-02",
-      "sourceLine": 7224,
+      "sourceLine": 7219,
       "sourceAnchor": "Accept #RGB",
       "statement": "Color parsing accepts short/full/alpha hex and comma-separated RGB, HSL and HSB forms, while unsupported input produces no fallback color or mount-time mutation.",
       "strength": "normative",
@@ -6014,7 +6014,7 @@
     },
     {
       "id": "S18.27-03",
-      "sourceLine": 7231,
+      "sourceLine": 7226,
       "sourceAnchor": "colorTextEntry",
       "statement": "Disabling colorTextEntry leaves a clearable picker; the initial channel view follows the save format, and switching view alone preserves storage and data.",
       "strength": "normative",
@@ -6029,7 +6029,7 @@
     },
     {
       "id": "S18.18.3-01",
-      "sourceLine": 5575,
+      "sourceLine": 5570,
       "sourceAnchor": "Text entry accepts the documented notations",
       "statement": "Color text entry keeps incomplete input as a local draft, valid edits normalize to the configured save format, and schema format errors use ordinary JSON Schema validation.",
       "strength": "normative",
@@ -6045,7 +6045,7 @@
     },
     {
       "id": "S18.4-03",
-      "sourceLine": 3805,
+      "sourceLine": 3800,
       "sourceAnchor": "Recheck mutation permissions and target identity",
       "statement": "Delayed commits recheck current enabled, readonly, restriction and target identity before writing.",
       "strength": "MUST NOT",
@@ -6060,7 +6060,7 @@
     },
     {
       "id": "S18.17-selection-confirmation-01",
-      "sourceLine": 5455,
+      "sourceLine": 5450,
       "sourceAnchor": "selection that only displays MUST NOT",
       "statement": "Display-only selection must not invoke destructive confirmation; selection that writes must use the shared confirmation policy.",
       "strength": "MUST NOT",
@@ -6075,7 +6075,7 @@
     },
     {
       "id": "S18.18-stored-serialization-01",
-      "sourceLine": 5567,
+      "sourceLine": 5562,
       "sourceAnchor": "stored serialization",
       "statement": "Picker internal and displayed values must not silently change the configured stored serialization.",
       "strength": "MUST NOT",
@@ -6088,7 +6088,7 @@
     },
     {
       "id": "S22-runtime-state-01",
-      "sourceLine": 7693,
+      "sourceLine": 7688,
       "sourceAnchor": "Runtime interaction state MUST NOT mutate",
       "statement": "Category, step, expansion, splitter, action, focus, hover and widget state must remain outside the authored UI schema.",
       "strength": "MUST NOT",
@@ -6101,7 +6101,7 @@
     },
     {
       "id": "S22-runtime-data-02",
-      "sourceLine": 7697,
+      "sourceLine": 7692,
       "sourceAnchor": "editor-local state MUST NOT become form data",
       "statement": "Template-local and editor-local state must not become committed form data.",
       "strength": "MUST NOT",
@@ -6115,7 +6115,7 @@
     },
     {
       "id": "S23-reserved-names-01",
-      "sourceLine": 7711,
+      "sourceLine": 7706,
       "sourceAnchor": "Renderer-specific namespaces MUST NOT redefine",
       "statement": "Renderer-specific option namespaces must not redefine reserved portable names incompatibly.",
       "strength": "MUST NOT",
@@ -6131,7 +6131,7 @@
     },
     {
       "id": "S24-example-catalog-01",
-      "sourceLine": 7716,
+      "sourceLine": 7711,
       "sourceAnchor": "An example catalogue MUST accompany",
       "statement": "Ship an example catalogue with the portable model.",
       "strength": "MUST",
@@ -6145,7 +6145,7 @@
     },
     {
       "id": "S24-example-domains-02",
-      "sourceLine": 7718,
+      "sourceLine": 7713,
       "sourceAnchor": "Examples MUST use understandable business domains",
       "statement": "Examples use realistic business domains, names, labels, descriptions, data and constraints.",
       "strength": "MUST",
@@ -6158,7 +6158,7 @@
     },
     {
       "id": "S25-conformance-vectors-01",
-      "sourceLine": 7742,
+      "sourceLine": 7737,
       "sourceAnchor": "Portable implementations MUST share machine-readable",
       "statement": "Portable adapters share machine-readable conformance vectors.",
       "strength": "MUST",
@@ -6173,7 +6173,7 @@
     },
     {
       "id": "S25-security-conformance-02",
-      "sourceLine": 7755,
+      "sourceLine": 7750,
       "sourceAnchor": "Security conformance is REQUIRED",
       "statement": "Conformance covers prototype protection, URL policy, script gating and Markdown sanitization.",
       "strength": "REQUIRED",
@@ -6187,7 +6187,7 @@
     },
     {
       "id": "S18.22-renderer-gaps-01",
-      "sourceLine": 6745,
+      "sourceLine": 6740,
       "sourceAnchor": "Renderer families MUST publish gaps",
       "statement": "Renderer families publish missing table, pagination and detail capabilities until implemented; schema acceptance alone does not claim support.",
       "strength": "MUST",
@@ -6201,7 +6201,7 @@
     },
     {
       "id": "S18.22-ag-grid-portable-01",
-      "sourceLine": 6811,
+      "sourceLine": 6806,
       "sourceAnchor": "AG Grid controls MUST support portable",
       "statement": "An AG Grid adapter consumes portable pagination, columnDefs and rowDetail options, with explicit native settings overriding corresponding portable settings.",
       "strength": "MUST",
@@ -6215,7 +6215,7 @@
     },
     {
       "id": "S18.22-ag-grid-overrides-02",
-      "sourceLine": 6826,
+      "sourceLine": 6821,
       "sourceAnchor": "native `paginationPageSize: 2` MUST show",
       "statement": "AG Grid native page-size and column overrides apply independently and retain portable row-detail behavior.",
       "strength": "MUST",
@@ -6228,7 +6228,7 @@
     },
     {
       "id": "S20-tooling-identifier-01",
-      "sourceLine": 7616,
+      "sourceLine": 7611,
       "sourceAnchor": "choosing a display name MUST NOT",
       "statement": "Friendly tooling identifiers preserve their established option encodings and do not silently rewrite data schema or canonical variant.",
       "strength": "MUST NOT",
@@ -6243,7 +6243,7 @@
     },
     {
       "id": "S18.19-picker-preferred-01",
-      "sourceLine": 6194,
+      "sourceLine": 6189,
       "sourceAnchor": "Date, Time, and Date-time controls SHOULD provide",
       "statement": "Date, time and date-time controls provide discoverable preferred picker interactions that apply supported schema bounds.",
       "strength": "SHOULD",
@@ -6259,7 +6259,7 @@
     },
     {
       "id": "S18.19-direct-entry-02",
-      "sourceLine": 6199,
+      "sourceLine": 6194,
       "sourceAnchor": "Controls SHOULD also allow direct keyboard entry",
       "statement": "Temporal controls permit format-aware direct entry, show the expected format and honor mask:false where supported.",
       "strength": "SHOULD",
@@ -6281,7 +6281,7 @@
     },
     {
       "id": "S18.23-scroll-input-01",
-      "sourceLine": 6988,
+      "sourceLine": 6983,
       "sourceAnchor": "Scrolling SHOULD preserve",
       "statement": "Scroll panes retain themed pointer, wheel, touch and keyboard behavior; show scrollbars only on overflow and keep both required axes reachable.",
       "strength": "SHOULD",
@@ -6295,7 +6295,7 @@
     },
     {
       "id": "S18.25-cron-format-00",
-      "sourceLine": 7151,
+      "sourceLine": 7146,
       "sourceAnchor": "Field ranges are",
       "statement": "Cron accepts the documented six-field grammar and selector profile, validates via normal schema validation, and does not republish those errors as additional errors.",
       "strength": "MUST NOT",
@@ -6310,7 +6310,7 @@
     },
     {
       "id": "S18.17-editor-identity-01",
-      "sourceLine": 5480,
+      "sourceLine": 5475,
       "sourceAnchor": "Control identity during updates",
       "statement": "Routine data and validation updates preserve the mounted editor, keyboard focus, caret/selection, IME composition and open picker for the same logical field.",
       "strength": "MUST",
@@ -6323,7 +6323,7 @@
     },
     {
       "id": "S18.17-row-cell-identity-02",
-      "sourceLine": 5480,
+      "sourceLine": 5475,
       "sourceAnchor": "Keep row identity and cell-renderer component identity stable",
       "statement": "Table row and cell component identity follows the logical item across edits and reorders.",
       "strength": "MUST",
@@ -6336,7 +6336,7 @@
     },
     {
       "id": "S18.14-boolean-cell-error-01",
-      "sourceLine": 5920,
+      "sourceLine": 5915,
       "sourceAnchor": "This feedback also applies to checkbox and switch cells",
       "statement": "Boolean table cells expose their localized field error locally and clear it after a valid correction.",
       "strength": "MUST",
@@ -6349,7 +6349,7 @@
     },
     {
       "id": "S18.14-child-summary-02",
-      "sourceLine": 5920,
+      "sourceLine": 5915,
       "sourceAnchor": "array's child-error summary",
       "statement": "An array child-error summary is renderer aggregation and does not replace each cell error or become an additional validator error.",
       "strength": "MUST NOT",
@@ -6362,7 +6362,7 @@
     },
     {
       "id": "S18.21-dialog-viewport-01",
-      "sourceLine": 6947,
+      "sourceLine": 6942,
       "sourceAnchor": "Re-clamp after viewport changes",
       "statement": "A table row or composite-cell detail dialog re-clamps to a changed viewport while its title and action footer stay visible and the body scrolls inside.",
       "strength": "normative",
@@ -6376,7 +6376,7 @@
     },
     {
       "id": "S18.21-cell-dialog-options-01",
-      "sourceLine": 6919,
+      "sourceLine": 6914,
       "sourceAnchor": "Cell editors accept",
       "statement": "Composite cell dialog geometry accepts the collection cells[field].dialog form and options.dialog on the authored composite detail element, with global dialog settings as fallback.",
       "strength": "normative",
@@ -6391,7 +6391,7 @@
     },
     {
       "id": "S18.21-list-splitter-01",
-      "sourceLine": 6677,
+      "sourceLine": 6672,
       "sourceAnchor": "default split MUST be resizable",
       "statement": "ListWithDetail has a resizable vertical divider whose keyboard and focus behavior works when form data is read-only.",
       "strength": "MUST",
@@ -6404,7 +6404,7 @@
     },
     {
       "id": "S18.21-list-resize-state-02",
-      "sourceLine": 6677,
+      "sourceLine": 6672,
       "sourceAnchor": "Resizing MUST preserve selection",
       "statement": "ListWithDetail resize and ordinary edits preserve pane size, selection, data, pending edits and validation.",
       "strength": "MUST",
@@ -6418,7 +6418,7 @@
     },
     {
       "id": "S18.21-list-row-actions-03",
-      "sourceLine": 6677,
+      "sourceLine": 6672,
       "sourceAnchor": "List rows show item labels",
       "statement": "List rows expose labels, selection/errors and separate keyboard-accessible reorder/delete actions.",
       "strength": "normative",
@@ -6431,7 +6431,7 @@
     },
     {
       "id": "S18.22-pagination-options-00",
-      "sourceLine": 6749,
+      "sourceLine": 6744,
       "sourceAnchor": "`options.pagination` is false, true, or an object with",
       "statement": "Pagination accepts only Boolean or object option shapes; local then namespaced settings then presentation defaults apply as whole values.",
       "strength": "normative",
@@ -6448,7 +6448,7 @@
     },
     {
       "id": "S18.22-pagination-data-01",
-      "sourceLine": 6794,
+      "sourceLine": 6789,
       "sourceAnchor": "Pagination is a view over the complete collection",
       "statement": "Pagination does not slice or reorder committed data; validation, counts and summaries cover every page.",
       "strength": "normative",
@@ -6462,7 +6462,7 @@
     },
     {
       "id": "S18.22-pagination-identity-02",
-      "sourceLine": 6794,
+      "sourceLine": 6789,
       "sourceAnchor": "edits target original items",
       "statement": "Paging, sorting and external replacement preserve logical edit targets, selection, focus and pending drafts.",
       "strength": "normative",
@@ -6477,7 +6477,7 @@
     },
     {
       "id": "S18.22-pagination-controls-03",
-      "sourceLine": 6794,
+      "sourceLine": 6789,
       "sourceAnchor": "Use localized labels and keyboard-accessible",
       "statement": "Collection pager has localized keyboard-accessible controls in a distinct footer; optional top pager shares state.",
       "strength": "MUST",
@@ -6493,7 +6493,7 @@
     },
     {
       "id": "S18.22-row-dialog-01",
-      "sourceLine": 6865,
+      "sourceLine": 6860,
       "sourceAnchor": "Dialog presentation adds a localized Edit details",
       "statement": "Row dialog edits an isolated whole-item draft; Apply rechecks identity and guards, Cancel discards, and read-only inspection remains available.",
       "strength": "normative",
@@ -6507,7 +6507,7 @@
     },
     {
       "id": "S18.22-row-panel-splitter-02",
-      "sourceLine": 6865,
+      "sourceLine": 6860,
       "sourceAnchor": "default MUST allow users to resize both placements",
       "statement": "Right and bottom row-detail panels default to resizable dividers and preserve selection, data, drafts, validation and size through edits.",
       "strength": "MUST",
@@ -6521,7 +6521,7 @@
     },
     {
       "id": "S18.22-row-panel-visibility-03",
-      "sourceLine": 6865,
+      "sourceLine": 6860,
       "sourceAnchor": "options.rowDetail.collapsed",
       "statement": "Collapsed is initial panel visibility; show/hide retains row selection and data and does not reset on ordinary data updates.",
       "strength": "normative",
@@ -6534,7 +6534,7 @@
     },
     {
       "id": "S18.22-row-panel-selection-04",
-      "sourceLine": 6865,
+      "sourceLine": 6860,
       "sourceAnchor": "table MUST visually highlight",
       "statement": "Visible detail selection has styled and accessible current-row indication independent of bulk-delete checkbox selection.",
       "strength": "MUST",
@@ -6548,7 +6548,7 @@
     },
     {
       "id": "S27-01",
-      "sourceLine": 7788,
+      "sourceLine": 7783,
       "sourceAnchor": "Verify against the exact targeted core",
       "statement": "Verify targeted core and renderer contracts empirically before adopting types, rules, restriction, options, temporal behavior, translation, resolver identity, CSP, expression or Markdown behavior.",
       "strength": "normative",
@@ -6559,7 +6559,7 @@
     },
     {
       "id": "S28-01",
-      "sourceLine": 7806,
+      "sourceLine": 7801,
       "sourceAnchor": "Each renderer family publishes",
       "statement": "Publish supported element types, variants, formats, options, validator dialects and extensions, runtime integrations and limitations per renderer family.",
       "strength": "normative",
@@ -6574,7 +6574,7 @@
     },
     {
       "id": "S28-02",
-      "sourceLine": 7808,
+      "sourceLine": 7803,
       "sourceAnchor": "Registration rank and escape-hatch",
       "statement": "Document registration ranks and escape-hatch namespaces for each renderer family.",
       "strength": "normative",
@@ -6589,7 +6589,7 @@
     },
     {
       "id": "S28-03",
-      "sourceLine": 7809,
+      "sourceLine": 7804,
       "sourceAnchor": "without claiming exact compatibility",
       "statement": "Describe native equivalent grids and editors by supported behavior without claiming compatibility with named web integrations.",
       "strength": "normative",
@@ -6603,7 +6603,7 @@
     },
     {
       "id": "S28-04",
-      "sourceLine": 7812,
+      "sourceLine": 7807,
       "sourceAnchor": "serialized spec and examples",
       "statement": "Keep serialized spec and examples independent of component libraries, share core logic, and isolate component rendering and props in adapters.",
       "strength": "normative",
@@ -6612,13 +6612,14 @@
       "evidence": [
         "core and examples commonMain Gradle dependencies exclude Compose and component libraries; the shared OTP editor accepts a family text slot, and Material/Cupertino adapters supply their own text components",
         "The mounted OtpPasswordUiTest suite passes on JVM, JS browser, Wasm browser and iOS simulator after the OTP text split",
-        "Shared MixedTreeEditor now accepts family text, input and action slots; Material and Cupertino adapters supply those components. The 14 focused mixed-tree tests, including the paired MixedTreeFamilyUiTest search, clear and rename cases, pass on JVM, JS browser, Wasm browser and iOS simulator with zero failures or skips."
+        "Shared MixedTreeEditor now accepts family text, input and action slots; Material and Cupertino adapters supply those components. The 14 focused mixed-tree tests, including the paired MixedTreeFamilyUiTest search, clear and rename cases, pass on JVM, JS browser, Wasm browser and iOS simulator with zero failures or skips.",
+        "Shared UnknownRenderer delegates unavailable text to a renderer-family hook; Material supplies Text and Cupertino supplies CupertinoText. Shared Compose source and its commonMain dependencies no longer use Material3. Nine focused fallback, locale, cell and scope tests pass on JVM, JS browser, Wasm browser and iOS simulator with zero failures or skips. Two mounted UnknownRendererFamilyUiTest cases per target cover the registered family hook and a custom registry without it, including live English/Bulgarian fallback updates. Four mounted light/dark screenshot cases per target find the Material onSurface or Cupertino label foreground pixels in the actual unavailable-renderer path without a data write; the six-case theme/family suite passes on JVM, JS browser, Wasm browser and iOS simulator."
       ],
-      "next": "Move the remaining Material3 UI in shared UnknownRenderer behind family adapters, then audit other shared component imports and verify actual family styling on all targets."
+      "next": "Check physical-device appearance, other shared component boundaries and the final full build gate before claiming complete adapter isolation."
     },
     {
       "id": "S29-01",
-      "sourceLine": 7819,
+      "sourceLine": 7814,
       "sourceAnchor": "common config schema includes",
       "statement": "Verify readonly and separateReadonlyFromDisabled presentation in each adapter before claiming renderer support.",
       "strength": "normative",
@@ -6632,7 +6633,7 @@
     },
     {
       "id": "S29-02",
-      "sourceLine": 7827,
+      "sourceLine": 7822,
       "sourceAnchor": "schemas in this package use",
       "statement": "Validate the draft-07 authoring schemas offline by their published IDs.",
       "strength": "normative",
@@ -6645,7 +6646,7 @@
     },
     {
       "id": "S29-03",
-      "sourceLine": 7833,
+      "sourceLine": 7828,
       "sourceAnchor": "jsonforms-uischema.schema.json",
       "statement": "Validate the common UI profile and shared definitions with the common UI schema artifact.",
       "strength": "normative",
@@ -6658,7 +6659,7 @@
     },
     {
       "id": "S29-04",
-      "sourceLine": 7834,
+      "sourceLine": 7829,
       "sourceAnchor": "jsonforms-extended-uischema.schema.json",
       "statement": "Validate recursively nested layouts and details with the extended UI schema artifact.",
       "strength": "normative",
@@ -6671,7 +6672,7 @@
     },
     {
       "id": "S29-05",
-      "sourceLine": 7835,
+      "sourceLine": 7830,
       "sourceAnchor": "jsonforms-config.schema.json",
       "statement": "Validate common defaults and shared extension configuration with the common config artifact.",
       "strength": "normative",
@@ -6684,7 +6685,7 @@
     },
     {
       "id": "S29-06",
-      "sourceLine": 7836,
+      "sourceLine": 7831,
       "sourceAnchor": "jsonforms-extended-config.schema.json",
       "statement": "Validate extended configuration and security blocks with the extended config artifact.",
       "strength": "normative",
@@ -6697,7 +6698,7 @@
     },
     {
       "id": "S29-07",
-      "sourceLine": 7837,
+      "sourceLine": 7832,
       "sourceAnchor": "example.schema.json",
       "statement": "Validate catalog entries and host requirements with the example artifact.",
       "strength": "normative",
@@ -6710,7 +6711,7 @@
     },
     {
       "id": "S29-08",
-      "sourceLine": 7838,
+      "sourceLine": 7833,
       "sourceAnchor": "jsonforms-rule.schema.json",
       "statement": "Validate standalone serialized rules in both UI profiles with the rule artifact.",
       "strength": "normative",
@@ -6723,7 +6724,7 @@
     },
     {
       "id": "S29-09",
-      "sourceLine": 7840,
+      "sourceLine": 7835,
       "sourceAnchor": "Unknown options and extension",
       "statement": "Allow unknown options and namespaces while enforcing known field constraints; accept unknown extended element types for downstream registries.",
       "strength": "normative",
@@ -6736,7 +6737,7 @@
     },
     {
       "id": "S29-10",
-      "sourceLine": 7845,
+      "sourceLine": 7840,
       "sourceAnchor": "default` values in these",
       "statement": "Do not apply authoring-schema defaults to authored UI schemas or config during validation.",
       "strength": "normative",
@@ -6751,7 +6752,7 @@
     },
     {
       "id": "S29-11",
-      "sourceLine": 7850,
+      "sourceLine": 7845,
       "sourceAnchor": "Structural checks cover option",
       "statement": "Keep structural authoring validation distinct from semantic and runtime conformance, and never derive script permission from schema acceptance.",
       "strength": "normative",
@@ -6767,7 +6768,7 @@
     },
     {
       "id": "S29-12",
-      "sourceLine": 7857,
+      "sourceLine": 7852,
       "sourceAnchor": "Example data-schema documents",
       "statement": "Check example data schemas against the applicable meta-schema, leaving custom keywords to the selected validator integration.",
       "strength": "normative",
@@ -6780,7 +6781,7 @@
     },
     {
       "id": "S29-13",
-      "sourceLine": 7863,
+      "sourceLine": 7858,
       "sourceAnchor": "test suite validates every example",
       "statement": "Validate each example data schema, UI schema, config, registry UI schema and metadata; enforce exact expected-invalid pointers.",
       "strength": "normative",
@@ -6793,7 +6794,7 @@
     },
     {
       "id": "S30.1-01",
-      "sourceLine": 7880,
+      "sourceLine": 7875,
       "sourceAnchor": "Framework-native and web-component hosts",
       "statement": "Use the same data/schema semantics, registries, config, locale, validation mode and action contracts in native and web-component hosts.",
       "strength": "normative",
@@ -6814,7 +6815,7 @@
     },
     {
       "id": "S30.1-02",
-      "sourceLine": 7882,
+      "sourceLine": 7877,
       "sourceAnchor": "Switching hosts preserves",
       "statement": "Preserve current data and settings when switching hosts.",
       "strength": "normative",
@@ -6828,7 +6829,7 @@
     },
     {
       "id": "S30.1-03",
-      "sourceLine": 7882,
+      "sourceLine": 7877,
       "sourceAnchor": "Web components",
       "statement": "Install component styles in the ShadowRoot and support styled portals, workers and overlays.",
       "strength": "normative",
@@ -6843,7 +6844,7 @@
     },
     {
       "id": "S30.1-04",
-      "sourceLine": 7884,
+      "sourceLine": 7879,
       "sourceAnchor": "color scheme must follow",
       "statement": "Follow selected light, dark and system color scheme, including system changes after mount.",
       "strength": "normative",
@@ -6859,7 +6860,7 @@
     },
     {
       "id": "S30.1-05",
-      "sourceLine": 7887,
+      "sourceLine": 7882,
       "sourceAnchor": "Renderers use the underlying",
       "statement": "Use real library controls where available and preserve keyboard, focus and theme contracts when adapting primitives.",
       "strength": "normative",
@@ -6870,7 +6871,7 @@
     },
     {
       "id": "S30.2-01",
-      "sourceLine": 7894,
+      "sourceLine": 7889,
       "sourceAnchor": "A demo exposes",
       "statement": "Expose example, live data, schema, UI schema, registered UI schemas, translations and config in the demo.",
       "strength": "normative",
@@ -6884,7 +6885,7 @@
     },
     {
       "id": "S30.2-02",
-      "sourceLine": 7895,
+      "sourceLine": 7890,
       "sourceAnchor": "JSON editors have Reload",
       "statement": "Give JSON editors Reload and Apply; invalid JSON leaves active state intact; Apply changes only the edited property; Reload does not apply.",
       "strength": "normative",
@@ -6899,7 +6900,7 @@
     },
     {
       "id": "S30.2-03",
-      "sourceLine": 7899,
+      "sourceLine": 7894,
       "sourceAnchor": "desktop form/data view",
       "statement": "Start form/data panes near 75/25 with resizable, keyboard-usable minima, RTL direction and narrow stacking.",
       "strength": "normative",
@@ -6913,7 +6914,7 @@
     },
     {
       "id": "S30.2-04",
-      "sourceLine": 7902,
+      "sourceLine": 7897,
       "sourceAnchor": "Form-only mode hides",
       "statement": "Preserve data and settings through form-only mode and back.",
       "strength": "normative",
@@ -6927,7 +6928,7 @@
     },
     {
       "id": "S30.2-05",
-      "sourceLine": 7905,
+      "sourceLine": 7900,
       "sourceAnchor": "Expose light/dark/system",
       "statement": "Expose theme, direction, locale, readonly, validation, default restricted edits, description and required-marker settings separately from library settings.",
       "strength": "normative",
@@ -6943,7 +6944,7 @@
     },
     {
       "id": "S30.2-06",
-      "sourceLine": 7907,
+      "sourceLine": 7902,
       "sourceAnchor": "Example selection has stable",
       "statement": "Provide stable example links and feature groups; show error count with schema, additional and pending analysis distinguishable.",
       "strength": "normative",
@@ -6962,7 +6963,7 @@
     },
     {
       "id": "S30.3-01",
-      "sourceLine": 7913,
+      "sourceLine": 7908,
       "sourceAnchor": "Every interactive element",
       "statement": "Make every interactive element keyboard reachable with a visible focus indicator.",
       "strength": "normative",
@@ -6978,7 +6979,7 @@
     },
     {
       "id": "S30.3-02",
-      "sourceLine": 7914,
+      "sourceLine": 7909,
       "sourceAnchor": "Icon actions have localized",
       "statement": "Give icon actions localized names and focusable tooltips; manage and restore dialog focus.",
       "strength": "normative",
@@ -6995,7 +6996,7 @@
     },
     {
       "id": "S30.3-03",
-      "sourceLine": 7916,
+      "sourceLine": 7911,
       "sourceAnchor": "Disclosure, selection, disabled",
       "statement": "Expose disclosure, selection, disabled, required and error state through platform semantics without relying on color.",
       "strength": "normative",
@@ -7017,7 +7018,7 @@
     },
     {
       "id": "S30.3-04",
-      "sourceLine": 7919,
+      "sourceLine": 7914,
       "sourceAnchor": "Light and dark modes",
       "statement": "Cover controls, overlays, editors, validation and icons in both themes; use logical inline RTL without changing data paths.",
       "strength": "normative",
@@ -7032,7 +7033,7 @@
     },
     {
       "id": "S30.3-05",
-      "sourceLine": 7922,
+      "sourceLine": 7917,
       "sourceAnchor": "Test integration through",
       "statement": "Test competing dispatch through the full registry for values, restrictions, readonly, hidden, empty/absent, locale, drafts, external updates and identity.",
       "strength": "normative",
@@ -7049,7 +7050,7 @@
     },
     {
       "id": "S30.3-06",
-      "sourceLine": 7925,
+      "sourceLine": 7920,
       "sourceAnchor": "Verify scalar controls",
       "statement": "Verify scalar controls and table cells through their respective registries and assert JSON shapes and emitted values.",
       "strength": "normative",
@@ -7076,7 +7077,7 @@
     },
     {
       "id": "S30.3-07",
-      "sourceLine": 7927,
+      "sourceLine": 7922,
       "sourceAnchor": "Build packages, demos",
       "statement": "Build packages, demos and web components separately and test theme, RTL, narrow and ShadowRoot behavior where applicable.",
       "strength": "normative",

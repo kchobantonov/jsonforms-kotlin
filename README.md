@@ -37,21 +37,30 @@ and [examples/UPSTREAM.md](examples/UPSTREAM.md) for upstream commits and parity
 `additionalProperties`/`patternProperties` objects have dedicated renderers in both Material and
 Cupertino, including type selection and add, rename, and delete operations.
 
-After updating the sibling upstream checkouts, refresh the examples with:
+After updating the sibling JSON Forms checkout, refresh its examples with:
 
 ```bash
 node scripts/sync-upstream-examples.mjs
-node scripts/sync-spec-examples.mjs
-node scripts/check-imported-authoring.mjs
 ```
+
+The extended spec and its examples come from the exact `@chobantonov/jsonforms-extended-spec@0.2.0`
+package pinned in `package-lock.json`. Install and verify that source with:
+
+```bash
+npm ci
+npm run spec:check
+```
+
+When updating the pinned package version, run `npm run spec:sync` and review the
+coverage, requirement ledger, and generated example catalog before checking in the snapshot.
 
 Set `JSONFORMS_EXAMPLES_BUNDLE` when the upstream bundle is not located at the default sibling
 path (`../jsonforms/packages/examples/lib/jsonforms-examples.cjs.js`). Catalog tests compare the
 registered Kotlin names to the generated upstream index so omissions and duplicates fail the build.
-Set `JSONFORMS_SPEC_EXAMPLES_DIR` to override the default sibling spec fixtures directory.
+Set `JSONFORMS_SPEC_EXAMPLES_DIR` to inspect an alternate spec fixtures directory during migration.
 The spec sync copies portable JSON into `examples/spec`; it does not create a checked-in Kotlin snapshot.
-The authoring check validates the imported spec fixtures against the pinned sibling spec's
-draft-07 schemas. It requires that checkout's Ajv dependencies and treats the two declared
+The authoring check validates the imported spec fixtures against the installed package's
+draft-07 schemas. It uses the root Ajv dependencies and treats the two declared
 invalid authoring examples as expected rejections before validating repaired copies.
 
 ## Interpolated labels

@@ -46,7 +46,15 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 
-val MaterialMixedRenderer = ComposeJsonFormsRenderer { MaterialMixedRenderer(it) }
+val MaterialMixedRenderer: ComposeJsonFormsRenderer = object : ComposeJsonFormsRenderer, ComposeUnknownRenderer {
+    @Composable
+    override fun Render(props: ComposeJsonFormsRendererProps) = MaterialMixedRenderer(props)
+
+    @Composable
+    override fun RenderUnknown(message: String) {
+        Text(message, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
 
 @Composable
 fun MaterialMixedRenderer(props: ComposeJsonFormsRendererProps) {

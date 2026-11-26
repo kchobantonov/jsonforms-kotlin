@@ -1,10 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { missingRequirementSections, misplacedRequirementIds } from './spec-ledger-coverage.mjs';
+import { assertPinnedSpecPackage } from './spec-package-source.mjs';
 
 const read = (path) => readFileSync(path, 'utf8');
 const candidates = JSON.parse(read('docs/spec-normative-candidates.json'));
 const inventory = JSON.parse(read('docs/spec-source-inventory.json'));
-const lines = read(`${inventory.sourceRoot}/docs/spec.md`).split('\n');
+assertPinnedSpecPackage();
+const specRoot = process.env.JSONFORMS_SPEC_ROOT ?? inventory.sourceRoot;
+const lines = read(`${specRoot}/docs/spec.md`).split('\n');
 const expected = [];
 let buffer = [];
 let start = 1;
